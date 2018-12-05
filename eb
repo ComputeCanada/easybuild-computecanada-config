@@ -38,7 +38,7 @@ elif [ "$(id -ng)" != "ebuser" ] ; then
 	export EASYBUILD_INSTALLPATH_SOFTWARE=/cvmfs/restricted.computecanada.ca/easybuild/software/2017
 	export EASYBUILD_SOURCEPATH=/cvmfs/restricted.computecanada.ca/easybuild/sources
 fi
-export $EASYBUILD_HOOKS=/cvmfs/soft.computecanada.ca/easybuild/cc_hooks.py
+export EASYBUILD_HOOKS=/cvmfs/soft.computecanada.ca/easybuild/cc_hooks.py
 export EASYBUILD_BUILDPATH=$EASYBUILD_BUILDPATH/$RSNT_ARCH
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
