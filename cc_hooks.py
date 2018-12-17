@@ -95,7 +95,7 @@ new_version_mapping = {
                 ('PLUMED','2.3.0'):'2.3.7',
                 ('PLUMED','2.4.2'):'2.4.3',
                 ('PETSc','ANY','ANY'): '3.10.2',
-                ('Trilinos','ANY','ANY'): ('12.10.1',None),
+                ('Trilinos','12.10.1','ANY'): ('12.10.1',None),
             },
             'tc_mapping': {
                 (('gomkl','2018.3.312'),('gomklc','2018.3.312.100')):('gomkl','2018.3.312'),
