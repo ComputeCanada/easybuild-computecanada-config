@@ -22,7 +22,7 @@ new_version_mapping = {
                 'arpack-ng': '3.5.0',
                 ('AUGUSTUS','3.2.3'):'3.3',
                 'CheMPS2': '1.8.9',
-                'R':'3.5.2',
+                'R':('3.5.2',None),
             },
             'tc_mapping': {
                 (('gmkl','2018.3'),('gomkl','2018.3.312'),('gomklc','2018.3.312.100')):('gmkl','2018.3'),
