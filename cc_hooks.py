@@ -10,6 +10,7 @@ new_version_mapping = {
                 'QJson':'0.9.0',
                 ('Python','2.7.13','ANY'): ('2.7.14',None),
                 ('Python','3.5.2','ANY'): ('3.5.4',None),
+                ('SciPy-Stack','ANY'): ('2019a',None),
             },
             'tc_mapping': {
                 'ALL':('dummy','dummy'),
