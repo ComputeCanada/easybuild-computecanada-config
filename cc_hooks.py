@@ -209,6 +209,9 @@ def replace_dependencies(ec, tc, param, deps_mapping):
         #print("toolchain match")
         for n, dep in enumerate(ec[param]):
             dep = list(dep)
+            if dep[0] == ec.name:
+                print("Dependency has the same name as the easyconfig, not replacing.")
+                continue
             for new_dep, new_dep_version in deps_mapping['pkg_mapping'].iteritems():
                 if package_match(new_dep, dep):
                     print("Dependency %s matches %s" % (str(dep),(new_dep)))
