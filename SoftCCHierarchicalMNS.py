@@ -130,7 +130,7 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
         else:
             tc_comp_name, tc_comp_ver = tc_comp_info
             tc_comp_name = tc_comp_name.lower().split('-')[0]
-            tc_comp_ver = self.det_twodigit_version({'version': tc_comp_ver})
+            tc_comp_ver = self.det_twodigit_version({'name': tc_comp_name, 'version': tc_comp_ver})
             tc_mpi = det_toolchain_mpi(ec)
             tc_cuda = det_toolchain_cuda(ec)
             if tc_cuda is not None:
@@ -168,6 +168,12 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
         version = ec['version'].replace('2013_sp1', '2014')
         if version.count('.') > 1:
             version = version[:version.find('.',version.find('.')+1)]
+        major = int(version[:version.find('.')])
+        # use one-digit version for newer compilers and MPIs.
+        if ((ec['name'].lower() == 'gcc' and major >=8) or
+            (ec['name'] in ['intel', 'icc', 'ifort', 'iccifort', 'impi', 'intelmpi'] and major >= 2019) or
+            (ec['name'].lower() == 'openmpi' and major >= 4)):
+            version = str(major)
         return version
 
     def det_modpath_extensions(self, ec):
@@ -225,7 +231,7 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
             else:
                 tc_comp_name, tc_comp_ver = tc_comp_info
                 tc_comp_name = tc_comp_name.lower().split('-')[0]
-                tc_comp_ver = self.det_twodigit_version({'version': tc_comp_ver})
+                tc_comp_ver = self.det_twodigit_version({'name': tc_comp_name, 'version': tc_comp_ver})
                 fullver = self.det_twodigit_version(ec)
                 tc_cuda = det_toolchain_cuda(ec)
                 subdir = tc_comp_name+tc_comp_ver
