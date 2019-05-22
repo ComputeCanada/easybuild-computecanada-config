@@ -35,28 +35,14 @@ import re
 from vsc.utils import fancylogger
 
 from easybuild.tools.build_log import EasyBuildError
-from easybuild.tools.module_naming_scheme.hierarchical_mns import HierarchicalMNS
+from easybuild.tools.module_naming_scheme.hierarchical_mns import HierarchicalMNS, COMP_NAME_VERSION_TEMPLATES
+from easybuild.tools.module_naming_scheme.hierarchical_mns import CORE, COMPILER, MPI
+from easybuild.tools.module_naming_scheme.hierarchical_mns import MODULECLASS_COMPILER, MODULECLASS_MPI
 from easybuild.tools.module_naming_scheme.toolchain import det_toolchain_compilers, det_toolchain_mpi
 from easybuild.tools.module_naming_scheme.toolchain import det_toolchain_element_details
 
-CORE = 'Core'
-COMPILER = 'Compiler'
-MPI = 'MPI'
 CUDA = 'CUDA'
-
-MODULECLASS_COMPILER = 'compiler'
-MODULECLASS_MPI = 'mpi'
-
 GCCCORE = 'GCCcore'
-
-# note: names in keys are ordered alphabetically
-COMP_NAME_VERSION_TEMPLATES = {
-    'icc,ifort': ('intel', '%(icc)s'),
-    'Clang,GCC': ('Clang-GCC', '%(Clang)s-%(GCC)s'),
-    'CUDA,GCC': ('GCC-CUDA', '%(GCC)s-%(CUDA)s'),
-    'xlc,xlf': ('xlcxlf', '%(xlc)s'),
-}
-
 TOOLCHAIN_COMPILER_CUDA = 'COMPILER_CUDA'
 
 def det_toolchain_cuda(ec):
@@ -146,7 +132,7 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
                     subdir = os.path.join(MPI, subdir, tc_mpi_name+tc_mpi_fullver)
             elif tc_mpi is None:
                 # compiler-only toolchain => Compiler/<compiler_name><compiler_version> namespace
-                if tc_comp_ver == 'system' or tc_comp_name == 'gcccore':
+                if tc_comp_ver == 'system' or tc_comp_name == GCCCORE.lower():
                     subdir = CORE
                 else:
                     subdir = os.path.join(COMPILER, tc_comp_name+tc_comp_ver)
