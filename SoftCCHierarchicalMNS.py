@@ -67,6 +67,11 @@ def det_toolchain_cuda(ec):
 
 class SoftCCHierarchicalMNS(HierarchicalMNS):
     """Class implementing an example hierarchical module naming scheme."""
+    def __init__(self, *args, **kwargs):
+        # required for use of pgicuda toolchain
+        COMP_NAME_VERSION_TEMPLATES['CUDA,PGI'] = ('PGI-CUDA', '%(PGI)s-%(CUDA)s')
+        super(SoftCCHierarchicalMNS, self).__init__(*args, **kwargs)
+
     def is_short_modname_for(self, short_modname, name):
         """
         Determine whether the specified (short) module name is a module for software with the specified name.
