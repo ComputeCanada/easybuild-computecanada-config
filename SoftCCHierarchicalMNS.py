@@ -157,6 +157,9 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
         """Determine two-digit version"""
         # we use "2014" toolchain for Intel 2013_sp1 compilers.
         version = ec['version'].replace('2013_sp1', '2014')
+        # strip off cuda component in version
+        if '-' in version:
+            version = version[:version.find('-')]
         if version.count('.') > 1:
             version = version[:version.find('.',version.find('.')+1)]
         major = int(version[:version.find('.')])
