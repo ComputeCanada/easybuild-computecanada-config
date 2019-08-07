@@ -35,28 +35,14 @@ import re
 from vsc.utils import fancylogger
 
 from easybuild.tools.build_log import EasyBuildError
-from easybuild.tools.module_naming_scheme.hierarchical_mns import HierarchicalMNS
+from easybuild.tools.module_naming_scheme.hierarchical_mns import HierarchicalMNS, COMP_NAME_VERSION_TEMPLATES
+from easybuild.tools.module_naming_scheme.hierarchical_mns import CORE, COMPILER, MPI
+from easybuild.tools.module_naming_scheme.hierarchical_mns import MODULECLASS_COMPILER, MODULECLASS_MPI
 from easybuild.tools.module_naming_scheme.toolchain import det_toolchain_compilers, det_toolchain_mpi
 from easybuild.tools.module_naming_scheme.toolchain import det_toolchain_element_details
 
-CORE = 'Core'
-COMPILER = 'Compiler'
-MPI = 'MPI'
 CUDA = 'CUDA'
-
-MODULECLASS_COMPILER = 'compiler'
-MODULECLASS_MPI = 'mpi'
-
 GCCCORE = 'GCCcore'
-
-# note: names in keys are ordered alphabetically
-COMP_NAME_VERSION_TEMPLATES = {
-    'icc,ifort': ('intel', '%(icc)s'),
-    'Clang,GCC': ('Clang-GCC', '%(Clang)s-%(GCC)s'),
-    'CUDA,GCC': ('GCC-CUDA', '%(GCC)s-%(CUDA)s'),
-    'xlc,xlf': ('xlcxlf', '%(xlc)s'),
-}
-
 TOOLCHAIN_COMPILER_CUDA = 'COMPILER_CUDA'
 
 def det_toolchain_cuda(ec):
@@ -81,6 +67,11 @@ def det_toolchain_cuda(ec):
 
 class SoftCCHierarchicalMNS(HierarchicalMNS):
     """Class implementing an example hierarchical module naming scheme."""
+    def __init__(self, *args, **kwargs):
+        # required for use of pgicuda toolchain
+        COMP_NAME_VERSION_TEMPLATES['CUDA,PGI'] = ('PGI-CUDA', '%(PGI)s-%(CUDA)s')
+        super(SoftCCHierarchicalMNS, self).__init__(*args, **kwargs)
+
     def is_short_modname_for(self, short_modname, name):
         """
         Determine whether the specified (short) module name is a module for software with the specified name.
@@ -146,7 +137,7 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
                     subdir = os.path.join(MPI, subdir, tc_mpi_name+tc_mpi_fullver)
             elif tc_mpi is None:
                 # compiler-only toolchain => Compiler/<compiler_name><compiler_version> namespace
-                if tc_comp_ver == 'system' or tc_comp_name == 'gcccore':
+                if tc_comp_ver == 'system' or tc_comp_name == GCCCORE.lower():
                     subdir = CORE
                 else:
                     subdir = os.path.join(COMPILER, tc_comp_name+tc_comp_ver)
@@ -166,6 +157,9 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
         """Determine two-digit version"""
         # we use "2014" toolchain for Intel 2013_sp1 compilers.
         version = ec['version'].replace('2013_sp1', '2014')
+        # strip off cuda component in version
+        if '-' in version:
+            version = version[:version.find('-')]
         if version.count('.') > 1:
             version = version[:version.find('.',version.find('.')+1)]
         major = int(version[:version.find('.')])
@@ -189,8 +183,8 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
         if modclass == MODULECLASS_COMPILER or ec['name'] in ['iccifort']:
             # obtain list of compilers based on that extend $MODULEPATH in some way other than <name>/<version>
             extend_comps = []
-            # exclude GCC for which <name>/<version> is used as $MODULEPATH extension
-            excluded_comps = ['GCC']
+            # exclude GCC and PGI for which <name>/<version> is used as $MODULEPATH extension
+            excluded_comps = ['GCC', 'PGI']
             for comps in COMP_NAME_VERSION_TEMPLATES.keys():
                 extend_comps.extend([comp for comp in comps.split(',') if comp not in excluded_comps])
 
