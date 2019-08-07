@@ -46,7 +46,7 @@ new_version_mapping = {
                 'CLHEP': '2.4.1.0',
                 ('FFTW','ANY',None): '3.3.8',
                 'GDAL': ('2.1.3',None),
-                'GEOS': ('3.6.1',None),
+                ('GEOS',('3.4.3','3.6.1'),None): ('3.6.1',None),
                 ('GSL',('2.2.1', '2.3', '2.4')) : '2.5' ,
                 ('HDF5','ANY',None): '1.10.3',
                 'HTSlib': '1.9',
@@ -141,6 +141,7 @@ configopts_changes_based_on_easyblock_class_and_name = {
 def package_match(ref, test):
     #print("Testing %s against %s" % (str(test),str(ref)))
     if isinstance(ref,str): ref = (ref, "ANY", "ANY")
+    if isinstance(test,list) and isinstance(test[0],tuple): return False  # does not change anything for multi_deps
     ref_name = ref[0]
     ref_version = ref[1]
     ref_version_suffix = "ANY"
