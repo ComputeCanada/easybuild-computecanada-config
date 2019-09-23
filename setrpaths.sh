@@ -67,9 +67,9 @@ function patch_jar {
 	for so in $shared_objects; do
 		unzip -q $fullname $so
 		# some wheels have their files extract with read-only permission
-		chmod +w $so 
+		chmod +w $so
 		patch_rpath $so
-		zip -qu $fullname $so
+		zip -q $fullname $so
 	done
 
 	cd -
@@ -128,4 +128,3 @@ for filename in $(find $ARG_PATH -type f); do
 done
 IFS=$SAVEIFS
 exit 0
-
