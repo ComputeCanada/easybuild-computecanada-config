@@ -23,20 +23,20 @@
 # along with EasyBuild.  If not, see <http://www.gnu.org/licenses/>.
 ##
 """
-EasyBuild support for a PGI + CUDA compiler toolchain.
+EasyBuild support for a iccifort+CUDA compiler toolchain.
 
-:author: Maxime Boissonneault (Universite Laval, Calcul Quebec, Compute Canada)
+:author: Ake Sandgren (HPC2N)
 :author: Bart Oldeman (McGill University, Calcul Quebec, Compute Canada)
 """
 
 from easybuild.toolchains.compiler.cuda import Cuda
 from easybuild.toolchains.gcccorecuda import GCCcoreCUDA
-from easybuild.toolchains.pgi import PgiToolchain
+from easybuild.toolchains.iccifort import IccIfort
 
 
-class PgiCUDA(PgiToolchain, Cuda):
+class IccIfortCUDA(IccIfort, Cuda):
     """Compiler toolchain with iccifort and CUDA."""
-    NAME = 'pgicuda'
+    NAME = 'iccifortcuda'
 
-    COMPILER_MODULE_NAME = PgiToolchain.COMPILER_MODULE_NAME + Cuda.COMPILER_CUDA_MODULE_NAME
-    SUBTOOLCHAIN = [PgiToolchain.NAME, GCCcoreCUDA.NAME]
+    COMPILER_MODULE_NAME = IccIfort.COMPILER_MODULE_NAME + Cuda.COMPILER_CUDA_MODULE_NAME
+    SUBTOOLCHAIN = [IccIfort.NAME, GCCcoreCUDA.NAME]

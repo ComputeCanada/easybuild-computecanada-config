@@ -23,20 +23,21 @@
 # along with EasyBuild.  If not, see <http://www.gnu.org/licenses/>.
 ##
 """
-EasyBuild support for a PGI + CUDA compiler toolchain.
+EasyBuild support for a GCC+CUDA compiler toolchain.
 
-:author: Maxime Boissonneault (Universite Laval, Calcul Quebec, Compute Canada)
+:author: Kenneth Hoste (Ghent University)
 :author: Bart Oldeman (McGill University, Calcul Quebec, Compute Canada)
 """
 
 from easybuild.toolchains.compiler.cuda import Cuda
+from easybuild.toolchains.gcc import GccToolchain
 from easybuild.toolchains.gcccorecuda import GCCcoreCUDA
-from easybuild.toolchains.pgi import PgiToolchain
+from easybuild.tools.toolchain import DUMMY_TOOLCHAIN_NAME
 
 
-class PgiCUDA(PgiToolchain, Cuda):
-    """Compiler toolchain with iccifort and CUDA."""
-    NAME = 'pgicuda'
+class GccCUDA(GccToolchain, Cuda):
+    """Compiler toolchain with GCC and CUDA."""
+    NAME = 'gcccuda'
 
-    COMPILER_MODULE_NAME = PgiToolchain.COMPILER_MODULE_NAME + Cuda.COMPILER_CUDA_MODULE_NAME
-    SUBTOOLCHAIN = [PgiToolchain.NAME, GCCcoreCUDA.NAME]
+    COMPILER_MODULE_NAME = ['GCC', 'CUDA']
+    SUBTOOLCHAIN = [GccToolchain.NAME, GCCcoreCUDA.NAME]
