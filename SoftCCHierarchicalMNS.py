@@ -118,12 +118,20 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
         This determines the separation between module names exposed to users, and what's part of the $MODULEPATH.
         Examples: Core, avx2/Compiler/gcc4.8, avx/MPI/gcc4.8/openmpi1.6
         """
-        tc_comps = det_toolchain_compilers(ec)
-        tc_comp_info = self.det_toolchain_compilers_name_version(tc_comps)
+        tc_comp_info = None
+        if ec.toolchain.name != CUDACORE:
+            tc_comps = det_toolchain_compilers(ec)
+            tc_comp_info = self.det_toolchain_compilers_name_version(tc_comps)
         # determine prefix based on type of toolchain used
         if tc_comp_info is None:
             # no compiler in toolchain, dummy toolchain => Core module
-            subdir = CORE
+            if ec.toolchain.name == CUDACORE:
+                tc_cuda = det_toolchain_cuda(ec)
+                tc_cuda_name = CUDA.lower()
+                tc_cuda_fullver = self.det_twodigit_version(tc_cuda)
+                subdir = os.path.join(CUDA, tc_cuda_name+tc_cuda_fullver)
+            else:
+                subdir = CORE
         else:
             tc_comp_name, tc_comp_ver = tc_comp_info
             tc_comp_name = tc_comp_name.lower().split('-')[0]
@@ -184,8 +192,10 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
         Examples: avx2/Compiler/gcc4.8 (for GCC/4.8.5 module), avx/MPI/intel2016.4/openmpi2.0 (for OpenMPI/2.0.2 module)
         """
         modclass = ec['moduleclass']
-        tc_comps = det_toolchain_compilers(ec)
-        tc_comp_info = self.det_toolchain_compilers_name_version(tc_comps)
+        tc_comp_info = None
+        if ec.toolchain.name != CUDACORE:
+            tc_comps = det_toolchain_compilers(ec)
+            tc_comp_info = self.det_toolchain_compilers_name_version(tc_comps)
 
         paths = []
         if modclass == MODULECLASS_COMPILER or ec['name'] in ['iccifort']:
