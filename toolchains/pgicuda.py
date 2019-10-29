@@ -30,7 +30,7 @@ EasyBuild support for a PGI + CUDA compiler toolchain.
 """
 
 from easybuild.toolchains.compiler.cuda import Cuda
-from easybuild.toolchains.gcccorecuda import GCCcoreCUDA
+from easybuild.toolchains.cudacore import CUDAcore
 from easybuild.toolchains.pgi import PgiToolchain
 
 
@@ -39,4 +39,4 @@ class PgiCUDA(PgiToolchain, Cuda):
     NAME = 'pgicuda'
 
     COMPILER_MODULE_NAME = PgiToolchain.COMPILER_MODULE_NAME + Cuda.COMPILER_CUDA_MODULE_NAME
-    SUBTOOLCHAIN = [PgiToolchain.NAME, GCCcoreCUDA.NAME]
+    SUBTOOLCHAIN = [PgiToolchain.NAME, CUDAcore.NAME]
