@@ -73,6 +73,8 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
     def __init__(self, *args, **kwargs):
         # required for use of pgicuda toolchain
         COMP_NAME_VERSION_TEMPLATES['CUDA,PGI'] = ('PGI-CUDA', '%(PGI)s-%(CUDA)s')
+        # required for use of gcccorecuda toolchain
+        COMP_NAME_VERSION_TEMPLATES['CUDAcore,GCCcore'] = ('GCCcore-CUDAcore', '%(GCCcore)s-%(CUDAcore)s')
         super(SoftCCHierarchicalMNS, self).__init__(*args, **kwargs)
 
     def is_short_modname_for(self, short_modname, name):
@@ -129,9 +131,11 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
             tc_cuda = det_toolchain_cuda(ec)
             if tc_cuda is not None:
                 # compiler-CUDA toolchain => CUDA/<comp_name>/<comp_version>/<CUDA_name>/<CUDA_version> namespace
-                tc_cuda_name = tc_cuda['name'].lower()
+                tc_cuda_name = CUDA.lower()
                 tc_cuda_fullver = self.det_twodigit_version(tc_cuda)
-                subdir = os.path.join(tc_comp_name+tc_comp_ver, tc_cuda_name+tc_cuda_fullver)
+                subdir = tc_cuda_name+tc_cuda_fullver
+                if tc_comp_name != GCCCORE.lower():
+                    subdir = os.path.join(tc_comp_name+tc_comp_ver, subdir)
                 if tc_mpi is None:
                     subdir = os.path.join(CUDA, subdir)
                 else:
@@ -152,7 +156,7 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
 
         if os.getenv('RSNT_ARCH') is None:
             raise EasyBuildError("Need to set architecture to determine module path in $RSNT_ARCH")
-        if subdir != CORE:
+        if subdir != CORE and not subdir.startswith(os.path.join(CUDA, CUDA.lower())):
             subdir = os.path.join(os.getenv('RSNT_ARCH'), subdir)
         return subdir
 
