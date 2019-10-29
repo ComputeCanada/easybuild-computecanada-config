@@ -45,6 +45,7 @@ from easybuild.tools.module_naming_scheme.toolchain import det_toolchain_compile
 from easybuild.tools.module_naming_scheme.toolchain import det_toolchain_element_details
 
 CUDA = 'CUDA'
+CUDACORE = 'CUDAcore'
 GCCCORE = 'GCCcore'
 TOOLCHAIN_COMPILER_CUDA = 'COMPILER_CUDA'
 
@@ -220,6 +221,8 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
             # XXX use custom code for MODULEPATH for compilers via modluafooter
             #if ec['name'] not in ['icc', 'ifort']:
             #    paths.append(os.path.join(COMPILER, *comp_name_ver))
+        elif ec['name'] == CUDACORE:
+            paths.append(os.path.join(CUDA, CUDA.lower()+self.det_twodigit_version(ec)))
         elif modclass == MODULECLASS_MPI or ec['name'] == CUDA:
             if modclass == MODULECLASS_MPI:
                 prefix = MPI
@@ -244,6 +247,7 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
 
         if os.getenv('RSNT_ARCH') is None:
             raise EasyBuildError("Need to set architecture for MODULEPATH extension in $RSNT_ARCH")
-        for i, path in enumerate(paths):
-            paths[i] = os.path.join(os.getenv('RSNT_ARCH'), path)
+        if ec['name'] != CUDACORE:
+            for i, path in enumerate(paths):
+                paths[i] = os.path.join(os.getenv('RSNT_ARCH'), path)
         return paths
