@@ -32,7 +32,10 @@ EasyBuild support for a system+CUDAcore compiler toolchain.
 from easybuild.toolchains.compiler.cuda import Cuda
 from easybuild.toolchains.compiler.gcc import Gcc
 from easybuild.toolchains.gcccore import GCCcore
-from easybuild.tools.toolchain import DUMMY_TOOLCHAIN_NAME
+try:
+    from easybuild.tools.toolchain import SYSTEM_TOOLCHAIN_NAME
+except ImportError:
+    from easybuild.tools.toolchain import DUMMY_TOOLCHAIN_NAME as SYSTEM_TOOLCHAIN_NAME
 
 
 class CUDAcore(Cuda):
@@ -51,6 +54,6 @@ class CUDAcore(Cuda):
     COMPILER_F90 = Gcc.COMPILER_F90
     COMPILER_FC = Gcc.COMPILER_FC
 
-    SUBTOOLCHAIN = DUMMY_TOOLCHAIN_NAME
+    SUBTOOLCHAIN = SYSTEM_TOOLCHAIN_NAME
     OPTIONAL = True
 
