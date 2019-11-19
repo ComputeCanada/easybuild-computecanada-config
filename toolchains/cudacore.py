@@ -32,10 +32,7 @@ EasyBuild support for a system+CUDAcore compiler toolchain.
 from easybuild.toolchains.compiler.cuda import Cuda
 from easybuild.toolchains.compiler.gcc import Gcc
 from easybuild.toolchains.gcccore import GCCcore
-try:
-    from easybuild.tools.toolchain import SYSTEM_TOOLCHAIN_NAME
-except ImportError:
-    from easybuild.tools.toolchain import DUMMY_TOOLCHAIN_NAME as SYSTEM_TOOLCHAIN_NAME
+from easybuild.tools.toolchain import SYSTEM_TOOLCHAIN_NAME
 
 
 class CUDAcore(Cuda):
