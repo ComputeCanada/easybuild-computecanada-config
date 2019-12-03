@@ -228,7 +228,8 @@ def replace_dependencies(ec, tc, param, deps_mapping):
             if dep[0] == ec.name:
                 print("Dependency has the same name as the easyconfig, not replacing.")
                 continue
-            for new_dep, new_dep_version in deps_mapping['pkg_mapping'].iteritems():
+            for new_dep in deps_mapping['pkg_mapping']:
+                new_dep_version = deps_mapping['pkg_mapping'][new_dep]
                 if package_match(new_dep, dep):
                     print("Dependency %s matches %s" % (str(dep),(new_dep)))
                     dep = map_dependency_version(dep,new_dep_version,deps_mapping['tc_mapping'],mytc)
@@ -237,13 +238,16 @@ def replace_dependencies(ec, tc, param, deps_mapping):
                     ec[param][n] = dep
 
 def modify_dependencies(ec,param):
-    for tc, deps_mapping in new_version_mapping.iteritems():
+    for tc in new_version_mapping:
+        deps_mapping = new_version_mapping[tc]
         replace_dependencies(ec,tc,param,deps_mapping)
 
-    for names, mapping in new_version_mapping_app_specific.iteritems():
+    for names in new_version_mapping_app_specific:
+        mapping = new_version_mapping_app_specific[names]
         if ec['name'] in names:
             print("Specific dependency mappings exist for %s, applying them" % ec['name'])
-            for tc, deps_mapping in mapping.iteritems():
+            for tc in mapping:
+                deps_mapping = mapping[tc]
                 replace_dependencies(ec,tc,param,deps_mapping)
 
 def prepend_configopts(ec,changes,key="configopts"):
