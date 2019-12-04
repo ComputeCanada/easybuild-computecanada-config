@@ -8,19 +8,19 @@ if [ "$RSNT_ARCH" == avx2 ]; then
 elif [ "$RSNT_ARCH" == avx512 ]; then
 	export EASYBUILD_REPOSITORY='FileRepository'
 	export EASYBUILD_REPOSITORYPATH=/cvmfs/soft.computecanada.ca/easybuild/ebfiles_repo_$RSNT_ARCH
-	export EASYBUILD_ROBOT_PATHS=/cvmfs/soft.computecanada.ca/easybuild/ebfiles_repo_$RSNT_ARCH:/cvmfs/soft.computecanada.ca/easybuild/ebfiles_repo
+	export EASYBUILD_ROBOT_PATHS=/cvmfs/soft.computecanada.ca/easybuild/easyconfigs:cvmfs/soft.computecanada.ca/easybuild/ebfiles_repo_$RSNT_ARCH
 	export EASYBUILD_OPTARCH='Intel:xCore-AVX512;GCC:march=skylake-avx512;GCCcore:GENERIC'
 	export EASYBUILD_USE_CCACHE=''
 elif [ "$RSNT_ARCH" == avx ]; then
         export EASYBUILD_REPOSITORY='FileRepository'
         export EASYBUILD_REPOSITORYPATH=/cvmfs/soft.computecanada.ca/easybuild/ebfiles_repo_$RSNT_ARCH
-	export EASYBUILD_ROBOT_PATHS=/cvmfs/soft.computecanada.ca/easybuild/ebfiles_repo_$RSNT_ARCH:/cvmfs/soft.computecanada.ca/easybuild/ebfiles_repo
+	export EASYBUILD_ROBOT_PATHS=/cvmfs/soft.computecanada.ca/easybuild/easyconfigs:/cvmfs/soft.computecanada.ca/easybuild/ebfiles_repo_$RSNT_ARCH
 	export EASYBUILD_OPTARCH='Intel:xAVX;GCC:march=corei7-avx;GCCcore:GENERIC'
 	export EASYBUILD_USE_CCACHE=''
 elif [ "$RSNT_ARCH" == sse3 ]; then
         export EASYBUILD_REPOSITORY='FileRepository'
         export EASYBUILD_REPOSITORYPATH=/cvmfs/soft.computecanada.ca/easybuild/ebfiles_repo_$RSNT_ARCH
-	export EASYBUILD_ROBOT_PATHS=/cvmfs/soft.computecanada.ca/easybuild/ebfiles_repo_$RSNT_ARCH:/cvmfs/soft.computecanada.ca/easybuild/ebfiles_repo
+	export EASYBUILD_ROBOT_PATHS=/cvmfs/soft.computecanada.ca/easybuild/easyconfigs:/cvmfs/soft.computecanada.ca/easybuild/ebfiles_repo_$RSNT_ARCH
 	export EASYBUILD_OPTARCH='Intel:msse3;GCC:march=nocona -mtune=generic;GCCcore:GENERIC'
 	export EASYBUILD_USE_CCACHE=''
 else
