@@ -14,12 +14,21 @@ function patch_rpath {
 	local REX_LINUX_INTERPRETER=".*interpreter.*ld-linux-x86-64.so.2"
 	local REX_LSB_INTERPRETER=".*interpreter.*ld-lsb-x86-64.so.3"
 
+	if [[ -n "$NIXUSER_PROFILE" ]]; then
+		PREFIX=$NIXUSER_PROFILE
+	elif [[ -n "$EBROOTGENTOO" ]]; then
+		PREFIX=$EBROOTGENTOO
+	else
+		echo "Neither nixpkgs nor gentoo modules are loaded. Aborting"
+		exit 1
+	fi
+
 	if [[ $filetype =~ $REX_DYNAMIC ]]; then
 		if [[ $filetype =~ $REX_OS_INTERPRETER ]]; then
-			patchelf --set-interpreter "$NIXUSER_PROFILE/lib/ld-linux-x86-64.so.2" "$filename"
+			patchelf --set-interpreter "$PREFIX/lib/ld-linux-x86-64.so.2" "$filename"
 			rpath='set'
 		elif [[ $ARG_ANY_INTERPRETER -eq 1 && ( $filetype =~ $REX_LINUX_INTERPRETER || $filetype =~ $REX_LSB_INTERPRETER ) ]]; then
-			patchelf --set-interpreter "$NIXUSER_PROFILE/lib/ld-linux-x86-64.so.2" "$filename"
+			patchelf --set-interpreter "$PREFIX/lib/ld-linux-x86-64.so.2" "$filename"
 			rpath='set'
 		fi
 	fi
