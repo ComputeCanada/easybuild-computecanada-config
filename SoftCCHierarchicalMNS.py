@@ -219,7 +219,10 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
                             # also provide toolchain version for non-dummy toolchains
                             comp_versions.update({tc_comp_info[0]: tc_comp_info[1]})
 
-                        comp_name_ver = [comp_name.lower() + comp_ver_tmpl % comp_versions]
+                        try:
+                            comp_name_ver = [comp_name.lower() + comp_ver_tmpl % comp_versions]
+                        except KeyError:
+                            continue
                         break
             else:
                 comp_name_ver = [ec['name'].lower() + self.det_twodigit_version(ec)]
