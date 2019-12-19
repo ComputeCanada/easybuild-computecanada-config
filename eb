@@ -51,4 +51,4 @@ export LIBRARY_PATH=$NIX_PROF/lib
 export PKG_CONFIG_PATH=$NIX_PROF/lib/pkgconfig
 export PYTHONPATH=/cvmfs/soft.computecanada.ca/easybuild/lib/python2.7/site-packages
 export RSNT_EASYBUILD_MAGIC_COOKIE=263ca73bb634185aab1d1b41627fdbba
-/cvmfs/soft.computecanada.ca/easybuild/framework/eb ${1+$@}
+/cvmfs/soft.computecanada.ca/easybuild/framework/eb ${1+"$@"}
