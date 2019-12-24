@@ -1,6 +1,6 @@
 #!/bin/sh
 if [ -n "$EBROOTGENTOO" ]; then
-	exec /cvmfs/soft.computecanada.ca/easybuild/framework/eb-gentoo ${1+"$@"}
+	exec /cvmfs/soft.computecanada.ca/easybuild/bin/eb-gentoo ${1+"$@"}
 fi
 module --force purge
 module load nixpkgs/16.09
