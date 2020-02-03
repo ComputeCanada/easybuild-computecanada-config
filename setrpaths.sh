@@ -16,8 +16,10 @@ function patch_rpath {
 
 	if [[ -n "$NIXUSER_PROFILE" ]]; then
 		PREFIX=$NIXUSER_PROFILE
+		FORCE_RPATH=""
 	elif [[ -n "$EBROOTGENTOO" ]]; then
 		PREFIX=$EBROOTGENTOO
+		FORCE_RPATH="--force-rpath"
 	else
 		echo "Neither nixpkgs nor gentoo modules are loaded. Aborting"
 		exit 1
@@ -60,7 +62,7 @@ function patch_rpath {
 		fi
 
 		if [ "$rpath" != "$rpath_old" ] ; then
-			patchelf --set-rpath "$rpath" "$filename"
+			patchelf $FORCE_RPATH --set-rpath "$rpath" "$filename"
 		fi
 	fi
 }
