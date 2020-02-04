@@ -61,11 +61,6 @@ export LC_ALL=en_US.UTF-8
 if [ ! -d /cvmfs/local ]; then
 	export EASYBUILD_USE_CCACHE=''
 fi
-unset CPATH
-if [ -n "$EBROOTGENTOO" ]; then
-	export PYTHONPATH=/cvmfs/soft.computecanada.ca/easybuild/lib/python3.6/site-packages
-else
-	export PYTHONPATH=/cvmfs/soft.computecanada.ca/easybuild/lib/python2.7/site-packages
-fi
+export PYTHONPATH=/cvmfs/soft.computecanada.ca/easybuild
 export RSNT_EASYBUILD_MAGIC_COOKIE=263ca73bb634185aab1d1b41627fdbba
 exec /cvmfs/soft.computecanada.ca/easybuild/framework/eb ${1+"$@"}
