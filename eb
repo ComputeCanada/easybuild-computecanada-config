@@ -21,7 +21,11 @@ fi
 export PATH=${PATH%%:/usr/bin}
 module use /cvmfs/soft.computecanada.ca/easybuild/$EASYBUILD_SUBDIR_MODULES
 if [ "$RSNT_ARCH" == avx2 ]; then
-	export EASYBUILD_OPTARCH='PGI:tp=haswell;Intel:xCore-AVX2;GCC:march=core-avx2;GCCcore:GENERIC'
+	if [ -n "$USE_GENTOO" ]; then
+	    export EASYBUILD_OPTARCH='PGI:tp=haswell;Intel:march=core-avx2 -axCore-AVX512;GCC:march=core-avx2;GCCcore:GENERIC'
+	else
+	    export EASYBUILD_OPTARCH='PGI:tp=haswell;Intel:xCore-AVX2;GCC:march=core-avx2;GCCcore:GENERIC'
+	fi
 elif [ "$RSNT_ARCH" == avx512 ]; then
 	export EASYBUILD_REPOSITORY='FileRepository'
 	export EASYBUILD_REPOSITORYPATH=/cvmfs/soft.computecanada.ca/easybuild/ebfiles_repo_$RSNT_ARCH
