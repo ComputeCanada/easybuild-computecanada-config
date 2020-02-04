@@ -1,11 +1,24 @@
 #!/bin/sh
-if [ -n "$EBROOTGENTOO" ]; then
-	exec /cvmfs/soft.computecanada.ca/easybuild/bin/eb-gentoo ${1+"$@"}
-fi
+# remember EBROOTGENTOO before cleaning environment
+USE_GENTOO="$EBROOTGENTOO"
+# clean environment incl. user variables
 module --force purge
-module load nixpkgs/16.09
-module use /cvmfs/soft.computecanada.ca/easybuild/modules/2017
-NIX_PROF=/cvmfs/soft.computecanada.ca/nix/var/nix/profiles/16.09
+unset PATH
+unset CPATH
+unset LIBRARY_PATH
+unset LD_LIBRARY_PATH
+if [ -n "$USE_GENTOO" ]; then
+	module load gentoo/2019
+	export EASYBUILD_SUBDIR_MODULES=modules/2019
+	export EASYBUILD_SUBDIR_SOFTWARE=software/2019
+	export EASYBUILD_SUBDIR_USER_MODULES=.local/easybuild/$EASYBUILD_SUBDIR_MODULES
+	export EASYBUILD_ALLOW_LOADED_MODULES=gentoo
+else
+	module load nixpkgs/16.09
+	export EASYBUILD_SUBDIR_MODULES=modules/2017
+	export EASYBUILD_SUBDIR_SOFTWARE=software/2017
+fi
+module use /cvmfs/soft.computecanada.ca/easybuild/$EASYBUILD_SUBDIR_MODULES
 if [ "$RSNT_ARCH" == avx2 ]; then
 	export EASYBUILD_OPTARCH='PGI:tp=haswell;Intel:xCore-AVX2;GCC:march=core-avx2;GCCcore:GENERIC'
 elif [ "$RSNT_ARCH" == avx512 ]; then
@@ -38,20 +51,21 @@ if [ "$(whoami)" != "ebuser" ] ; then
 	export EASYBUILD_ROBOT_PATHS=/cvmfs/soft.computecanada.ca/easybuild/easyconfigs:$EASYBUILD_REPOSITORYPATH:/cvmfs/soft.computecanada.ca/easybuild/ebfiles_repo
 elif [ "$(id -ng)" != "ebuser" ] ; then
 	# using ebuser with different group ID
-	export EASYBUILD_INSTALLPATH_SOFTWARE=/cvmfs/restricted.computecanada.ca/easybuild/software/2017
+	export EASYBUILD_INSTALLPATH_SOFTWARE=/cvmfs/restricted.computecanada.ca/easybuild/$EASYBUILD_SUBDIR_SOFTWARE
 	export EASYBUILD_SOURCEPATH=/cvmfs/restricted.computecanada.ca/easybuild/sources
 fi
 export EASYBUILD_HOOKS=/cvmfs/soft.computecanada.ca/easybuild/cc_hooks.py
 export EASYBUILD_BUILDPATH=$EASYBUILD_BUILDPATH/$RSNT_ARCH
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
-export PATH=$NIX_PROF/bin:$NIX_PROF/sbin:/cvmfs/soft.computecanada.ca/custom/bin:/cvmfs/soft.computecanada.ca/easybuild/bin
 if [ ! -d /cvmfs/local ]; then
 	export EASYBUILD_USE_CCACHE=''
 fi
 unset CPATH
-export LIBRARY_PATH=$NIX_PROF/lib
-export PKG_CONFIG_PATH=$NIX_PROF/lib/pkgconfig
-export PYTHONPATH=/cvmfs/soft.computecanada.ca/easybuild/lib/python2.7/site-packages
+if [ -n "$EBROOTGENTOO" ]; then
+	export PYTHONPATH=/cvmfs/soft.computecanada.ca/easybuild/lib/python3.6/site-packages
+else
+	export PYTHONPATH=/cvmfs/soft.computecanada.ca/easybuild/lib/python2.7/site-packages
+fi
 export RSNT_EASYBUILD_MAGIC_COOKIE=263ca73bb634185aab1d1b41627fdbba
 exec /cvmfs/soft.computecanada.ca/easybuild/framework/eb ${1+"$@"}
