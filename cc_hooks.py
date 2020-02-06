@@ -266,7 +266,7 @@ def map_dependency_version(dep, new_dep, tc_mapping, mytc):
 
     # figure out what is the right toolchain to put there
     new_tc = None
-    if tc_mapping.has_key('ALL'): new_tc = tc_mapping['ALL']
+    if 'ALL' in tc_mapping: new_tc = tc_mapping['ALL']
     for tcs in tc_mapping.keys():
         if not isinstance(tcs,tuple): continue
         if mytc == tcs or mytc in tcs:
