@@ -1,5 +1,6 @@
 from easybuild.framework.easyconfig.easyconfig import get_easyblock_class
 from easybuild.easyblocks.generic.cmakemake import CMakeMake
+import os
 
 new_version_mapping = {
         'ALL': {
@@ -203,7 +204,7 @@ configopts_changes = {
 }
 configopts_changes_based_on_easyblock_class_and_name = {
         'ANY': {
-            CMakeMake: ' -DZLIB_ROOT=$NIXUSER_PROFILE ' +
+            CMakeMake: (' -DZLIB_ROOT=$NIXUSER_PROFILE ' +
                    ' -DOPENGL_INCLUDE_DIR=$NIXUSER_PROFILE/include -DOPENGL_gl_LIBRARY=$NIXUSER_PROFILE/lib/libGL.so ' +
                    ' -DOPENGL_glu_LIBRARY=$NIXUSER_PROFILE/lib/libGLU.so ' +
                    ' -DJPEG_INCLUDE_DIR=$NIXUSER_PROFILE/include -DJPEG_LIBRARY=$NIXUSER_PROFILE/lib/libjpeg.so ' +
@@ -211,7 +212,15 @@ configopts_changes_based_on_easyblock_class_and_name = {
                    ' -DPYTHON_EXECUTABLE=$EBROOTPYTHON/bin/python ' +
                    ' -DCURL_LIBRARY=$NIXUSER_PROFILE/lib/libcurl.so -DCURL_INCLUDE_DIR=$NIXUSER_PROFILE/include ' +
                    ' -DCMAKE_SYSTEM_PREFIX_PATH=$NIXUSER_PROFILE ' +
-                   ' -DCMAKE_SKIP_INSTALL_RPATH=ON '
+                   ' -DCMAKE_SKIP_INSTALL_RPATH=ON ',
+                        ' -DZLIB_ROOT=$EBROOTGENTOO/usr ' +
+                   ' -DOPENGL_INCLUDE_DIR=$EBROOTGENTOO/usr/include -DOPENGL_gl_LIBRARY=$EBROOTGENTOO/usr/lib/libGL.so ' +
+                   ' -DOPENGL_glu_LIBRARY=$EBROOTGENTOO/usr/lib/libGLU.so ' +
+                   ' -DJPEG_INCLUDE_DIR=$EBROOTGENTOO/usr/include -DJPEG_LIBRARY=$EBROOTGENTOO/usr/lib/libjpeg.so ' +
+                   ' -DPNG_PNG_INCLUDE_DIR=$EBROOTGENTOO/usr/include -DPNG_LIBRARY=$EBROOTGENTOO/usr/lib/libpng.so ' +
+                   ' -DPYTHON_EXECUTABLE=$EBROOTPYTHON/bin/python ' +
+                   ' -DCURL_LIBRARY=$EBROOTGENTOO/usr/lib/libcurl.so -DCURL_INCLUDE_DIR=$EBROOTGENTOO/usr/include ' +
+                   ' -DCMAKE_SKIP_INSTALL_RPATH=ON ')
         },
         # this version is a fake CMakeMake, it falls back to ./configure
         ('ROOT','5.34.36'): {}
@@ -343,7 +352,7 @@ def modify_configopts(ec):
         if c == easyblock_class or issubclass(c,easyblock_class):
             print("Class type %s is subclass of %s:" % (str(c),str(easyblock_class)))
             changes = configopts_changes_based_on_easyblock_class_and_name[name_to_be_checked][easyblock_class]
-            prepend_configopts(ec,changes)
+            prepend_configopts(ec,changes['EBROOTGENTOO' in os.environ])
 
     if ec['name'] in configopts_changes.keys():
         print("Changing configopts for %s" % ec['name'])
