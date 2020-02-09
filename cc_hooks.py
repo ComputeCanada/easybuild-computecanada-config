@@ -147,6 +147,7 @@ new_version_mapping = {
                 ('Boost','ANY','-mpi'): '1.72.0',
                 ('FFTW','ANY','-mpi'): '3.3.8',
                 ('HDF5','1.8.18','-mpi'): '1.10.6',
+                ('HDF5','1.10.3','-mpi'): '1.10.6',
                 ('netCDF','ANY','-mpi'): '4.7.3',
                 'SCOTCH':'6.0.7',
             },
@@ -213,13 +214,6 @@ configopts_changes_based_on_easyblock_class_and_name = {
                    ' -DCURL_LIBRARY=$NIXUSER_PROFILE/lib/libcurl.so -DCURL_INCLUDE_DIR=$NIXUSER_PROFILE/include ' +
                    ' -DCMAKE_SYSTEM_PREFIX_PATH=$NIXUSER_PROFILE ' +
                    ' -DCMAKE_SKIP_INSTALL_RPATH=ON ',
-                        ' -DZLIB_ROOT=$EBROOTGENTOO/usr ' +
-                   ' -DOPENGL_INCLUDE_DIR=$EBROOTGENTOO/usr/include -DOPENGL_gl_LIBRARY=$EBROOTGENTOO/usr/lib/libGL.so ' +
-                   ' -DOPENGL_glu_LIBRARY=$EBROOTGENTOO/usr/lib/libGLU.so ' +
-                   ' -DJPEG_INCLUDE_DIR=$EBROOTGENTOO/usr/include -DJPEG_LIBRARY=$EBROOTGENTOO/usr/lib/libjpeg.so ' +
-                   ' -DPNG_PNG_INCLUDE_DIR=$EBROOTGENTOO/usr/include -DPNG_LIBRARY=$EBROOTGENTOO/usr/lib/libpng.so ' +
-                   ' -DPYTHON_EXECUTABLE=$EBROOTPYTHON/bin/python ' +
-                   ' -DCURL_LIBRARY=$EBROOTGENTOO/usr/lib/libcurl.so -DCURL_INCLUDE_DIR=$EBROOTGENTOO/usr/include ' +
                    ' -DCMAKE_SKIP_INSTALL_RPATH=ON ')
         },
         # this version is a fake CMakeMake, it falls back to ./configure
