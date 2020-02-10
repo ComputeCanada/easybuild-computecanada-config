@@ -151,7 +151,7 @@ new_version_mapping = {
                 ('HDF5','1.10.3','-mpi'): '1.10.6',
                 ('netCDF','ANY','-mpi'): '4.7.3',
                 ('netCDF-Fortran','ANY','-mpi'):'4.5.2',
-                'SCOTCH':'6.0.7',
+                'SCOTCH':'6.0.9',
             },
             'tc_mapping': {
                 (('gompi','2020.0.403'),('gomkl','2020.0.403')):('gompi','2020.0.403'),
