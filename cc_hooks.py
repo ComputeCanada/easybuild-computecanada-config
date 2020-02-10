@@ -111,6 +111,7 @@ new_version_mapping = {
                 'Mono': '6.8.0.105',
                 'muParser': '2.2.6',
                 ('netCDF','ANY',None): '4.7.3',
+                ('netCDF-Fortran','ANY','-mpi'):'4.5.2',
                 'NLopt': '2.6.1',
                 ('OpenImageIO',('1.8.7','1.8.15')): '2.1.10',
                 'OSL': '1.10.9',
@@ -149,6 +150,7 @@ new_version_mapping = {
                 ('HDF5','1.8.18','-mpi'): '1.10.6',
                 ('HDF5','1.10.3','-mpi'): '1.10.6',
                 ('netCDF','ANY','-mpi'): '4.7.3',
+                ('netCDF-Fortran','ANY','-mpi'):'4.5.2',
                 'SCOTCH':'6.0.7',
             },
             'tc_mapping': {
