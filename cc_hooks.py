@@ -20,6 +20,7 @@ new_version_mapping = {
         },
         'ALL_GENTOO': {
             'pkg_mapping': {
+                'JasPer': '2.0.16',
                 ('Python','2.7.14','ANY'): ('2.7.16',None),
                 ('Python','3.5.4','ANY'): ('3.7.5',None),
                 ('Python','3.7.0','ANY'): ('3.7.5',None),
