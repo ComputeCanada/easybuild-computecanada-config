@@ -24,7 +24,7 @@ new_version_mapping = {
                 ('Python','3.5.4','ANY'): ('3.7.5',None),
                 ('Python','3.7.0','ANY'): ('3.7.5',None),
                 ('Python','3.7.4','ANY'): ('3.7.5',None),
-                ('Eigen','ANY'): ('3.7.5',None),
+                ('Eigen','ANY'): ('3.3.7',None),
                 ('CMake','3.15.3'): ('3.12.2',None), # to be ignored by filter-deps
             },
             'tc_mapping': {
