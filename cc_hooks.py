@@ -18,6 +18,19 @@ new_version_mapping = {
                 'ALL':('dummy','dummy'),
             }
         },
+        'ALL_GENTOO': {
+            'pkg_mapping': {
+                ('Python','2.7.14','ANY'): ('2.7.16',None),
+                ('Python','3.5.4','ANY'): ('3.7.5',None),
+                ('Python','3.7.0','ANY'): ('3.7.5',None),
+                ('Python','3.7.4','ANY'): ('3.7.5',None),
+                ('Eigen','ANY'): ('3.7.5',None),
+                ('CMake','3.15.3'): ('3.12.2',None), # to be ignored by filter-deps
+            },
+            'tc_mapping': {
+                'ALL':('system','system'),
+            }
+        },
         (('gmkl','2018.3'),('iimkl','2018.3'),
          ('gomkl','2018.3.312'),('iomkl','2018.3.312'),
          ('gomklc','2018.3.312.100'),('iomklc','2018.3.312.100')): {
@@ -309,7 +322,12 @@ def replace_dependencies(ec, tc, param, deps_mapping):
 def modify_dependencies(ec,param):
     for tc in new_version_mapping:
         deps_mapping = new_version_mapping[tc]
-        replace_dependencies(ec,tc,param,deps_mapping)
+        if tc == 'ALL' or tc == 'ALL_GENTOO':
+            if ((tc == 'ALL_GENTOO' and "EBROOTGENTOO" in os.environ) or
+                 tc == 'ALL' and "EBROOTGENTOO" not in os.environ):
+                replace_dependencies(ec,'ALL',param,deps_mapping)
+        else:
+            replace_dependencies(ec,tc,param,deps_mapping)
 
     for names in new_version_mapping_app_specific:
         mapping = new_version_mapping_app_specific[names]
