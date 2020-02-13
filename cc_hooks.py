@@ -346,12 +346,22 @@ def modify_dependencies(ec,param):
 def prepend_configopts(ec,changes,key="configopts"):
     print("Changing configopts from: %s" % ec[key])
     if isinstance(ec[key], str):
-        if not changes in ec[key]:
-            ec[key] = changes + ec[key]
+        configopts = [ec[key]]
     elif isinstance(ec[key], list):
-        for i in range(len(ec[key])):
-            if not changes in ec[key][i]:
-                ec[key][i] = changes + ec[key][i]
+        configopts = ec[key]
+    else:
+        return
+    for i in range(len(configopts)):
+        if not changes in configopts[i]:
+            configopts[i] = changes + configopts[i]
+        if 'NIXUSER_PROFILE' not in os.environ:
+            optlist = [opt for opt in configopts[i].split() if '$NIXUSER_PROFILE' not in opt and
+                       '$EBROOTNIXPKGS' not in opt and '$EBROOTPYTHON' not in opt]
+            configopts[i] = ' '.join(optlist)
+            print(configopts[i])
+
+    if isinstance(ec[key], str):
+        ec[key] = configopts[0]
     print("New configopts: %s" % ec[key])
 
 def modify_configopts(ec):
