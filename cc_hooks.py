@@ -12,7 +12,7 @@ new_version_mapping = {
                 ('Python','2.7.13','ANY'): ('2.7.14',None),
                 ('Python','3.5.2','ANY'): ('3.5.4',None),
                 ('SciPy-Stack','ANY'): ('2019a',None),
-                ('Java', 'ANY'): ('1.8',None),
+                ('Java', 'ANY'): ('13.0.1',None),
             },
             'tc_mapping': {
                 'ALL':('dummy','dummy'),
@@ -184,7 +184,7 @@ new_version_mapping = {
                 ('Hypre','ANY'):'2.15.1',
                 ('PLUMED','2.3.0'):'2.3.7',
                 ('PLUMED','2.4.2'):'2.4.3',
-                ('PETSc','ANY','ANY'): '3.10.2',
+                ('PETSc','ANY','ANY'): '3.10.5',
                 ('Trilinos','12.10.1','ANY'): ('12.10.1',None),
             },
             'tc_mapping': {
@@ -239,6 +239,10 @@ configopts_changes_based_on_easyblock_class_and_name = {
         },
         # this version is a fake CMakeMake, it falls back to ./configure
         ('ROOT','5.34.36'): {}
+        ('mariadb', '10.4.11'): {
+            CMakeMake: ' '
+        },
+
 }
 
 def package_match(ref, test):
