@@ -238,7 +238,7 @@ configopts_changes_based_on_easyblock_class_and_name = {
                    ' -DCMAKE_SKIP_INSTALL_RPATH=ON ')
         },
         # this version is a fake CMakeMake, it falls back to ./configure
-        ('ROOT','5.34.36'): {}
+        ('ROOT','5.34.36'): {},
         ('mariadb', '10.4.11'): {
             CMakeMake: ' '
         },
