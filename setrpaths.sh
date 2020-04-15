@@ -69,19 +69,17 @@ function patch_rpath {
 
 function patch_jar {
 	local filename=${1?Missing filename}
-	local shared_objects=$(unzip -l $filename | awk '$4 ~ /\.so[\.0-9]*$/ { print $4 }')
 	local tmp=$(mktemp --directory)
 	local fullname=$(readlink -f $filename)
 
 	cd $tmp
-	# Extract and patch every shared object, and update the archive
-	for so in $shared_objects; do
-		unzip -q $fullname $so
-		# some wheels have their files extract with read-only permission
-		chmod +w $so
-		patch_rpath $so
-		zip -q $fullname $so
+
+	# Extract all and patch every binary file, and update the archive
+	unzip -q $fullname
+	for fname in $(find . -type f); do
+		patch_rpath $fname;
 	done
+	zip -rq $fullname .
 
 	cd -
 	rm -r $tmp
@@ -128,10 +126,9 @@ for filename in $(find $ARG_PATH -type f); do
 	if [[ -z "$filename" ]]; then
 		continue
 	fi
-	# Extract shared objects of jar archive, if any
-	if [[ $filename == *.jar ]] && unzip -l $filename | grep --quiet '\.so[\.0-9\]*$' ; then
+	if [[ $filename == *.jar ]]; then
 		patch_jar $filename
-	elif [[ $filename == *.whl ]] && unzip -l $filename | grep --quiet '\.so[\.0-9\]*$' ; then
+	elif [[ $filename == *.whl ]]; then
 		patch_whl $filename
 	else
 		patch_rpath $filename
