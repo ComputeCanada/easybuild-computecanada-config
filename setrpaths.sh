@@ -67,7 +67,7 @@ function patch_rpath {
 	fi
 }
 
-function patch_jar {
+function patch_zip {
 	local filename=${1?Missing filename}
 	local tmp=$(mktemp --directory)
 	local fullname=$(readlink -f $filename)
@@ -83,10 +83,6 @@ function patch_jar {
 
 	cd -
 	rm -r $tmp
-}
-
-function patch_whl {
-	patch_jar $1
 }
 
 TEMP=$(getopt -o p: --longoptions path:,add_origin,add_path:,any_interpreter -n $0 -- "$@")
@@ -127,9 +123,9 @@ for filename in $(find $ARG_PATH -type f); do
 		continue
 	fi
 	if [[ $filename == *.jar ]]; then
-		patch_jar $filename
+		patch_zip $filename
 	elif [[ $filename == *.whl ]]; then
-		patch_whl $filename
+		patch_zip $filename
 	else
 		patch_rpath $filename
 	fi
