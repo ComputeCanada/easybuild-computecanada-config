@@ -21,7 +21,7 @@ new_version_mapping = {
         'ALL_GENTOO': {
             'pkg_mapping': {
                 'JasPer': '2.0.16',
-                ('Python','2.7.14','ANY'): ('2.7.16',None),
+                ('Python','2.7.14','ANY'): ('2.7.17',None),
                 ('Python','3.5.4','ANY'): ('3.7.5',None),
                 ('Python','3.7.0','ANY'): ('3.7.5',None),
                 ('Python','3.7.4','ANY'): ('3.7.5',None),
@@ -216,6 +216,16 @@ new_version_mapping_app_specific = {
                 'tc_mapping': {
                     (('iccifort','2018.3')):('iccifort','2018.3'),
                     (('GCC','7.3.0')):('GCC','7.3.0'),
+                }
+            },
+        },
+        ('intel'):{
+            'ALL': {
+                'pkg_mapping': {
+                    ('imkl','2020.1.217'): '2020.1.217',
+                },
+                'tc_mapping': {
+                    (('iimpi','2020a')):('SYSTEM','SYSTEM'),
                 }
             },
         }
