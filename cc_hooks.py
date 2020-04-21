@@ -219,7 +219,7 @@ new_version_mapping_app_specific = {
                 }
             },
         },
-        ('intel','iomkl'):{
+        ('intel','gimkl','iomkl','gomkl'):{
             'ALL': {
                 'pkg_mapping': {
                     ('imkl','2020.1.217'): '2020.1.217',
