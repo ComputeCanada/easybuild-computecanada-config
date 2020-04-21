@@ -110,6 +110,9 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
 
     def det_full_version(self, ec):
         """Determine full version, NOT using version prefix/suffix."""
+        # automatically hide toolchains
+        if ec['moduleclass'] == 'toolchain' and ec['version'][0] != '.':
+            return '.' + ec['version']
         return ec['version']
 
     def det_module_subdir(self, ec):
