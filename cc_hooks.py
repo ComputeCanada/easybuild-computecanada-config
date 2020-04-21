@@ -244,6 +244,12 @@ configopts_changes_based_on_easyblock_class_and_name = {
         },
 
 }
+buildopts_changes = {
+	'OpenBLAS': {'sse3': 'DYNAMIC_ARCH=1',
+                    'avx': 'TARGET=SANDYBRIDGE',
+                    'avx2': 'DYNAMIC_ARCH=1 DYNAMIC_LIST="HASWELL ZEN SKYLAKEX"',
+                    'avx512': 'TARGET=SKYLAKEX'}[os.getenv('RSNT_ARCH')] + ' NUM_THREADS=64'
+}
 
 def package_match(ref, test):
     #print("Testing %s against %s" % (str(test),str(ref)))
@@ -391,6 +397,10 @@ def modify_configopts(ec):
     if ec['name'] in configopts_changes.keys():
         print("Changing configopts for %s" % ec['name'])
         prepend_configopts(ec,configopts_changes[ec['name']])
+
+    if ec['name'] in buildopts_changes:
+        print("Changing buildopts for %s" % ec['name'])
+        prepend_configopts(ec,buildopts_changes[ec['name']],'buildopts')
 
 def parse_hook(ec, *args, **kwargs):
     """Example parse hook to inject a patch file for a fictive software package named 'Example'."""
