@@ -219,16 +219,26 @@ new_version_mapping_app_specific = {
                 }
             },
         },
-        ('intel'):{
+        ('intel','iomkl'):{
             'ALL': {
                 'pkg_mapping': {
                     ('imkl','2020.1.217'): '2020.1.217',
                 },
                 'tc_mapping': {
-                    (('iimpi','2020a')):('SYSTEM','SYSTEM'),
+                    (('iimpi','2020a')):('system','system'),
                 }
             },
-        }
+        },
+        ('foss'):{
+            'ALL': {
+                'pkg_mapping': {
+                    ('FFTW','3.3.8'): '3.3.8',
+                },
+                'tc_mapping': {
+                    (('system','system')):('GCC','9.3.0'),
+                }
+            },
+        },
 }
 preconfigopts_changes = {
 }
