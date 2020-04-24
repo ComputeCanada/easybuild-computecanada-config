@@ -12,7 +12,7 @@ new_version_mapping = {
                 ('Python','2.7.13','ANY'): ('2.7.14',None),
                 ('Python','3.5.2','ANY'): ('3.5.4',None),
                 ('SciPy-Stack','ANY'): ('2019a',None),
-                ('Java', 'ANY'): ('13.0.1',None),
+                ('Java', ('1.7.0_80','1.8.0_121','1.8.0_192')): ('1.8',None),
             },
             'tc_mapping': {
                 'ALL':('dummy','dummy'),
