@@ -82,7 +82,7 @@ function patch_zip {
 	zip -rq $fullname .
 
 	cd -
-	rm -r $tmp
+	rm -rf $tmp
 }
 
 TEMP=$(getopt -o p: --longoptions path:,add_origin,add_path:,any_interpreter -n $0 -- "$@")
