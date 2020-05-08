@@ -1,6 +1,7 @@
 #!/bin/sh
 # remember EBROOTGENTOO before cleaning environment
 USE_GENTOO="$EBROOTGENTOO"
+USE_GENTOO_VERSION="$EBVERSIONGENTOO"
 # clean environment incl. user variables
 module --force purge
 unset CPATH
@@ -8,9 +9,9 @@ unset LIBRARY_PATH
 unset LD_LIBRARY_PATH
 export PATH=/usr/bin
 if [ -n "$USE_GENTOO" ]; then
-	module load gentoo/2019
-	export EASYBUILD_SUBDIR_MODULES=modules/2019
-	export EASYBUILD_SUBDIR_SOFTWARE=software/2019
+	module load gentoo/$USE_GENTOO_VERSION
+	export EASYBUILD_SUBDIR_MODULES=modules/$USE_GENTOO_VERSION
+	export EASYBUILD_SUBDIR_SOFTWARE=software/$USE_GENTOO_VERSION
 	export EASYBUILD_SUBDIR_USER_MODULES=.local/easybuild/$EASYBUILD_SUBDIR_MODULES
 	export EASYBUILD_ALLOW_LOADED_MODULES=gentoo
 else
