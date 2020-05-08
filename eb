@@ -10,17 +10,29 @@ unset LD_LIBRARY_PATH
 export PATH=/usr/bin
 if [ -n "$USE_GENTOO" ]; then
 	module load gentoo/$USE_GENTOO_VERSION
-	export EASYBUILD_SUBDIR_MODULES=modules/$USE_GENTOO_VERSION
-	export EASYBUILD_SUBDIR_SOFTWARE=software/$USE_GENTOO_VERSION
-	export EASYBUILD_SUBDIR_USER_MODULES=.local/easybuild/$EASYBUILD_SUBDIR_MODULES
+	YEAR=$USE_GENTOO_VERSION
 	export EASYBUILD_ALLOW_LOADED_MODULES=gentoo
 else
 	module load nixpkgs/16.09
-	export EASYBUILD_SUBDIR_MODULES=modules/2017
-	export EASYBUILD_SUBDIR_SOFTWARE=software/2017
+	YEAR=2017
 fi
+export EASYBUILD_SUBDIR_MODULES=modules/$YEAR
+export EASYBUILD_SUBDIR_SOFTWARE=software/$YEAR
+export EASYBUILD_SUBDIR_USER_MODULES=.local/easybuild/$EASYBUILD_SUBDIR_MODULES
 export PATH=${PATH%%:/usr/bin}
-module use /cvmfs/soft.computecanada.ca/easybuild/$EASYBUILD_SUBDIR_MODULES
+EASYBUILD_ROOT=/cvmfs/soft.computecanada.ca/easybuild
+module use $EASYBUILD_ROOT/$EASYBUILD_SUBDIR_MODULES
+if [ "$RSNT_ARCH" == avx2 ]; then
+	export EASYBUILD_REPOSITORY='GitRepository'
+	export EASYBUILD_REPOSITORYPATH=$EASYBUILD_ROOT/ebfiles_repo.git,$YEAR
+	export EASYBUILD_ROBOT_PATHS=$EASYBUILD_ROOT/easyconfigs:$EASYBUILD_ROOT/ebfiles_repo/$YEAR
+else
+	export EASYBUILD_REPOSITORY='FileRepository'
+	export EASYBUILD_REPOSITORYPATH=$EASYBUILD_ROOT/ebfiles_repo_$RSNT_ARCH,$YEAR
+	export EASYBUILD_ROBOT_PATHS=$EASYBUILD_ROOT/easyconfigs:$EASYBUILD_ROOT/ebfiles_repo_$RSNT_ARCH/$YEAR:$EASYBUILD_ROOT/ebfiles_repo/$YEAR
+	export EASYBUILD_USE_CCACHE=''
+fi
+
 if [ "$RSNT_ARCH" == avx2 ]; then
 	if [ -n "$USE_GENTOO" ]; then
 	    export EASYBUILD_OPTARCH='PGI:tp=haswell;Intel:march=core-avx2 -axCore-AVX512;GCC:march=core-avx2;GCCcore:GENERIC'
@@ -28,45 +40,34 @@ if [ "$RSNT_ARCH" == avx2 ]; then
 	    export EASYBUILD_OPTARCH='PGI:tp=haswell;Intel:xCore-AVX2;GCC:march=core-avx2;GCCcore:GENERIC'
 	fi
 elif [ "$RSNT_ARCH" == avx512 ]; then
-	export EASYBUILD_REPOSITORY='FileRepository'
-	export EASYBUILD_REPOSITORYPATH=/cvmfs/soft.computecanada.ca/easybuild/ebfiles_repo_$RSNT_ARCH
-	export EASYBUILD_ROBOT_PATHS=/cvmfs/soft.computecanada.ca/easybuild/easyconfigs:/cvmfs/soft.computecanada.ca/easybuild/ebfiles_repo_$RSNT_ARCH:/cvmfs/soft.computecanada.ca/easybuild/ebfiles_repo
 	export EASYBUILD_OPTARCH='PGI:tp=skylake;Intel:xCore-AVX512;GCC:march=skylake-avx512;GCCcore:GENERIC'
-	export EASYBUILD_USE_CCACHE=''
 elif [ "$RSNT_ARCH" == avx ]; then
-        export EASYBUILD_REPOSITORY='FileRepository'
-        export EASYBUILD_REPOSITORYPATH=/cvmfs/soft.computecanada.ca/easybuild/ebfiles_repo_$RSNT_ARCH
-	export EASYBUILD_ROBOT_PATHS=/cvmfs/soft.computecanada.ca/easybuild/easyconfigs:/cvmfs/soft.computecanada.ca/easybuild/ebfiles_repo_$RSNT_ARCH:/cvmfs/soft.computecanada.ca/easybuild/ebfiles_repo
 	export EASYBUILD_OPTARCH='PGI:tp=sandybridge;Intel:xAVX;GCC:march=corei7-avx;GCCcore:GENERIC'
-	export EASYBUILD_USE_CCACHE=''
 elif [ "$RSNT_ARCH" == sse3 ]; then
-        export EASYBUILD_REPOSITORY='FileRepository'
-        export EASYBUILD_REPOSITORYPATH=/cvmfs/soft.computecanada.ca/easybuild/ebfiles_repo_$RSNT_ARCH
-	export EASYBUILD_ROBOT_PATHS=/cvmfs/soft.computecanada.ca/easybuild/easyconfigs:/cvmfs/soft.computecanada.ca/easybuild/ebfiles_repo_$RSNT_ARCH:/cvmfs/soft.computecanada.ca/easybuild/ebfiles_repo
 	export EASYBUILD_OPTARCH='PGI:tp=px;Intel:msse3;GCC:march=nocona -mtune=generic;GCCcore:GENERIC'
-	export EASYBUILD_USE_CCACHE=''
 else
 	echo please set RSNT_ARCH to sse3, avx, or avx2
 	exit
 fi
+
 if [ "$(whoami)" != "ebuser" ] ; then
 	export EASYBUILD_PREFIX=$HOME/.local/easybuild
 	export EASYBUILD_SUBDIR_USER_MODULES=''
         export EASYBUILD_REPOSITORY='FileRepository'
-	export EASYBUILD_REPOSITORYPATH=$EASYBUILD_PREFIX/ebfiles_repo
-	export EASYBUILD_ROBOT_PATHS=/cvmfs/soft.computecanada.ca/easybuild/easyconfigs:$EASYBUILD_REPOSITORYPATH:/cvmfs/soft.computecanada.ca/easybuild/ebfiles_repo
+	export EASYBUILD_REPOSITORYPATH=$EASYBUILD_PREFIX/ebfiles_repo,$YEAR
+	export EASYBUILD_ROBOT_PATHS=$EASYBUILD_ROOT/easyconfigs:$EASYBUILD_REPOSITORYPATH:$EASYBUILD_ROOT/ebfiles_repo/$YEAR
 elif [ "$(id -ng)" != "ebuser" ] ; then
 	# using ebuser with different group ID
 	export EASYBUILD_INSTALLPATH_SOFTWARE=/cvmfs/restricted.computecanada.ca/easybuild/$EASYBUILD_SUBDIR_SOFTWARE
 	export EASYBUILD_SOURCEPATH=/cvmfs/restricted.computecanada.ca/easybuild/sources
 fi
-export EASYBUILD_HOOKS=/cvmfs/soft.computecanada.ca/easybuild/cc_hooks.py
+export EASYBUILD_HOOKS=$EASYBUILD_ROOT/cc_hooks.py
 export EASYBUILD_BUILDPATH=$EASYBUILD_BUILDPATH/$RSNT_ARCH
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 if [ ! -d /cvmfs/local ]; then
 	export EASYBUILD_USE_CCACHE=''
 fi
-export PYTHONPATH=/cvmfs/soft.computecanada.ca/easybuild/site-packages
+export PYTHONPATH=$EASYBUILD_ROOT/site-packages
 export RSNT_EASYBUILD_MAGIC_COOKIE=263ca73bb634185aab1d1b41627fdbba
-exec /cvmfs/soft.computecanada.ca/easybuild/framework/eb ${1+"$@"}
+exec $EASYBUILD_ROOT/framework/eb ${1+"$@"}
