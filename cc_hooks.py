@@ -241,8 +241,14 @@ new_version_mapping_app_specific = {
         },
 }
 preconfigopts_changes = {
+        # build EPREFIX-aware GCCcore
+        'GCCcore': ("", "if [ -f ../gcc/gcc.c ]; then sed -i 's/--sysroot=%R//' ../gcc/gcc.c; " +
+		    "for h in ../gcc/config/*/*linux*.h; do " +
+                    r'sed -i -r "/_DYNAMIC_LINKER/s,([\":])(/lib),\1${EPREFIX}\2,g" $h; done; fi; ')
 }
 configopts_changes = {
+        # build EPREFIX-aware GCCcore
+        'GCCcore': ("", "--with-sysroot=$EPREFIX")
 }
 configopts_changes_based_on_easyblock_class_and_name = {
         'ANY': {
@@ -397,11 +403,11 @@ def prepend_configopts(ec,changes,key="configopts"):
 def modify_configopts(ec):
     if ec['name'] in preconfigopts_changes.keys():
         print("Changing preconfigopts from: %s" % ec['preconfigopts'])
-        prepend_configopts(ec,preconfigopts_changes[ec['name']],'preconfigopts')
+        prepend_configopts(ec,preconfigopts_changes[ec['name']]['EBROOTGENTOO' in os.environ],'preconfigopts')
 
     if ec['name'] in configopts_changes.keys():
         print("Changing configopts from: %s" % ec['configopts'])
-        prepend_configopts(ec,configopts_changes[ec['name']])
+        prepend_configopts(ec,configopts_changes[ec['name']]['EBROOTGENTOO' in os.environ])
 
     c = get_easyblock_class(ec.easyblock, name=ec.name)
     name_to_be_checked = 'ANY'
@@ -416,7 +422,7 @@ def modify_configopts(ec):
 
     if ec['name'] in configopts_changes.keys():
         print("Changing configopts for %s" % ec['name'])
-        prepend_configopts(ec,configopts_changes[ec['name']])
+        prepend_configopts(ec,configopts_changes[ec['name']]['EBROOTGENTOO' in os.environ])
 
     if ec['name'] in buildopts_changes:
         print("Changing buildopts for %s" % ec['name'])
