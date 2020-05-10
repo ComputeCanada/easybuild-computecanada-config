@@ -459,6 +459,13 @@ end
 add_property("type_","tools")
 """
 
+mpi_modluafooter = """
+assert(loadfile("/cvmfs/soft.computecanada.ca/config/lmod/%s_custom.lua"))("%%(version_major_minor)s")
+
+add_property("type_","mpi")
+family("mpi")
+"""
+
 def parse_hook(ec, *args, **kwargs):
     """Example parse hook to inject a patch file for a fictive software package named 'Example'."""
     modify_dependencies(ec,'dependencies')
@@ -470,4 +477,13 @@ def parse_hook(ec, *args, **kwargs):
         ec['modluafooter'] = compiler_modluafooter%(year,comp,year,comp,year,comp)
         if ec['name'] != 'GCCcore':
             ec['modluafooter'] += 'family("compiler")\n'
+    elif ec['moduleclass'] == 'mpi' and 'EBROOTGENTOO' in os.environ:
+        name = ec['name'].lower()
+        if name == 'impi':
+            name = intelmpi
+        ec['modluafooter'] = mpi_modluafooter%name
+        if name == 'openmpi':
+            ec['postinstallcmds'] = ['rm %(installdir)s/lib/*.la %(installdir)s/lib/*/*.la']
+            ec['dependencies'].append(('libfabric', '1.10.1'))
+
 
