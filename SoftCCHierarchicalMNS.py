@@ -141,12 +141,13 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
             tc_comp_ver = self.det_twodigit_version({'name': tc_comp_name, 'version': tc_comp_ver})
             tc_mpi = det_toolchain_mpi(ec)
             tc_cuda = det_toolchain_cuda(ec)
+            use_nix = 'NIXUSER_PROFILE' in os.environ
             if tc_cuda is not None:
                 # compiler-CUDA toolchain => CUDA/<comp_name>/<comp_version>/<CUDA_name>/<CUDA_version> namespace
                 tc_cuda_name = CUDA.lower()
                 tc_cuda_fullver = self.det_twodigit_version(tc_cuda)
                 subdir = tc_cuda_name+tc_cuda_fullver
-                if tc_comp_name != GCCCORE.lower():
+                if tc_comp_name != GCCCORE.lower() or not use_nix:
                     subdir = os.path.join(tc_comp_name+tc_comp_ver, subdir)
                 if tc_mpi is None:
                     subdir = os.path.join(CUDA, subdir)
@@ -156,7 +157,7 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
                     subdir = os.path.join(MPI, subdir, tc_mpi_name+tc_mpi_fullver)
             elif tc_mpi is None:
                 # compiler-only toolchain => Compiler/<compiler_name><compiler_version> namespace
-                if tc_comp_ver == 'system' or tc_comp_name == GCCCORE.lower():
+                if tc_comp_ver == 'system' or (tc_comp_name == GCCCORE.lower() and use_nix):
                     subdir = CORE
                 else:
                     subdir = os.path.join(COMPILER, tc_comp_name+tc_comp_ver)

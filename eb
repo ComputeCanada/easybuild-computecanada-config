@@ -35,19 +35,22 @@ fi
 
 if [ "$RSNT_ARCH" == avx2 ]; then
 	if [ -n "$USE_GENTOO" ]; then
-	    export EASYBUILD_OPTARCH='PGI:tp=haswell;Intel:march=core-avx2 -axCore-AVX512;GCC:march=core-avx2;GCCcore:GENERIC'
+	    export EASYBUILD_OPTARCH='PGI:tp=haswell;Intel:march=core-avx2 -axCore-AVX512;GCC:march=core-avx2'
 	else
-	    export EASYBUILD_OPTARCH='PGI:tp=haswell;Intel:xCore-AVX2;GCC:march=core-avx2;GCCcore:GENERIC'
+	    export EASYBUILD_OPTARCH='PGI:tp=haswell;Intel:xCore-AVX2;GCC:march=core-avx2'
 	fi
 elif [ "$RSNT_ARCH" == avx512 ]; then
-	export EASYBUILD_OPTARCH='PGI:tp=skylake;Intel:xCore-AVX512;GCC:march=skylake-avx512;GCCcore:GENERIC'
+	export EASYBUILD_OPTARCH='PGI:tp=skylake;Intel:xCore-AVX512;GCC:march=skylake-avx512'
 elif [ "$RSNT_ARCH" == avx ]; then
-	export EASYBUILD_OPTARCH='PGI:tp=sandybridge;Intel:xAVX;GCC:march=corei7-avx;GCCcore:GENERIC'
+	export EASYBUILD_OPTARCH='PGI:tp=sandybridge;Intel:xAVX;GCC:march=corei7-avx'
 elif [ "$RSNT_ARCH" == sse3 ]; then
-	export EASYBUILD_OPTARCH='PGI:tp=px;Intel:msse3;GCC:march=nocona -mtune=generic;GCCcore:GENERIC'
+	export EASYBUILD_OPTARCH='PGI:tp=px;Intel:msse3;GCC:march=nocona -mtune=generic'
 else
 	echo please set RSNT_ARCH to sse3, avx, or avx2
 	exit
+fi
+if [ -z $USE_GENTOO ]; then
+    export EASYBUILD_OPTARCH="$EASYBUILD_OPTARCH;GCCcore:GENERIC"
 fi
 
 if [ "$(whoami)" != "ebuser" ] ; then
