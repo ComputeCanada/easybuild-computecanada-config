@@ -471,13 +471,14 @@ def parse_hook(ec, *args, **kwargs):
     modify_dependencies(ec,'dependencies')
     modify_dependencies(ec,'builddependencies')
     modify_configopts(ec)
-    if ec['moduleclass'] == 'compiler' and 'EBROOTGENTOO' in os.environ:
+    moduleclass = ec.get('moduleclass','')
+    if moduleclass == 'compiler' and 'EBROOTGENTOO' in os.environ:
         year = os.environ['EBVERSIONGENTOO']
         comp = ec['name'].lower() + ec['version'][:ec['version'].find('.')]
         ec['modluafooter'] = compiler_modluafooter%(year,comp,year,comp,year,comp)
         if ec['name'] != 'GCCcore':
             ec['modluafooter'] += 'family("compiler")\n'
-    elif ec['moduleclass'] == 'mpi' and 'EBROOTGENTOO' in os.environ:
+    elif moduleclass == 'mpi' and 'EBROOTGENTOO' in os.environ:
         name = ec['name'].lower()
         if name == 'impi':
             name = intelmpi
@@ -485,5 +486,5 @@ def parse_hook(ec, *args, **kwargs):
         if name == 'openmpi':
             ec['postinstallcmds'] = ['rm %(installdir)s/lib/*.la %(installdir)s/lib/*/*.la']
             ec['dependencies'].append(('libfabric', '1.10.1'))
-
-
+    if moduleclass == 'toolchain' or ec['name'] == 'GCCcore':
+        ec['hidden'] = True

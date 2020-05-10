@@ -110,9 +110,6 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
 
     def det_full_version(self, ec):
         """Determine full version, NOT using version prefix/suffix."""
-        # automatically hide toolchains
-        if (ec.get('moduleclass','') == 'toolchain' or ec['name']=='GCCcore') and ec['version'][0] != '.' and ec['modaltsoftname'] != 'intel' and not ec['hidden']:
-            return '.' + ec['version']
         return ec['version']
 
     def det_module_subdir(self, ec):
@@ -177,8 +174,6 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
         """Determine two-digit version"""
         # we use "2014" toolchain for Intel 2013_sp1 compilers.
         version = ec['version'].replace('2013_sp1', '2014')
-        if version[0] == '.':
-            version = version[1:]
         # strip off cuda component in version
         if '-' in version:
             version = version[:version.find('-')]
