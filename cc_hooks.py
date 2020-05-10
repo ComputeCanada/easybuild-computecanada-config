@@ -246,10 +246,32 @@ preconfigopts_changes = {
 		    "for h in ../gcc/config/*/*linux*.h; do " +
                     r'sed -i -r "/_DYNAMIC_LINKER/s,([\":])(/lib),\1${EPREFIX}\2,g" $h; done; fi; ')
 }
+
 configopts_changes = {
         # build EPREFIX-aware GCCcore
-        'GCCcore': ("", "--with-sysroot=$EPREFIX")
+        'GCCcore': ("", "--with-sysroot=$EPREFIX"),
+        # local customizations for OpenMPI
+        'OpenMPI': ("", '--enable-shared --with-verbs ' +
+                    '--with-hwloc=external '  + # hwloc support
+                    '--without-usnic ' + # No usnic-via-libfabric
+                    # rpath is already done by ld wrapper
+                    '--disable-wrapper-runpath --disable-wrapper-rpath ' +
+                    '--with-munge ' + #enable Munge in PMIx
+                    '--with-slurm --with-pmi=$EBROOTGENTOO ' +
+                    '--enable-mpi-cxx ' +
+                    '--with-hcoll ' +
+                    '--disable-show-load-errors-by-default ' +
+                    '--enable-mpi1-compatibility ' +
+                    # enumerate all mca's that should be compiled as plugins
+                    # (only those that link to system-specific
+                    # libraries (lustre, fabric, and scheduler)
+                    '--enable-mca-dso=common-ucx,common-verbs,event-external,' +
+                    'atomic-ucx,btl-openib,btl-uct,' +
+                    'coll-hcoll,ess-tm,fs-lustre,mtl-ofi,mtl-psm,mtl-psm2,osc-ucx,' +
+                    'plm-tm,pmix-s1,pmix-s2,pml-ucx,pnet-opa,psec-munge,' +
+                    'ras-tm,spml-ucx,sshmem-ucx,hwloc-external')
 }
+
 configopts_changes_based_on_easyblock_class_and_name = {
         'ANY': {
             CMakeMake: (' -DZLIB_ROOT=$NIXUSER_PROFILE ' +
