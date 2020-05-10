@@ -450,9 +450,22 @@ def modify_configopts(ec):
         print("Changing buildopts for %s" % ec['name'])
         prepend_configopts(ec,buildopts_changes[ec['name']],'buildopts')
 
+compiler_modluafooter = """
+prepend_path("MODULEPATH", pathJoin("/cvmfs/soft.computecanada.ca/easybuild/modules/%s", os.getenv("RSNT_ARCH"), "Compiler/%s"))
+if isDir(pathJoin(os.getenv("HOME"), ".local/easybuild/modules/%s", os.getenv("RSNT_ARCH"), "Compiler/%s")) then
+    prepend_path("MODULEPATH", pathJoin(os.getenv("HOME"), ".local/easybuild/modules/%s", os.getenv("RSNT_ARCH"), "Compiler/%s"))
+end
+
+add_property("type_","tools")
+family("compiler")
+"""
+
 def parse_hook(ec, *args, **kwargs):
     """Example parse hook to inject a patch file for a fictive software package named 'Example'."""
     modify_dependencies(ec,'dependencies')
     modify_dependencies(ec,'builddependencies')
     modify_configopts(ec)
-
+    if ec['moduleclass'] == 'compiler' and 'EBROOTGENTOO' in os.environ:
+        year = os.environ['EBVERSIONGENTOO']
+        comp = ec['name'].lower() + ec['version'][:ec['version'].find('.')]
+        ec['modluafooter'] = compiler_modluafooter%(year,comp,year,comp,year,comp)
