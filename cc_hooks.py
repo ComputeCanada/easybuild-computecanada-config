@@ -243,7 +243,7 @@ new_version_mapping_app_specific = {
 preconfigopts_changes = {
         # build EPREFIX-aware GCCcore
         'GCCcore': ("", "if [ -f ../gcc/gcc.c ]; then sed -i 's/--sysroot=%R//' ../gcc/gcc.c; " +
-		    "for h in ../gcc/config/*/*linux*.h; do " +
+                   "for h in ../gcc/config/*/*linux*.h; do " +
                     r'sed -i -r "/_DYNAMIC_LINKER/s,([\":])(/lib),\1${EPREFIX}\2,g" $h; done; fi; ')
 }
 
@@ -470,15 +470,16 @@ def parse_hook(ec, *args, **kwargs):
     """Example parse hook to inject a patch file for a fictive software package named 'Example'."""
     modify_dependencies(ec,'dependencies')
     modify_dependencies(ec,'builddependencies')
-    modify_configopts(ec)
+    if 'EBROOTGENTOO' not in os.environ:
+        return
     moduleclass = ec.get('moduleclass','')
-    if moduleclass == 'compiler' and 'EBROOTGENTOO' in os.environ:
+    if moduleclass == 'compiler':
         year = os.environ['EBVERSIONGENTOO']
         comp = ec['name'].lower() + ec['version'][:ec['version'].find('.')]
         ec['modluafooter'] = compiler_modluafooter%(year,comp,year,comp,year,comp)
         if ec['name'] != 'GCCcore':
             ec['modluafooter'] += 'family("compiler")\n'
-    elif moduleclass == 'mpi' and 'EBROOTGENTOO' in os.environ:
+    elif moduleclass == 'mpi':
         name = ec['name'].lower()
         if name == 'impi':
             name = intelmpi
@@ -488,3 +489,7 @@ def parse_hook(ec, *args, **kwargs):
             ec['dependencies'].append(('libfabric', '1.10.1'))
     if moduleclass == 'toolchain' or ec['name'] == 'GCCcore':
         ec['hidden'] = True
+
+def pre_configure_hook(self, *args, **kwargs):
+    "Modify configopts (here is more efficient than parse_hook since only called once)"
+    modify_configopts(self.cfg)
