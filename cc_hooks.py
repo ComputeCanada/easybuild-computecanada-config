@@ -459,12 +459,42 @@ end
 add_property("type_","tools")
 """
 
+intel_modluafooter = """
+prepend_path("INTEL_LICENSE_FILE", pathJoin("/cvmfs/soft.computecanada.ca/config/licenses/intel", os.getenv("CC_CLUSTER") .. ".lic"))
+
+if isloaded("imkl") then
+    always_load("imkl/2020.1.217")
+end
+"""
+
 mpi_modluafooter = """
 assert(loadfile("/cvmfs/soft.computecanada.ca/config/lmod/%s_custom.lua"))("%%(version_major_minor)s")
 
 add_property("type_","mpi")
 family("mpi")
 """
+
+#See compilers_and_libraries_2020.0.166/licensing/compiler/en/credist.txt
+intel_postinstallcmds = '''
+    /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s
+    /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/compilers_and_libraries_%(version)s/linux/compiler/lib --add_origin
+    patchelf --set-rpath '$ORIGIN/../lib:$ORIGIN/../compiler/lib/intel64' %(installdir)s/compilers_and_libraries_%(version)s/linux/lib/LLVMgold.so
+    installdir=%(installdir)s
+    publicdir=${installdir/restricted.computecanada.ca/soft.computecanada.ca}
+    for i in $(grep "compiler.*\.so" $installdir/compilers_and_libraries_%(version)s/licensing/compiler/en/credist.txt | cut -c 13-); do
+       if [ -f $installdir/$i ]; then
+         mkdir -p $(dirname $publicdir/$i)
+         cp -p $installdir/$i $publicdir/$i
+       fi
+     done
+     cd $installdir
+     for i in compilers_and_libraries_%(version)s/linux/compiler/lib/*; do
+       if [ -L $i ]; then
+         cp -a $i $publicdir/$i
+       fi
+     done
+     ln -s compilers_and_libraries_%(version)s/linux/compiler/lib $publicdir/lib
+'''
 
 def parse_hook(ec, *args, **kwargs):
     """Example parse hook to inject a patch file for a fictive software package named 'Example'."""
@@ -479,6 +509,13 @@ def parse_hook(ec, *args, **kwargs):
         ec['modluafooter'] = compiler_modluafooter%(year,comp,year,comp,year,comp)
         if ec['name'] != 'GCCcore':
             ec['modluafooter'] += 'family("compiler")\n'
+            if ec['name'] == 'iccifort':
+                # set via intel_modluafooter
+                ec['skip_license_file_in_module'] = True
+                ec['modluafooter'] = intel_modluafooter + ec['modluafooter']
+                ec['modaltsoftname'] = 'intel'
+                ec['license_file'] = "/cvmfs/soft.computecanada.ca/config/licenses/intel/computecanada.lic"
+                ec['postinstallcmds'] = [intel_postinstallcmds]
     elif moduleclass == 'mpi':
         name = ec['name'].lower()
         if name == 'impi':
