@@ -457,7 +457,6 @@ if isDir(pathJoin(os.getenv("HOME"), ".local/easybuild/modules/%s", os.getenv("R
 end
 
 add_property("type_","tools")
-family("compiler")
 """
 
 def parse_hook(ec, *args, **kwargs):
@@ -469,3 +468,6 @@ def parse_hook(ec, *args, **kwargs):
         year = os.environ['EBVERSIONGENTOO']
         comp = ec['name'].lower() + ec['version'][:ec['version'].find('.')]
         ec['modluafooter'] = compiler_modluafooter%(year,comp,year,comp,year,comp)
+        if ec['name'] != 'GCCcore':
+            ec['modluafooter'] += 'family("compiler")\n'
+
