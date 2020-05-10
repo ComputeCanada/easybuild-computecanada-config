@@ -507,7 +507,7 @@ def parse_hook(ec, *args, **kwargs):
     moduleclass = ec.get('moduleclass','')
     if moduleclass == 'compiler':
         year = os.environ['EBVERSIONGENTOO']
-        name = ec['name'].lower
+        name = ec['name'].lower()
         if name == 'iccifort':
             name = 'intel'
         comp = name + ec['version'][:ec['version'].find('.')]
