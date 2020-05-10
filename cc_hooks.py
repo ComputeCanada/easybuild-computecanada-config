@@ -505,15 +505,18 @@ def parse_hook(ec, *args, **kwargs):
     moduleclass = ec.get('moduleclass','')
     if moduleclass == 'compiler':
         year = os.environ['EBVERSIONGENTOO']
-        comp = ec['name'].lower() + ec['version'][:ec['version'].find('.')]
+        name = ec['name'].lower
+        if name == 'iccifort':
+            name = 'intel'
+        comp = name + ec['version'][:ec['version'].find('.')]
         ec['modluafooter'] = compiler_modluafooter%(year,comp,year,comp,year,comp)
-        if ec['name'] != 'GCCcore':
+        if name != 'gcccore':
             ec['modluafooter'] += 'family("compiler")\n'
-            if ec['name'] == 'iccifort':
+            if name == 'intel':
                 # set via intel_modluafooter
                 ec['skip_license_file_in_module'] = True
                 ec['modluafooter'] = intel_modluafooter + ec['modluafooter']
-                ec['modaltsoftname'] = 'intel'
+                ec['modaltsoftname'] = name
                 ec['license_file'] = "/cvmfs/soft.computecanada.ca/config/licenses/intel/computecanada.lic"
                 ec['postinstallcmds'] = [intel_postinstallcmds]
     elif moduleclass == 'mpi':
