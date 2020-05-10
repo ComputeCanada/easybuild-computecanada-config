@@ -476,6 +476,8 @@ family("mpi")
 
 #See compilers_and_libraries_2020.0.166/licensing/compiler/en/credist.txt
 intel_postinstallcmds = '''
+    echo "--sysroot=$EPREFIX" > %(installdir)s/compilers_and_libraries_%(version)s/linux/bin/intel64/icc.cfg
+    echo "--sysroot=$EPREFIX" > %(installdir)s/compilers_and_libraries_%(version)s/linux/bin/intel64/icpc.cfg
     /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s
     /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/compilers_and_libraries_%(version)s/linux/compiler/lib --add_origin
     patchelf --set-rpath '$ORIGIN/../lib:$ORIGIN/../compiler/lib/intel64' %(installdir)s/compilers_and_libraries_%(version)s/linux/lib/LLVMgold.so
