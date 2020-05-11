@@ -119,6 +119,7 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
         Examples: Core, avx2/Compiler/gcc4.8, avx/MPI/gcc4.8/openmpi1.6
         """
         tc_comp_info = None
+        tc_comp_name = ""
         if ec.toolchain.name != CUDACORE:
             tc_comps = det_toolchain_compilers(ec)
             tc_comp_info = self.det_toolchain_compilers_name_version(tc_comps)
@@ -138,13 +139,12 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
             tc_comp_ver = self.det_twodigit_version({'name': tc_comp_name, 'version': tc_comp_ver})
             tc_mpi = det_toolchain_mpi(ec)
             tc_cuda = det_toolchain_cuda(ec)
-            use_nix = 'NIXUSER_PROFILE' in os.environ
             if tc_cuda is not None:
                 # compiler-CUDA toolchain => CUDA/<comp_name>/<comp_version>/<CUDA_name>/<CUDA_version> namespace
                 tc_cuda_name = CUDA.lower()
                 tc_cuda_fullver = self.det_twodigit_version(tc_cuda)
                 subdir = tc_cuda_name+tc_cuda_fullver
-                if tc_comp_name != GCCCORE.lower() or not use_nix:
+                if tc_comp_name != GCCCORE.lower():
                     subdir = os.path.join(tc_comp_name+tc_comp_ver, subdir)
                 if tc_mpi is None:
                     subdir = os.path.join(CUDA, subdir)
@@ -154,7 +154,7 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
                     subdir = os.path.join(MPI, subdir, tc_mpi_name+tc_mpi_fullver)
             elif tc_mpi is None:
                 # compiler-only toolchain => Compiler/<compiler_name><compiler_version> namespace
-                if tc_comp_ver == 'system' or (tc_comp_name == GCCCORE.lower() and use_nix):
+                if tc_comp_ver == 'system' or tc_comp_name == GCCCORE.lower():
                     subdir = CORE
                 else:
                     subdir = os.path.join(COMPILER, tc_comp_name+tc_comp_ver)
@@ -167,6 +167,8 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
         if os.getenv('RSNT_ARCH') is None:
             raise EasyBuildError("Need to set architecture to determine module path in $RSNT_ARCH")
         if subdir != CORE and not subdir.startswith(os.path.join(CUDA, CUDA.lower())):
+            subdir = os.path.join(os.getenv('RSNT_ARCH'), subdir)
+        elif subdir == CORE and tc_comp_name == GCCCORE.lower() and 'EBROOTGENTOO' in os.environ:
             subdir = os.path.join(os.getenv('RSNT_ARCH'), subdir)
         return subdir
 
