@@ -512,7 +512,10 @@ def parse_hook(ec, *args, **kwargs):
             name = 'intel'
         comp = name + ec['version'][:ec['version'].find('.')]
         ec['modluafooter'] = compiler_modluafooter%(year,comp,year,comp,year,comp)
-        if name != 'gcccore':
+        if name == 'gcccore':
+            # remove .la files, as they mess up rpath when libtool is used
+            ec['postinstallcmds'] = ["find %(installdir)s -name '*.la' -delete"]
+        else:
             ec['modluafooter'] += 'family("compiler")\n'
             if name == 'intel':
                 # set via intel_modluafooter
