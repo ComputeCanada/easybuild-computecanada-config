@@ -451,9 +451,9 @@ def modify_configopts(ec):
         prepend_configopts(ec,buildopts_changes[ec['name']],'buildopts')
 
 compiler_modluafooter = """
-prepend_path("MODULEPATH", pathJoin("/cvmfs/soft.computecanada.ca/easybuild/modules/%s", os.getenv("RSNT_ARCH"), "Compiler/%s"))
+prepend_path("MODULEPATH", pathJoin("/cvmfs/soft.computecanada.ca/easybuild/modules/%s", os.getenv("RSNT_ARCH"), "%s"))
 if isDir(pathJoin(os.getenv("HOME"), ".local/easybuild/modules/%s", os.getenv("RSNT_ARCH"), "Compiler/%s")) then
-    prepend_path("MODULEPATH", pathJoin(os.getenv("HOME"), ".local/easybuild/modules/%s", os.getenv("RSNT_ARCH"), "Compiler/%s"))
+    prepend_path("MODULEPATH", pathJoin(os.getenv("HOME"), ".local/easybuild/modules/%s", os.getenv("RSNT_ARCH"), "%s"))
 end
 
 add_property("type_","tools")
@@ -510,13 +510,15 @@ def parse_hook(ec, *args, **kwargs):
         name = ec['name'].lower()
         if name == 'iccifort':
             name = 'intel'
-        comp = name + ec['version'][:ec['version'].find('.')]
-        ec['modluafooter'] = compiler_modluafooter%(year,comp,year,comp,year,comp)
         if name == 'gcccore':
+            comp = 'Core'
+            ec['modluafooter'] = compiler_modluafooter%(year,comp,year,comp,year,comp)
             # remove .la files, as they mess up rpath when libtool is used
             ec['postinstallcmds'] = ["find %(installdir)s -name '*.la' -delete"]
         else:
-            ec['modluafooter'] += 'family("compiler")\n'
+            comp = os.path.join('Compiler', name + ec['version'][:ec['version'].find('.')])
+            ec['modluafooter'] = (compiler_modluafooter%(year,comp,year,comp,year,comp)
+                                  + 'family("compiler")\n')
             if name == 'intel':
                 # set via intel_modluafooter
                 ec['skip_license_file_in_module'] = True
