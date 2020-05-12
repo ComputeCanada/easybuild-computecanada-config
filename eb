@@ -32,11 +32,6 @@ else
 	export EASYBUILD_ROBOT_PATHS=$EASYBUILD_ROOT/ebfiles_repo_$RSNT_ARCH/$YEAR:$EASYBUILD_ROBOT_PATHS
 	export EASYBUILD_USE_CCACHE=''
 fi
-if [ -n "$USE_GENTOO" ]; then
-	export EASYBUILD_SEARCH_PATHS=$EASYBUILD_ROOT/easyconfigs
-else
-	export EASYBUILD_ROBOT_PATHS=$EASYBUILD_ROOT/easyconfigs:$EASYBUILD_ROBOT_PATHS
-fi
 
 if [ "$RSNT_ARCH" == avx2 ]; then
 	if [ -n "$USE_GENTOO" ]; then
@@ -63,11 +58,19 @@ if [ "$(whoami)" != "ebuser" ] ; then
 	export EASYBUILD_SUBDIR_USER_MODULES=''
         export EASYBUILD_REPOSITORY='FileRepository'
 	export EASYBUILD_REPOSITORYPATH=$EASYBUILD_PREFIX/ebfiles_repo,$YEAR
-	export EASYBUILD_ROBOT_PATHS=$EASYBUILD_ROOT/easyconfigs:$EASYBUILD_REPOSITORYPATH:$EASYBUILD_ROOT/ebfiles_repo/$YEAR
+	export EASYBUILD_ROBOT_PATHS=$EASYBUILD_PREFIX/ebfiles_repo/$YEAR:$EASYBUILD_ROBOTPATHS
+	if [ "$RSNT_ARCH" != avx2 ]; then
+	    export EASYBUILD_ROBOT_PATHS=$EASYBUILD_PREFIX/ebfiles_repo_$RSNT_ARCH/$YEAR:$EASYBUILD_ROBOT_PATHS
+	fi
 elif [ "$(id -ng)" != "ebuser" ] ; then
 	# using ebuser with different group ID
 	export EASYBUILD_INSTALLPATH_SOFTWARE=/cvmfs/restricted.computecanada.ca/easybuild/$EASYBUILD_SUBDIR_SOFTWARE
 	export EASYBUILD_SOURCEPATH=/cvmfs/restricted.computecanada.ca/easybuild/sources
+fi
+if [ -n "$USE_GENTOO" ]; then
+	export EASYBUILD_SEARCH_PATHS=$EASYBUILD_ROOT/easyconfigs
+else
+	export EASYBUILD_ROBOT_PATHS=$EASYBUILD_ROOT/easyconfigs:$EASYBUILD_ROBOT_PATHS
 fi
 export EASYBUILD_HOOKS=$EASYBUILD_ROOT/cc_hooks.py
 export EASYBUILD_BUILDPATH=$EASYBUILD_BUILDPATH/$RSNT_ARCH
