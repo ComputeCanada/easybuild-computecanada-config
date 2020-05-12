@@ -67,11 +67,7 @@ elif [ "$(id -ng)" != "ebuser" ] ; then
 	export EASYBUILD_INSTALLPATH_SOFTWARE=/cvmfs/restricted.computecanada.ca/easybuild/$EASYBUILD_SUBDIR_SOFTWARE
 	export EASYBUILD_SOURCEPATH=/cvmfs/restricted.computecanada.ca/easybuild/sources
 fi
-if [ -n "$USE_GENTOO" ]; then
-	export EASYBUILD_SEARCH_PATHS=$EASYBUILD_ROOT/easyconfigs
-else
-	export EASYBUILD_ROBOT_PATHS=$EASYBUILD_ROOT/easyconfigs:$EASYBUILD_ROBOT_PATHS
-fi
+export EASYBUILD_ROBOT_PATHS=$EASYBUILD_ROOT/easyconfigs:$EASYBUILD_ROBOT_PATHS
 export EASYBUILD_HOOKS=$EASYBUILD_ROOT/cc_hooks.py
 export EASYBUILD_BUILDPATH=$EASYBUILD_BUILDPATH/$RSNT_ARCH
 export LANG=en_US.UTF-8
