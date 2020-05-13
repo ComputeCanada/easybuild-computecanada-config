@@ -535,7 +535,7 @@ def parse_hook(ec, *args, **kwargs):
     elif moduleclass == 'mpi':
         name = ec['name'].lower()
         if name == 'impi':
-            name = intelmpi
+            name = 'intelmpi'
         ec['modluafooter'] = mpi_modluafooter%name
         if name == 'openmpi':
             ec['postinstallcmds'] = ['rm %(installdir)s/lib/*.la %(installdir)s/lib/*/*.la']
