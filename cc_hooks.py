@@ -450,6 +450,9 @@ def modify_configopts(ec):
     if ec['name'] in buildopts_changes:
         print("Changing buildopts for %s" % ec['name'])
         prepend_configopts(ec,buildopts_changes[ec['name']],'buildopts')
+        if ec['name'] == 'OpenBLAS':
+            prepend_configopts(ec,buildopts_changes[ec['name']],'installopts')
+            prepend_configopts(ec,buildopts_changes[ec['name']],'testopts')
 
 compiler_modluafooter = """
 prepend_path("MODULEPATH", pathJoin("/cvmfs/soft.computecanada.ca/easybuild/modules/%s", os.getenv("RSNT_ARCH"), "%s"))
