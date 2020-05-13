@@ -487,7 +487,7 @@ intel_postinstallcmds = '''
     patchelf --set-rpath '$ORIGIN/../lib:$ORIGIN/../compiler/lib/intel64' %(installdir)s/compilers_and_libraries_%(version)s/linux/lib/LLVMgold.so
     installdir=%(installdir)s
     publicdir=${installdir/restricted.computecanada.ca/soft.computecanada.ca}
-    for i in $(grep "compiler.*\.so" $installdir/compilers_and_libraries_%(version)s/licensing/compiler/en/credist.txt | cut -c 13-); do
+    for i in $(grep -h "compiler.*\.so" $installdir/compilers_and_libraries_%(version)s/licensing/compiler/en/[cf]redist.txt | cut -c 13-); do
        if [ -f $installdir/$i ]; then
          mkdir -p $(dirname $publicdir/$i)
          cp -p $installdir/$i $publicdir/$i
