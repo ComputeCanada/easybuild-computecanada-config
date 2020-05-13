@@ -502,6 +502,9 @@ intel_postinstallcmds = '''
      ln -s compilers_and_libraries_%(version)s/linux/compiler/lib $publicdir/lib
 '''
 
+# modules with both -mpi and no-mpi varieties
+mpi_modaltsoftname = ['fftw', 'hdf5', 'netcdf-c++4', 'netcdf-c++', 'netcdf-fortran', 'netcdf']
+
 def parse_hook(ec, *args, **kwargs):
     """Example parse hook to inject a patch file for a fictive software package named 'Example'."""
     modify_dependencies(ec,'dependencies')
@@ -538,6 +541,9 @@ def parse_hook(ec, *args, **kwargs):
             ec['dependencies'].append(('libfabric', '1.10.1'))
     if moduleclass == 'toolchain' or ec['name'] == 'GCCcore':
         ec['hidden'] = True
+    # add -mpi to module name for various modules with both -mpi and no-mpi varieties
+    if ec['name'].lower() in mpi_modaltsoftname and ec['toolchainopts'].get('usempi'):
+        ec['modaltsoftname'] = ec['name'].lower() + '-mpi'
 
 def pre_configure_hook(self, *args, **kwargs):
     "Modify configopts (here is more efficient than parse_hook since only called once)"
