@@ -543,7 +543,9 @@ def parse_hook(ec, *args, **kwargs):
     if moduleclass == 'toolchain' or ec['name'] == 'GCCcore':
         ec['hidden'] = True
     # add -mpi to module name for various modules with both -mpi and no-mpi varieties
-    if ec['name'].lower() in mpi_modaltsoftname and ec['toolchainopts'].get('usempi'):
+    toolchain = self.cfg.get('toolchain')
+    if (ec['name'].lower() in mpi_modaltsoftname and
+        ((toolchain and toolchain['name'].endswith('mpi')) or ec['toolchainopts'].get('usempi'))):
         ec['modaltsoftname'] = ec['name'].lower() + '-mpi'
 
 def pre_configure_hook(self, *args, **kwargs):
