@@ -548,6 +548,17 @@ def parse_hook(ec, *args, **kwargs):
         ((toolchain and toolchain['name'].endswith('mpi')) or ec['toolchainopts'].get('usempi'))):
         ec['modaltsoftname'] = ec['name'].lower() + '-mpi'
 
+    # for Python, keep only specific extensions
+    python_extensions_to_keep = ['setuptools', 'pip', 'wheel', 'virtualenv']
+    if ec['name'].lower() == 'python':
+        new_ext_list = []
+        for ext in ec['exts_list']:
+            if ext[0] in python_extensions_to_keep:
+                new_ext_list += [ext]
+        ec['exts_list'] = new_ext_list
+        ec['modextrapaths'] = {'PYTHONPATH': ['/cvmfs/soft.computecanada.ca/easybuild/python/site-packages']}
+        ec['prebuildopts'] = 'sed -i -e "s;/usr;$EBROOTGENTOO;g" setup.py && '
+
 def pre_configure_hook(self, *args, **kwargs):
     "Modify configopts (here is more efficient than parse_hook since only called once)"
     modify_configopts(self.cfg)
