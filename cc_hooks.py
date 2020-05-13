@@ -549,11 +549,12 @@ def parse_hook(ec, *args, **kwargs):
         ec['modaltsoftname'] = ec['name'].lower() + '-mpi'
 
     # for Python, keep only specific extensions, and add specific paths
-    python_extensions_to_keep = ['setuptools', 'pip', 'wheel', 'virtualenv']
+    python_extensions_to_keep = ['setuptools', 'pip', 'wheel', 'virtualenv', 'appdirs', 'distlib', 'filelock',
+                                 'six']
     if ec['name'].lower() == 'python':
         if ec['version'].startswith('2.7'):
-            python_extensions_to_keep += ['appdirs', 'contextlib2', 'distlib', 'filelock', 'importlib_metadata',
-                                          'importlib_resources', 'pathlib2', 'six', 'configparser', 'zipp', 'scandir',
+            python_extensions_to_keep += ['contextlib2', 'importlib_metadata',
+                                          'importlib_resources', 'pathlib2', 'configparser', 'zipp', 'scandir',
                                           'singledispatch', 'typing']
         new_ext_list = []
         for ext in ec['exts_list']:
