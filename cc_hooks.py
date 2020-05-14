@@ -510,6 +510,11 @@ def parse_hook(ec, *args, **kwargs):
     """Example parse hook to inject a patch file for a fictive software package named 'Example'."""
     modify_dependencies(ec,'dependencies')
     modify_dependencies(ec,'builddependencies')
+
+    # always disable multi_deps_load_default when multi_deps is used
+    if ec.get('multi_deps', None): 
+        ec['multi_deps_load_default'] = False
+
     if 'EBROOTGENTOO' not in os.environ:
         return
     moduleclass = ec.get('moduleclass','')
