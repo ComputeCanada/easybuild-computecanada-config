@@ -552,10 +552,13 @@ def parse_hook(ec, *args, **kwargs):
     python_extensions_to_keep = ['setuptools', 'pip', 'wheel', 'virtualenv', 'appdirs', 'distlib', 'filelock',
                                  'six']
     if ec['name'].lower() == 'python':
+        if ec['version'].startswith('2.7') or ec['version'].startswith('3.6') or ec['version'].startswith('3.7'):
+            python_extensions_to_keep += ['importlib_metadata', 'importlib_resources', 'zipp']
         if ec['version'].startswith('2.7'):
-            python_extensions_to_keep += ['contextlib2', 'importlib_metadata',
-                                          'importlib_resources', 'pathlib2', 'configparser', 'zipp', 'scandir',
+            python_extensions_to_keep += ['contextlib2', 'pathlib2', 'configparser', 'scandir',
                                           'singledispatch', 'typing']
+        if ec['version'].startswith('3.6') or ec['version'].startswith('3.7'):
+            python_extensions_to_keep += ['more-itertools']
         new_ext_list = []
         for ext in ec['exts_list']:
             if ext[0] in python_extensions_to_keep:
