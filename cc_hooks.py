@@ -573,6 +573,7 @@ def parse_hook(ec, *args, **kwargs):
         ec['modextrapaths'] = {'PYTHONPATH': ['/cvmfs/soft.computecanada.ca/easybuild/python/site-packages']}
         ec['allow_prepend_abs_path'] = True
         ec['prebuildopts'] = 'sed -i -e "s;/usr;$EBROOTGENTOO;g" setup.py && '
+        ec['installopts'] = ' && /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_path %(installdir)s/lib --any_interpreter'
 
 def pre_configure_hook(self, *args, **kwargs):
     "Modify configopts (here is more efficient than parse_hook since only called once)"
