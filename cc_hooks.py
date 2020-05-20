@@ -577,7 +577,10 @@ def parse_hook(ec, *args, **kwargs):
 
 def pre_configure_hook(self, *args, **kwargs):
     "Modify configopts (here is more efficient than parse_hook since only called once)"
+    orig_enable_templating = self.cfg.enable_templating
+    self.cfg.enable_templating = False
     modify_configopts(self.cfg)
+    self.cfg.enable_templating = orig_enable_templating
 
 def post_module_hook(self, *args, **kwargs):
     "Modify GCCcore toolchain to system toolchain for ebfiles_repo only"
