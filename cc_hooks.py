@@ -105,16 +105,16 @@ new_version_mapping = {
                 ):('GCC','8.3.0'),
             }
         },
-        (('iccifort','2020.0.166'),('GCC','9.2.0'),
-         ('gmkl','2020.0'),('iimkl','2020.0'),
-         ('gompi','2020.0.403'),('iompi','2020.0.403'),
-         ('gomkl','2020.0.403'),('iomkl','2020.0.403')): {
+        (('iccifort','2020.1.217'),('GCC','9.3.0'),
+         ('gmkl','2020a'),('iimkl','2020a'),
+         ('gompi','2020a'),('iompi','2020a'),
+         ('gomkl','2020a'),('iomkl','2020a')): {
             'pkg_mapping': {
                 'BLAST+': '2.10.0',
                 ('Boost',('1.54.0','1.60.0','1.65.1','1.66.0','1.68.0'),None): '1.72.0',
                 'Bowtie2': '2.3.5.1',
                 'BUFRLIB': '11.3.0',
-                ('CGAL','4.9'): '4.14.2',
+                ('CGAL','4.9'): '4.14.3',
                 'CLHEP': '2.4.1.3',
                 'ecCodes': '2.16.0',
                 ('FFTW','ANY',None): '3.3.8',
@@ -142,8 +142,8 @@ new_version_mapping = {
                 'UDUNITS': '2.2.26',
             },
             'tc_mapping': {
-                (('iccifort','2020.0.166'),('iimkl','2020.0'),('iompi','2020.0.312'),('iomkl','2020.0.312')): ('iccifort','2020.0.166'),
-                (('GCC','9.2.0'),('gmkl','2020.0'),('gompi','2020.0.312'),('gomkl','2020.0.312')): ('GCC', '9.2.0')
+                (('iccifort','2020.1.217'),('iimkl','2020a'),('iompi','2020a'),('iomkl','2020a')): ('iccifort','2020.1.217'),
+                (('GCC','9.3.0'),('gmkl','2020a'),('gompi','2020a'),('gomkl','2020a')): ('GCC', '9.3.0')
             }
         },
         (('gompi','2018.3.312'),('iompi','2018.3.312'),
@@ -162,8 +162,8 @@ new_version_mapping = {
                 (('iompi','2018.3.312'),('iomkl','2018.3.312'),('iompic','2018.3.312.100'),('iomklc','2018.3.312.100')):('iompi','2018.3.312'),
             }
         },
-        (('gompi','2020.0.403'),('iompi','2020.0.403'),
-         ('gomkl','2020.0.403'),('iomkl','2020.0.403')): {
+        (('gompi','2020a'),('iompi','2020a'),
+         ('gomkl','2020a'),('iomkl','2020a')): {
             'pkg_mapping': {
                 ('Boost','ANY','-mpi'): '1.72.0',
                 ('FFTW','ANY','-mpi'): '3.3.8',
@@ -175,8 +175,8 @@ new_version_mapping = {
                 'SCOTCH':'6.0.9',
             },
             'tc_mapping': {
-                (('gompi','2020.0.403'),('gomkl','2020.0.403')):('gompi','2020.0.403'),
-                (('iompi','2020.0.403'),('iomkl','2020.0.403')):('iompi','2020.0.403'),
+                (('gompi','2020a'),('gomkl','2020a')):('gompi','2020a'),
+                (('iompi','2020a'),('iomkl','2020a')):('iompi','2020a'),
             }
         },
         (('gomkl','2018.3.312'),('iomkl','2018.3.312'),
@@ -194,7 +194,7 @@ new_version_mapping = {
                 (('iomkl','2018.3.312'),('iomklc','2018.3.312.100')):('iomkl','2018.3.312'),
             }
         },
-        (('gomkl','2020.0.403'),('iomkl','2020.0.403')): {
+        (('gomkl','2020a'),('iomkl','2020a')): {
             'pkg_mapping': {
                 ('ESMF',('7.0.1','7.1.0r')):'8.0.0',
                 ('Hypre','ANY'):'2.18.2',
@@ -204,8 +204,8 @@ new_version_mapping = {
                 ('Trilinos','12.10.1','ANY'): ('12.10.1',None),
             },
             'tc_mapping': {
-                (('gomkl','2020.0.403')):('gomkl','2020.0.403'),
-                (('iomkl','2020.0.403')):('iomkl','2020.0.403'),
+                (('gomkl','2020a')):('gomkl','2020a'),
+                (('iomkl','2020a')):('iomkl','2020a'),
             }
         }
 }
@@ -479,7 +479,7 @@ add_property("type_","mpi")
 family("mpi")
 """
 
-#See compilers_and_libraries_2020.0.166/licensing/compiler/en/credist.txt
+#See compilers_and_libraries_2020.1.217/licensing/compiler/en/credist.txt
 intel_postinstallcmds = '''
     echo "--sysroot=$EPREFIX" > %(installdir)s/compilers_and_libraries_%(version)s/linux/bin/intel64/icc.cfg
     echo "--sysroot=$EPREFIX" > %(installdir)s/compilers_and_libraries_%(version)s/linux/bin/intel64/icpc.cfg
