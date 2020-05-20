@@ -271,7 +271,9 @@ configopts_changes = {
                     'atomic-ucx,btl-openib,btl-uct,' +
                     'coll-hcoll,ess-tm,fs-lustre,mtl-ofi,mtl-psm,mtl-psm2,osc-ucx,' +
                     'plm-tm,pmix-s1,pmix-s2,pml-ucx,pnet-opa,psec-munge,' +
-                    'ras-tm,spml-ucx,sshmem-ucx,hwloc-external')
+                    'ras-tm,spml-ucx,sshmem-ucx,hwloc-external'),
+        # local customizations for UCX
+        'UCX':     ("", "--with-rdmacm=$EBROOTGENTOO --with-verbs=$EBROOTGENTOO --with-knem=$EBROOTGENTOO ")
 }
 
 configopts_changes_based_on_easyblock_class_and_name = {
