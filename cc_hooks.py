@@ -548,6 +548,17 @@ def parse_hook(ec, *args, **kwargs):
         if name == 'openmpi':
             ec['postinstallcmds'] = ['rm %(installdir)s/lib/*.la %(installdir)s/lib/*/*.la']
             ec['dependencies'].append(('libfabric', '1.10.1'))
+        elif name == 'intelmpi':
+            ec['modaltsoftname'] = name
+            ec['set_mpi_wrappers_all'] = True
+            # Fix mpirun from IntelMPI to explicitly unset I_MPI_PMI_LIBRARY
+            # it can only be used with srun.
+            ec['postinstallcmds'] = [
+                "sed -i 's@\\(#!/bin/sh.*\\)$@\\1\\nunset I_MPI_PMI_LIBRARY@' %(installdir)s/intel64/bin/mpirun",
+                "/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/intel64/bin --add_path='$ORIGIN/../lib/release'",
+                "for dir in release release_mt debug debug_mt; do /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/intel64/lib/$dir --add_path='$ORIGIN/../../libfabric/lib'; done",
+                "patchelf --set-rpath $EBROOTUCX/lib --force-rpath %(installdir)s/intel64/libfabric/lib/prov/libmlx-fi.so"
+            ]
     if moduleclass == 'toolchain' or ec['name'] == 'GCCcore':
         ec['hidden'] = True
     # add -mpi to module name for various modules with both -mpi and no-mpi varieties
