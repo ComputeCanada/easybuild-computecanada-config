@@ -559,6 +559,8 @@ def parse_hook(ec, *args, **kwargs):
                 "for dir in release release_mt debug debug_mt; do /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/intel64/lib/$dir --add_path='$ORIGIN/../../libfabric/lib'; done",
                 "patchelf --set-rpath $EBROOTUCX/lib --force-rpath %(installdir)s/intel64/libfabric/lib/prov/libmlx-fi.so"
             ]
+    elif ec['name'] == 'CUDAcore' and int(ec['version'].split('.')[0]) < 11:
+        ec['builddependencies'] = [('GCCcore', '8.4.0')]
     if moduleclass == 'toolchain' or ec['name'] == 'GCCcore':
         ec['hidden'] = True
     # add -mpi to module name for various modules with both -mpi and no-mpi varieties
