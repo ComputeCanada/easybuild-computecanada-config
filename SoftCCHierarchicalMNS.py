@@ -168,7 +168,7 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
             raise EasyBuildError("Need to set architecture to determine module path in $RSNT_ARCH")
         if subdir != CORE and not subdir.startswith(os.path.join(CUDA, CUDA.lower())):
             subdir = os.path.join(os.getenv('RSNT_ARCH'), subdir)
-        elif subdir == CORE and tc_comp_name == GCCCORE.lower() and 'EBROOTGENTOO' in os.environ:
+        elif tc_comp_name == GCCCORE.lower() and 'EBROOTGENTOO' in os.environ:
             subdir = os.path.join(os.getenv('RSNT_ARCH'), subdir)
         return subdir
 
