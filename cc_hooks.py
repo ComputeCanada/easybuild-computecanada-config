@@ -129,7 +129,7 @@ new_version_mapping = {
                 'MAFFT': '7.450',
                 'Mono': '6.8.0.105',
                 'muParser': '2.2.6',
-                ('netCDF','ANY',None): '4.7.3',
+                ('netCDF','ANY',None): '4.7.4',
                 ('netCDF-C++4','ANY',None):'4.3.1',
                 ('netCDF-Fortran','ANY',None):'4.5.2',
                 'NLopt': '2.6.1',
