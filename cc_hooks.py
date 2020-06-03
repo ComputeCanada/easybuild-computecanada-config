@@ -22,10 +22,10 @@ new_version_mapping = {
         'ALL_GENTOO': {
             'pkg_mapping': {
                 'JasPer': '2.0.16',
-                ('Python','2.7.14','ANY'): ('2.7.17',None),
-                ('Python','3.5.4','ANY'): ('3.7.5',None),
-                ('Python','3.7.0','ANY'): ('3.7.5',None),
-                ('Python','3.7.4','ANY'): ('3.7.5',None),
+                ('Python','2.7.14','ANY'): ('2.7.18',None),
+                ('Python','3.5.4','ANY'): ('3.7.7',None),
+                ('Python','3.7.0','ANY'): ('3.7.7',None),
+                ('Python','3.7.4','ANY'): ('3.7.7',None),
                 ('Eigen','ANY'): ('3.3.7',None),
                 ('CMake','3.15.3'): ('3.12.2',None), # to be ignored by filter-deps
                 ('CMake','3.16.4'): ('3.12.2',None), # to be ignored by filter-deps
