@@ -519,10 +519,13 @@ def drop_dependencies(ec, param):
     if 'EBROOTGENTOO' in os.environ:
         # dictionary in format <name>:<version under which to drop>
         to_drop = {
-                'Ninja': 'ALL',
                 'CMake': 'ALL',
-                'libxslt': 'ALL',
                 'ICU': 'ALL',
+                'libxslt': 'ALL',
+                'libzip': 'ALL',
+                'Ninja': 'ALL',
+                'PyQt5': 'ALL',
+                'SQLite': 'ALL',
         }
         # iterate over a copy
         for dep in ec[param][:]:
