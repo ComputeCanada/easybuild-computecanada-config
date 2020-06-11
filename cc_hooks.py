@@ -1,6 +1,8 @@
 from easybuild.framework.easyconfig.easyconfig import get_easyblock_class
 from easybuild.easyblocks.generic.cmakemake import CMakeMake
 from easybuild.framework.easyconfig.constants import EASYCONFIG_CONSTANTS
+from distutils.version import LooseVersion
+
 import os
 
 new_version_mapping = {
@@ -23,8 +25,6 @@ new_version_mapping = {
             'pkg_mapping': {
                 'JasPer': '2.0.16',
                 ('Eigen','ANY'): ('3.3.7',None),
-                ('CMake','3.15.3'): ('3.12.2',None), # to be ignored by filter-deps
-                ('CMake','3.16.4'): ('3.12.2',None), # to be ignored by filter-deps
             },
             'tc_mapping': {
                 'ALL':('system','system'),
@@ -515,10 +515,30 @@ intel_postinstallcmds = '''
 # modules with both -mpi and no-mpi varieties
 mpi_modaltsoftname = ['fftw', 'hdf5', 'netcdf-c++4', 'netcdf-c++', 'netcdf-fortran', 'netcdf']
 
+def drop_dependencies(ec, param):
+    if 'EBROOTGENTOO' in os.environ:
+        # dictionary in format <name>:<version under which to drop>
+        to_drop = {
+                'Ninja': 'ALL',
+                'CMake': 'ALL',
+                'libxslt': 'ALL',
+                'ICU': 'ALL',
+        }
+        for n, dep in enumerate(ec[param]):
+            dep = list(dep)
+            if dep[0] == ec.name:
+                continue
+            if dep[0] in to_drop:
+                if to_drop[dep[0]] == 'ALL' or LooseVersion(dep[1]) < LooseVersion(to_drop[dep[0]]):
+                    print("Dropped %s, %s from %s" % (dep[0],dep[1],param))
+                    del ec[param][n]
+
 def parse_hook(ec, *args, **kwargs):
     """Example parse hook to inject a patch file for a fictive software package named 'Example'."""
     modify_dependencies(ec,'dependencies')
     modify_dependencies(ec,'builddependencies')
+    drop_dependencies(ec, 'dependencies')
+    drop_dependencies(ec, 'builddependencies')
 
     # always disable multi_deps_load_default when multi_deps is used
     if ec.get('multi_deps', None): 
