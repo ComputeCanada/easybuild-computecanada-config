@@ -524,14 +524,17 @@ def drop_dependencies(ec, param):
                 'libxslt': 'ALL',
                 'ICU': 'ALL',
         }
-        for n, dep in enumerate(ec[param]):
-            dep = list(dep)
-            if dep[0] == ec.name:
+        # iterate over a copy
+        for dep in ec[param][:]:
+            dep_list = list(dep)
+            if dep_list[0] == ec.name:
                 continue
-            if dep[0] in to_drop:
-                if to_drop[dep[0]] == 'ALL' or LooseVersion(dep[1]) < LooseVersion(to_drop[dep[0]]):
-                    print("Dropped %s, %s from %s" % (dep[0],dep[1],param))
-                    del ec[param][n]
+            if dep_list[0] in to_drop:
+                if to_drop[dep_list[0]] == 'ALL' or LooseVersion(dep_list[1]) < LooseVersion(to_drop[dep_list[0]]):
+                    print("Dropped %s, %s from %s" % (dep_list[0],dep_list[1],param))
+                    ec[param].remove(dep)
+
+
 
 def parse_hook(ec, *args, **kwargs):
     """Example parse hook to inject a patch file for a fictive software package named 'Example'."""
