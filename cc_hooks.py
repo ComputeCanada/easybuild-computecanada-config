@@ -252,7 +252,16 @@ preconfigopts_changes = {
         # build EPREFIX-aware GCCcore
         'GCCcore': ("", "if [ -f ../gcc/gcc.c ]; then sed -i 's/--sysroot=%R//' ../gcc/gcc.c; " +
                    "for h in ../gcc/config/*/*linux*.h; do " +
-                    r'sed -i -r "/_DYNAMIC_LINKER/s,([\":])(/lib),\1${EPREFIX}\2,g" $h; done; fi; ')
+                    r'sed -i -r "/_DYNAMIC_LINKER/s,([\":])(/lib),\1${EPREFIX}\2,g" $h; done; fi; '),
+        'Clang': ("", """pushd %(builddir)s/llvm-%(version)s.src/tools/clang; """ +
+                      # Use ${EPREFIX} as default sysroot
+                      """sed -i -e "s@DEFAULT_SYSROOT \\"\\"@DEFAULT_SYSROOT \\"${EPREFIX}\\"@" CMakeLists.txt ; """ +
+                      """pushd lib/Driver/ToolChains ; """ +
+                      # Use dynamic linker from ${EPREFIX}
+                      """sed -i -e "/LibDir.*Loader/s@return \\"\/\\"@return \\"${EPREFIX%/}/\\"@" Linux.cpp ; """ +
+                      # Remove --sysroot call on ld for native toolchain
+                      """sed -i -e "$(grep -n -B1 sysroot= Gnu.cpp | sed -ne '{1s/-.*//;1p}'),+1 d" Gnu.cpp ; """ +
+                      """popd; popd ; """)
 }
 
 configopts_changes = {
