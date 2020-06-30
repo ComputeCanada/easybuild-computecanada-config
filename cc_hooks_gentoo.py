@@ -3,7 +3,7 @@ from easybuild.easyblocks.generic.cmakemake import CMakeMake
 from easybuild.framework.easyconfig.constants import EASYCONFIG_CONSTANTS
 from distutils.version import LooseVersion
 from cc_hooks_common import package_match, map_dependency_version, replace_dependencies, modify_dependencies
-
+from cc_hooks_common import modify_all_opts, update_opts, PREPEND, APPEND, REPLACE
 import os
 
 new_version_mapping = {
@@ -121,12 +121,19 @@ new_version_mapping_app_specific = {
             },
         },
 }
-preconfigopts_changes = {
+
+opts_changes = {
+    'GCCcore': {
         # build EPREFIX-aware GCCcore
-        'GCCcore': "if [ -f ../gcc/gcc.c ]; then sed -i 's/--sysroot=%R//' ../gcc/gcc.c; " +
-                   "for h in ../gcc/config/*/*linux*.h; do " +
+        'preconfigopts': (
+                    "if [ -f ../gcc/gcc.c ]; then sed -i 's/--sysroot=%R//' ../gcc/gcc.c; " +
+                    "for h in ../gcc/config/*/*linux*.h; do " +
                     r'sed -i -r "/_DYNAMIC_LINKER/s,([\":])(/lib),\1${EPREFIX}\2,g" $h; done; fi; ',
-        'Clang': """pushd %(builddir)s/llvm-%(version)s.src/tools/clang; """ +
+                    PREPEND ),
+        'configopts': ("--with-sysroot=$EPREFIX", PREPEND)
+    },
+    'Clang': {
+        'preconfigopts': ("""pushd %(builddir)s/llvm-%(version)s.src/tools/clang; """ +
                  # Use ${EPREFIX} as default sysroot
                  """sed -i -e "s@DEFAULT_SYSROOT \\"\\"@DEFAULT_SYSROOT \\"${EPREFIX}\\"@" CMakeLists.txt ; """ +
                  """pushd lib/Driver/ToolChains ; """ +
@@ -134,14 +141,12 @@ preconfigopts_changes = {
                  """sed -i -e "/LibDir.*Loader/s@return \\"\/\\"@return \\"${EPREFIX%/}/\\"@" Linux.cpp ; """ +
                  # Remove --sysroot call on ld for native toolchain
                  """sed -i -e "$(grep -n -B1 sysroot= Gnu.cpp | sed -ne '{1s/-.*//;1p}'),+1 d" Gnu.cpp ; """ +
-                 """popd; popd ; """
-}
-
-configopts_changes = {
-        # build EPREFIX-aware GCCcore
-        'GCCcore': "--with-sysroot=$EPREFIX",
+                 """popd; popd ; """,
+                 PREPEND)
+    },
+    "OpenMPI": {
         # local customizations for OpenMPI
-        'OpenMPI': '--enable-shared --with-verbs ' +
+        'configopts': ('--enable-shared --with-verbs ' +
                     '--with-hwloc=external '  + # hwloc support
                     '--without-usnic ' + # No usnic-via-libfabric
                     # rpath is already done by ld wrapper
@@ -160,72 +165,21 @@ configopts_changes = {
                     'coll-hcoll,ess-tm,fs-lustre,mtl-ofi,mtl-psm,mtl-psm2,osc-ucx,' +
                     'plm-tm,pmix-s1,pmix-s2,pml-ucx,pnet-opa,psec-munge,' +
                     'ras-tm,spml-ucx,sshmem-ucx,hwloc-external',
+                    PREPEND)
+    },
+    'UCX': {
         # local customizations for UCX
-        'UCX':     "--with-rdmacm=$EBROOTGENTOO --with-verbs=$EBROOTGENTOO --with-knem=$EBROOTGENTOO "
+        'configopts': ("--with-rdmacm=$EBROOTGENTOO --with-verbs=$EBROOTGENTOO --with-knem=$EBROOTGENTOO ", PREPEND)
+    },
+    'OpenBLAS': {
+        **dict.fromkeys(['buildopts','installopts','testopts'],
+                        ({'sse3': 'DYNAMIC_ARCH=1',
+                        'avx': 'TARGET=SANDYBRIDGE',
+                        'avx2': 'DYNAMIC_ARCH=1 DYNAMIC_LIST="HASWELL ZEN SKYLAKEX"',
+                        'avx512': 'TARGET=SKYLAKEX'}[os.getenv('RSNT_ARCH')] + ' NUM_THREADS=64',
+                        PREPEND))
+    },
 }
-
-configopts_changes_based_on_easyblock_class_and_name = {
-        'ANY': {
-            CMakeMake: ' -DCMAKE_SKIP_INSTALL_RPATH=ON '
-        },
-        # this version is a fake CMakeMake, it falls back to ./configure
-        ('ROOT','5.34.36'): {},
-        ('mariadb', '10.4.11'): {
-            CMakeMake: ' '
-        },
-
-}
-buildopts_changes = {
-	'OpenBLAS': {'sse3': 'DYNAMIC_ARCH=1',
-                    'avx': 'TARGET=SANDYBRIDGE',
-                    'avx2': 'DYNAMIC_ARCH=1 DYNAMIC_LIST="HASWELL ZEN SKYLAKEX"',
-                    'avx512': 'TARGET=SKYLAKEX'}[os.getenv('RSNT_ARCH')] + ' NUM_THREADS=64'
-}
-
-
-def prepend_configopts(ec,changes,key="configopts"):
-    print("Changing configopts from: %s" % ec[key])
-    if isinstance(ec[key], str):
-        configopts = [ec[key]]
-    elif isinstance(ec[key], list):
-        configopts = ec[key]
-    else:
-        return
-    for i in range(len(configopts)):
-        if not changes in configopts[i]:
-            configopts[i] = changes + configopts[i]
-
-    if isinstance(ec[key], str):
-        ec[key] = configopts[0]
-    print("New configopts: %s" % ec[key])
-
-def modify_configopts(ec):
-    if ec['name'] in preconfigopts_changes.keys():
-        print("Changing preconfigopts from: %s" % ec['preconfigopts'])
-        prepend_configopts(ec,preconfigopts_changes[ec['name']])
-
-    if ec['name'] in configopts_changes.keys():
-        print("Changing configopts from: %s" % ec['configopts'])
-        prepend_configopts(ec,configopts_changes[ec['name']])
-
-    c = get_easyblock_class(ec.easyblock, name=ec.name)
-    name_to_be_checked = 'ANY'
-    if (ec['name'],ec['version']) in configopts_changes_based_on_easyblock_class_and_name.keys():
-        name_to_be_checked = (ec['name'],ec['version'])
-
-    for easyblock_class in configopts_changes_based_on_easyblock_class_and_name[name_to_be_checked].keys():
-        if c == easyblock_class or issubclass(c,easyblock_class):
-            print("Class type %s is subclass of %s:" % (str(c),str(easyblock_class)))
-            changes = configopts_changes_based_on_easyblock_class_and_name[name_to_be_checked][easyblock_class]
-            prepend_configopts(ec,changes)
-
-
-    if ec['name'] in buildopts_changes:
-        print("Changing buildopts for %s" % ec['name'])
-        prepend_configopts(ec,buildopts_changes[ec['name']],'buildopts')
-        if ec['name'] == 'OpenBLAS':
-            prepend_configopts(ec,buildopts_changes[ec['name']],'installopts')
-            prepend_configopts(ec,buildopts_changes[ec['name']],'testopts')
 
 compiler_modluafooter = """
 prepend_path("MODULEPATH", pathJoin("/cvmfs/soft.computecanada.ca/easybuild/modules/%s", os.getenv("RSNT_ARCH"), "%s"))
@@ -391,7 +345,19 @@ def pre_configure_hook(self, *args, **kwargs):
     "Modify configopts (here is more efficient than parse_hook since only called once)"
     orig_enable_templating = self.cfg.enable_templating
     self.cfg.enable_templating = False
-    modify_configopts(self.cfg)
+
+    modify_all_opts(self.cfg, opts_changes)
+
+    # additional changes for CMakeMake EasyBlocks
+    CMakeMake_configopts_changes = ' -DCMAKE_SKIP_INSTALL_RPATH=ON '
+    c = get_easyblock_class(ec.easyblock, name=ec.name)
+    if c == CMakeMake or issubclass(c,CMakeMake):
+        # skip for those
+        if (ec['name'],ec['version']) in [('ROOT','5.34.36'), ('mariadb', '10.4.11')]:
+            pass
+        else:
+            update_opts(ec, CMakeMake_configopts_changes, 'configopts', PREPEND)
+
     self.cfg.enable_templating = orig_enable_templating
 
 def post_module_hook(self, *args, **kwargs):

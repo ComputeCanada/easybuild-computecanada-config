@@ -3,6 +3,7 @@ from easybuild.easyblocks.generic.cmakemake import CMakeMake
 from easybuild.framework.easyconfig.constants import EASYCONFIG_CONSTANTS
 from distutils.version import LooseVersion
 from cc_hooks_common import package_match, map_dependency_version, replace_dependencies, modify_dependencies
+from cc_hooks_common import modify_all_opts, update_opts, PREPEND, APPEND, REPLACE
 
 import os
 
@@ -138,82 +139,17 @@ new_version_mapping_app_specific = {
             },
         },
 }
-preconfigopts_changes = {
+
+opts_changes = {
+    'OpenBLAS': {
+        **dict.fromkeys(['buildopts','installopts','testopts'],
+                        ({'sse3': 'DYNAMIC_ARCH=1',
+                        'avx': 'TARGET=SANDYBRIDGE',
+                        'avx2': 'DYNAMIC_ARCH=1 DYNAMIC_LIST="HASWELL ZEN SKYLAKEX"',
+                        'avx512': 'TARGET=SKYLAKEX'}[os.getenv('RSNT_ARCH')] + ' NUM_THREADS=64',
+                        PREPEND))
+    }
 }
-
-configopts_changes = {
-}
-
-configopts_changes_based_on_easyblock_class_and_name = {
-        'ANY': {
-            CMakeMake: ' -DZLIB_ROOT=$NIXUSER_PROFILE ' +
-                   ' -DOPENGL_INCLUDE_DIR=$NIXUSER_PROFILE/include -DOPENGL_gl_LIBRARY=$NIXUSER_PROFILE/lib/libGL.so ' +
-                   ' -DOPENGL_glu_LIBRARY=$NIXUSER_PROFILE/lib/libGLU.so ' +
-                   ' -DJPEG_INCLUDE_DIR=$NIXUSER_PROFILE/include -DJPEG_LIBRARY=$NIXUSER_PROFILE/lib/libjpeg.so ' +
-                   ' -DPNG_PNG_INCLUDE_DIR=$NIXUSER_PROFILE/include -DPNG_LIBRARY=$NIXUSER_PROFILE/lib/libpng.so ' +
-                   ' -DPYTHON_EXECUTABLE=$EBROOTPYTHON/bin/python ' +
-                   ' -DCURL_LIBRARY=$NIXUSER_PROFILE/lib/libcurl.so -DCURL_INCLUDE_DIR=$NIXUSER_PROFILE/include ' +
-                   ' -DCMAKE_SYSTEM_PREFIX_PATH=$NIXUSER_PROFILE ' +
-                   ' -DCMAKE_SKIP_INSTALL_RPATH=ON '
-        },
-        # this version is a fake CMakeMake, it falls back to ./configure
-        ('ROOT','5.34.36'): {},
-        ('mariadb', '10.4.11'): {
-            CMakeMake: ' '
-        },
-
-}
-buildopts_changes = {
-	'OpenBLAS': {'sse3': 'DYNAMIC_ARCH=1',
-                    'avx': 'TARGET=SANDYBRIDGE',
-                    'avx2': 'DYNAMIC_ARCH=1 DYNAMIC_LIST="HASWELL ZEN SKYLAKEX"',
-                    'avx512': 'TARGET=SKYLAKEX'}[os.getenv('RSNT_ARCH')] + ' NUM_THREADS=64'
-}
-
-
-
-def prepend_configopts(ec,changes,key="configopts"):
-    print("Changing configopts from: %s" % ec[key])
-    if isinstance(ec[key], str):
-        configopts = [ec[key]]
-    elif isinstance(ec[key], list):
-        configopts = ec[key]
-    else:
-        return
-    for i in range(len(configopts)):
-        if not changes in configopts[i]:
-            configopts[i] = changes + configopts[i]
-
-    if isinstance(ec[key], str):
-        ec[key] = configopts[0]
-    print("New configopts: %s" % ec[key])
-
-def modify_configopts(ec):
-    if ec['name'] in preconfigopts_changes.keys():
-        print("Changing preconfigopts from: %s" % ec['preconfigopts'])
-        prepend_configopts(ec,preconfigopts_changes[ec['name']])
-
-    if ec['name'] in configopts_changes.keys():
-        print("Changing configopts from: %s" % ec['configopts'])
-        prepend_configopts(ec,configopts_changes[ec['name']])
-
-    c = get_easyblock_class(ec.easyblock, name=ec.name)
-    name_to_be_checked = 'ANY'
-    if (ec['name'],ec['version']) in configopts_changes_based_on_easyblock_class_and_name.keys():
-        name_to_be_checked = (ec['name'],ec['version'])
-
-    for easyblock_class in configopts_changes_based_on_easyblock_class_and_name[name_to_be_checked].keys():
-        if c == easyblock_class or issubclass(c,easyblock_class):
-            print("Class type %s is subclass of %s:" % (str(c),str(easyblock_class)))
-            changes = configopts_changes_based_on_easyblock_class_and_name[name_to_be_checked][easyblock_class]
-            prepend_configopts(ec,changes)
-
-    if ec['name'] in buildopts_changes:
-        print("Changing buildopts for %s" % ec['name'])
-        prepend_configopts(ec,buildopts_changes[ec['name']],'buildopts')
-        if ec['name'] == 'OpenBLAS':
-            prepend_configopts(ec,buildopts_changes[ec['name']],'installopts')
-            prepend_configopts(ec,buildopts_changes[ec['name']],'testopts')
 
 
 def parse_hook(ec, *args, **kwargs):
@@ -230,6 +166,26 @@ def pre_configure_hook(self, *args, **kwargs):
     "Modify configopts (here is more efficient than parse_hook since only called once)"
     orig_enable_templating = self.cfg.enable_templating
     self.cfg.enable_templating = False
-    modify_configopts(self.cfg)
+
+    modify_all_opts(self.cfg, opts_changes)
+
+    # additional changes for CMakeMake EasyBlocks
+    CMakeMake_configopts_changes = (' -DZLIB_ROOT=$NIXUSER_PROFILE ' + 
+        ' -DOPENGL_INCLUDE_DIR=$NIXUSER_PROFILE/include -DOPENGL_gl_LIBRARY=$NIXUSER_PROFILE/lib/libGL.so ' +
+        ' -DOPENGL_glu_LIBRARY=$NIXUSER_PROFILE/lib/libGLU.so ' +
+        ' -DJPEG_INCLUDE_DIR=$NIXUSER_PROFILE/include -DJPEG_LIBRARY=$NIXUSER_PROFILE/lib/libjpeg.so ' +
+        ' -DPNG_PNG_INCLUDE_DIR=$NIXUSER_PROFILE/include -DPNG_LIBRARY=$NIXUSER_PROFILE/lib/libpng.so ' +
+        ' -DPYTHON_EXECUTABLE=$EBROOTPYTHON/bin/python ' +
+        ' -DCURL_LIBRARY=$NIXUSER_PROFILE/lib/libcurl.so -DCURL_INCLUDE_DIR=$NIXUSER_PROFILE/include ' +
+        ' -DCMAKE_SYSTEM_PREFIX_PATH=$NIXUSER_PROFILE ' +
+        ' -DCMAKE_SKIP_INSTALL_RPATH=ON ')
+    c = get_easyblock_class(ec.easyblock, name=ec.name)
+    if c == CMakeMake or issubclass(c,CMakeMake):
+        # skip for those
+        if (ec['name'],ec['version']) in [('ROOT','5.34.36'), ('mariadb', '10.4.11')]:
+            pass
+        else:
+            update_opts(ec, CMakeMake_configopts_changes, 'configopts', PREPEND)
+
     self.cfg.enable_templating = orig_enable_templating
 
