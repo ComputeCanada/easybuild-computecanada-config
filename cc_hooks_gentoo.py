@@ -123,17 +123,6 @@ new_version_mapping_app_specific = {
 }
 
 opts_changes = {
-    'GCCcore': {
-        # build EPREFIX-aware GCCcore
-        'preconfigopts': (
-                    "if [ -f ../gcc/gcc.c ]; then sed -i 's/--sysroot=%R//' ../gcc/gcc.c; " +
-                    "for h in ../gcc/config/*/*linux*.h; do " +
-                    r'sed -i -r "/_DYNAMIC_LINKER/s,([\":])(/lib),\1${EPREFIX}\2,g" $h; done; fi; ',
-                    PREPEND ),
-        'configopts': ("--with-sysroot=$EPREFIX", PREPEND),
-        # remove .la files, as they mess up rpath when libtool is used
-        'postinstallcmds': (["find %(installdir)s -name '*.la' -delete"], REPLACE),
-    },
     'Clang': {
         'preconfigopts': ("""pushd %(builddir)s/llvm-%(version)s.src/tools/clang; """ +
                  # Use ${EPREFIX} as default sysroot
@@ -146,41 +135,16 @@ opts_changes = {
                  """popd; popd ; """,
                  PREPEND)
     },
-    "OpenMPI": {
-        # local customizations for OpenMPI
-        'configopts': ('--enable-shared --with-verbs ' +
-                    '--with-hwloc=external '  + # hwloc support
-                    '--without-usnic ' + # No usnic-via-libfabric
-                    # rpath is already done by ld wrapper
-                    '--disable-wrapper-runpath --disable-wrapper-rpath ' +
-                    '--with-munge ' + #enable Munge in PMIx
-                    '--with-slurm --with-pmi=$EBROOTGENTOO ' +
-                    '--enable-mpi-cxx ' +
-                    '--with-hcoll ' +
-                    '--disable-show-load-errors-by-default ' +
-                    '--enable-mpi1-compatibility ' +
-                    # enumerate all mca's that should be compiled as plugins
-                    # (only those that link to system-specific
-                    # libraries (lustre, fabric, and scheduler)
-                    '--enable-mca-dso=common-ucx,common-verbs,event-external,' +
-                    'atomic-ucx,btl-openib,btl-uct,' +
-                    'coll-hcoll,ess-tm,fs-lustre,mtl-ofi,mtl-psm,mtl-psm2,osc-ucx,' +
-                    'plm-tm,pmix-s1,pmix-s2,pml-ucx,pnet-opa,psec-munge,' +
-                    'ras-tm,spml-ucx,sshmem-ucx,hwloc-external',
-                    PREPEND),
-        'postinstallcmds': (['rm %(installdir)s/lib/*.la %(installdir)s/lib/*/*.la'], REPLACE),
-    },
-    'UCX': {
-        # local customizations for UCX
-        'configopts': ("--with-rdmacm=$EBROOTGENTOO --with-verbs=$EBROOTGENTOO --with-knem=$EBROOTGENTOO ", PREPEND)
-    },
-    'OpenBLAS': {
-        **dict.fromkeys(['buildopts','installopts','testopts'],
-                        ({'sse3': 'DYNAMIC_ARCH=1',
-                        'avx': 'TARGET=SANDYBRIDGE',
-                        'avx2': 'DYNAMIC_ARCH=1 DYNAMIC_LIST="HASWELL ZEN SKYLAKEX"',
-                        'avx512': 'TARGET=SKYLAKEX'}[os.getenv('RSNT_ARCH')] + ' NUM_THREADS=64',
-                        PREPEND))
+    'GCCcore': {
+        # build EPREFIX-aware GCCcore
+        'preconfigopts': (
+                    "if [ -f ../gcc/gcc.c ]; then sed -i 's/--sysroot=%R//' ../gcc/gcc.c; " +
+                    "for h in ../gcc/config/*/*linux*.h; do " +
+                    r'sed -i -r "/_DYNAMIC_LINKER/s,([\":])(/lib),\1${EPREFIX}\2,g" $h; done; fi; ',
+                    PREPEND ),
+        'configopts': ("--with-sysroot=$EPREFIX", PREPEND),
+        # remove .la files, as they mess up rpath when libtool is used
+        'postinstallcmds': (["find %(installdir)s -name '*.la' -delete"], REPLACE),
     },
     'iccifort': {
         'modaltsoftname': ('intel', REPLACE),
@@ -216,7 +180,7 @@ prepend_path("INTEL_LICENSE_FILE", pathJoin("/cvmfs/soft.computecanada.ca/config
 if isloaded("imkl") then
     always_load("imkl/2020.1.217")
 end
-""", REPLACE),
+""", APPEND),
     },
     'impi': {
         'modaltsoftname': ('intelmpi', REPLACE),
@@ -230,11 +194,47 @@ end
                 "patchelf --set-rpath $EBROOTUCX/lib --force-rpath %(installdir)s/intel64/libfabric/lib/prov/libmlx-fi.so"
             ], REPLACE),
     },
+    'OpenBLAS': {
+        **dict.fromkeys(['buildopts','installopts','testopts'],
+                        ({'sse3': 'DYNAMIC_ARCH=1',
+                        'avx': 'TARGET=SANDYBRIDGE',
+                        'avx2': 'DYNAMIC_ARCH=1 DYNAMIC_LIST="HASWELL ZEN SKYLAKEX"',
+                        'avx512': 'TARGET=SKYLAKEX'}[os.getenv('RSNT_ARCH')] + ' NUM_THREADS=64',
+                        PREPEND))
+    },
+    "OpenMPI": {
+        # local customizations for OpenMPI
+        'configopts': ('--enable-shared --with-verbs ' +
+                    '--with-hwloc=external '  + # hwloc support
+                    '--without-usnic ' + # No usnic-via-libfabric
+                    # rpath is already done by ld wrapper
+                    '--disable-wrapper-runpath --disable-wrapper-rpath ' +
+                    '--with-munge ' + #enable Munge in PMIx
+                    '--with-slurm --with-pmi=$EBROOTGENTOO ' +
+                    '--enable-mpi-cxx ' +
+                    '--with-hcoll ' +
+                    '--disable-show-load-errors-by-default ' +
+                    '--enable-mpi1-compatibility ' +
+                    # enumerate all mca's that should be compiled as plugins
+                    # (only those that link to system-specific
+                    # libraries (lustre, fabric, and scheduler)
+                    '--enable-mca-dso=common-ucx,common-verbs,event-external,' +
+                    'atomic-ucx,btl-openib,btl-uct,' +
+                    'coll-hcoll,ess-tm,fs-lustre,mtl-ofi,mtl-psm,mtl-psm2,osc-ucx,' +
+                    'plm-tm,pmix-s1,pmix-s2,pml-ucx,pnet-opa,psec-munge,' +
+                    'ras-tm,spml-ucx,sshmem-ucx,hwloc-external',
+                    PREPEND),
+        'postinstallcmds': (['rm %(installdir)s/lib/*.la %(installdir)s/lib/*/*.la'], REPLACE),
+    },
     'Python': {
         'modextrapaths': ({'PYTHONPATH': ['/cvmfs/soft.computecanada.ca/easybuild/python/site-packages']}, REPLACE),
         'allow_prepend_abs_path': (True, REPLACE),
         'prebuildopts': ('sed -i -e "s;/usr;$EBROOTGENTOO;g" setup.py && ', REPLACE),
         'installopts': (' && /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_path %(installdir)s/lib --any_interpreter', REPLACE),
+    },
+    'UCX': {
+        # local customizations for UCX
+        'configopts': ("--with-rdmacm=$EBROOTGENTOO --with-verbs=$EBROOTGENTOO --with-knem=$EBROOTGENTOO ", PREPEND)
     },
 }
 
