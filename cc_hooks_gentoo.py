@@ -130,7 +130,9 @@ opts_changes = {
                     "for h in ../gcc/config/*/*linux*.h; do " +
                     r'sed -i -r "/_DYNAMIC_LINKER/s,([\":])(/lib),\1${EPREFIX}\2,g" $h; done; fi; ',
                     PREPEND ),
-        'configopts': ("--with-sysroot=$EPREFIX", PREPEND)
+        'configopts': ("--with-sysroot=$EPREFIX", PREPEND),
+        # remove .la files, as they mess up rpath when libtool is used
+        'postinstallcmds': (["find %(installdir)s -name '*.la' -delete"], REPLACE),
     },
     'Clang': {
         'preconfigopts': ("""pushd %(builddir)s/llvm-%(version)s.src/tools/clang; """ +
@@ -165,7 +167,8 @@ opts_changes = {
                     'coll-hcoll,ess-tm,fs-lustre,mtl-ofi,mtl-psm,mtl-psm2,osc-ucx,' +
                     'plm-tm,pmix-s1,pmix-s2,pml-ucx,pnet-opa,psec-munge,' +
                     'ras-tm,spml-ucx,sshmem-ucx,hwloc-external',
-                    PREPEND)
+                    PREPEND),
+        'postinstallcmds': (['rm %(installdir)s/lib/*.la %(installdir)s/lib/*/*.la'], REPLACE),
     },
     'UCX': {
         # local customizations for UCX
@@ -179,34 +182,12 @@ opts_changes = {
                         'avx512': 'TARGET=SKYLAKEX'}[os.getenv('RSNT_ARCH')] + ' NUM_THREADS=64',
                         PREPEND))
     },
-}
-
-compiler_modluafooter = """
-prepend_path("MODULEPATH", pathJoin("/cvmfs/soft.computecanada.ca/easybuild/modules/%s", os.getenv("RSNT_ARCH"), "%s"))
-if isDir(pathJoin(os.getenv("HOME"), ".local/easybuild/modules/%s", os.getenv("RSNT_ARCH"), "Compiler/%s")) then
-    prepend_path("MODULEPATH", pathJoin(os.getenv("HOME"), ".local/easybuild/modules/%s", os.getenv("RSNT_ARCH"), "%s"))
-end
-
-add_property("type_","tools")
-"""
-
-intel_modluafooter = """
-prepend_path("INTEL_LICENSE_FILE", pathJoin("/cvmfs/soft.computecanada.ca/config/licenses/intel", os.getenv("CC_CLUSTER") .. ".lic"))
-
-if isloaded("imkl") then
-    always_load("imkl/2020.1.217")
-end
-"""
-
-mpi_modluafooter = """
-assert(loadfile("/cvmfs/soft.computecanada.ca/config/lmod/%s_custom.lua"))("%%(version_major_minor)s")
-
-add_property("type_","mpi")
-family("mpi")
-"""
-
-#See compilers_and_libraries_2020.1.217/licensing/compiler/en/credist.txt
-intel_postinstallcmds = '''
+    'iccifort': {
+        'modaltsoftname': ('intel', REPLACE),
+        'skip_license_file_in_module': (True, REPLACE),
+        'license_file': ("/cvmfs/soft.computecanada.ca/config/licenses/intel/computecanada.lic", REPLACE),
+        #See compilers_and_libraries_2020.1.217/licensing/compiler/en/credist.txt
+        'postinstallcmds': (['''
     echo "--sysroot=$EPREFIX" > %(installdir)s/compilers_and_libraries_%(version)s/linux/bin/intel64/icc.cfg
     echo "--sysroot=$EPREFIX" > %(installdir)s/compilers_and_libraries_%(version)s/linux/bin/intel64/icpc.cfg
     /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s
@@ -228,7 +209,52 @@ intel_postinstallcmds = '''
        fi
      done
      ln -s compilers_and_libraries_%(version)s/linux/compiler/lib $publicdir/lib
-'''
+'''], REPLACE),
+        "modluafooter": ("""
+prepend_path("INTEL_LICENSE_FILE", pathJoin("/cvmfs/soft.computecanada.ca/config/licenses/intel", os.getenv("CC_CLUSTER") .. ".lic"))
+
+if isloaded("imkl") then
+    always_load("imkl/2020.1.217")
+end
+""", REPLACE),
+    },
+    'impi': {
+        'modaltsoftname': ('intelmpi', REPLACE),
+        'set_mpi_wrappers_all': (True, REPLACE),
+        # Fix mpirun from IntelMPI to explicitly unset I_MPI_PMI_LIBRARY
+        # it can only be used with srun.
+        'postinstallcmds': ([
+                "sed -i 's@\\(#!/bin/sh.*\\)$@\\1\\nunset I_MPI_PMI_LIBRARY@' %(installdir)s/intel64/bin/mpirun",
+                "/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/intel64/bin --add_path='$ORIGIN/../lib/release'",
+                "for dir in release release_mt debug debug_mt; do /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/intel64/lib/$dir --add_path='$ORIGIN/../../libfabric/lib'; done",
+                "patchelf --set-rpath $EBROOTUCX/lib --force-rpath %(installdir)s/intel64/libfabric/lib/prov/libmlx-fi.so"
+            ], REPLACE),
+    },
+    'Python': {
+        'modextrapaths': ({'PYTHONPATH': ['/cvmfs/soft.computecanada.ca/easybuild/python/site-packages']}, REPLACE),
+        'allow_prepend_abs_path': (True, REPLACE),
+        'prebuildopts': ('sed -i -e "s;/usr;$EBROOTGENTOO;g" setup.py && ', REPLACE),
+        'installopts': (' && /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_path %(installdir)s/lib --any_interpreter', REPLACE),
+    },
+}
+
+compiler_modluafooter = """
+prepend_path("MODULEPATH", pathJoin("/cvmfs/soft.computecanada.ca/easybuild/modules/%s", os.getenv("RSNT_ARCH"), "%s"))
+if isDir(pathJoin(os.getenv("HOME"), ".local/easybuild/modules/%s", os.getenv("RSNT_ARCH"), "Compiler/%s")) then
+    prepend_path("MODULEPATH", pathJoin(os.getenv("HOME"), ".local/easybuild/modules/%s", os.getenv("RSNT_ARCH"), "%s"))
+end
+
+add_property("type_","tools")
+"""
+
+
+mpi_modluafooter = """
+assert(loadfile("/cvmfs/soft.computecanada.ca/config/lmod/%s_custom.lua"))("%%(version_major_minor)s")
+
+add_property("type_","mpi")
+family("mpi")
+"""
+
 
 # modules with both -mpi and no-mpi varieties
 mpi_modaltsoftname = ['fftw', 'hdf5', 'netcdf-c++4', 'netcdf-c++', 'netcdf-fortran', 'netcdf']
@@ -267,53 +293,31 @@ def parse_hook(ec, *args, **kwargs):
         ec['multi_deps_load_default'] = False
 
     moduleclass = ec.get('moduleclass','')
-    if moduleclass == 'compiler':
-        year = os.environ['EBVERSIONGENTOO']
-        name = ec['name'].lower()
+    year = os.environ['EBVERSIONGENTOO']
+    name = ec['name'].lower()
+    if moduleclass == 'compiler' and not name == 'gcccore':
         if name == 'iccifort':
             name = 'intel'
-        if name == 'gcccore':
-            # remove .la files, as they mess up rpath when libtool is used
-            ec['postinstallcmds'] = ["find %(installdir)s -name '*.la' -delete"]
         else:
             comp = os.path.join('Compiler', name + ec['version'][:ec['version'].find('.')])
             ec['modluafooter'] = (compiler_modluafooter%(year,comp,year,comp,year,comp)
                                   + 'family("compiler")\n')
-            if name == 'intel':
-                # set via intel_modluafooter
-                ec['skip_license_file_in_module'] = True
-                ec['modluafooter'] = intel_modluafooter + ec['modluafooter']
-                ec['modaltsoftname'] = name
-                ec['license_file'] = "/cvmfs/soft.computecanada.ca/config/licenses/intel/computecanada.lic"
-                ec['postinstallcmds'] = [intel_postinstallcmds]
     elif moduleclass == 'mpi':
-        name = ec['name'].lower()
         if name == 'impi':
             name = 'intelmpi'
-        ec['modluafooter'] = mpi_modluafooter%name
         if name == 'openmpi':
-            ec['postinstallcmds'] = ['rm %(installdir)s/lib/*.la %(installdir)s/lib/*/*.la']
             ec['dependencies'].append(('libfabric', '1.10.1'))
-        elif name == 'intelmpi':
-            ec['modaltsoftname'] = name
-            ec['set_mpi_wrappers_all'] = True
-            # Fix mpirun from IntelMPI to explicitly unset I_MPI_PMI_LIBRARY
-            # it can only be used with srun.
-            ec['postinstallcmds'] = [
-                "sed -i 's@\\(#!/bin/sh.*\\)$@\\1\\nunset I_MPI_PMI_LIBRARY@' %(installdir)s/intel64/bin/mpirun",
-                "/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/intel64/bin --add_path='$ORIGIN/../lib/release'",
-                "for dir in release release_mt debug debug_mt; do /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/intel64/lib/$dir --add_path='$ORIGIN/../../libfabric/lib'; done",
-                "patchelf --set-rpath $EBROOTUCX/lib --force-rpath %(installdir)s/intel64/libfabric/lib/prov/libmlx-fi.so"
-            ]
+        ec['modluafooter'] = mpi_modluafooter%name
     elif ec['name'] == 'CUDAcore':
         splitversion = ec['version'].split('.')
         if int(splitversion[0]) < 11:
             ec['builddependencies'] = [('GCCcore', '8.4.0')]
-        year = os.environ['EBVERSIONGENTOO']
         comp = os.path.join('CUDA', 'cuda' + '.'.join(splitversion[:2]))
         ec['modluafooter'] = compiler_modluafooter%(year,comp,year,comp,year,comp)
+
     if moduleclass == 'toolchain' or ec['name'] == 'GCCcore':
         ec['hidden'] = True
+
     # add -mpi to module name for various modules with both -mpi and no-mpi varieties
     toolchain = ec.get('toolchain')
     if (ec['name'].lower() in mpi_modaltsoftname and
@@ -336,10 +340,6 @@ def parse_hook(ec, *args, **kwargs):
             if ext[0] in python_extensions_to_keep:
                 new_ext_list += [ext]
         ec['exts_list'] = new_ext_list
-        ec['modextrapaths'] = {'PYTHONPATH': ['/cvmfs/soft.computecanada.ca/easybuild/python/site-packages']}
-        ec['allow_prepend_abs_path'] = True
-        ec['prebuildopts'] = 'sed -i -e "s;/usr;$EBROOTGENTOO;g" setup.py && '
-        ec['installopts'] = ' && /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_path %(installdir)s/lib --any_interpreter'
 
 def pre_configure_hook(self, *args, **kwargs):
     "Modify configopts (here is more efficient than parse_hook since only called once)"
