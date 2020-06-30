@@ -21,25 +21,6 @@ new_version_mapping = {
                 'ALL':('dummy','dummy'),
             }
         },
-        'ALL_GENTOO': {
-            'pkg_mapping': {
-                'JasPer': '2.0.16',
-                ('Eigen','ANY'): ('3.3.7',None),
-            },
-            'tc_mapping': {
-                'ALL':('system','system'),
-            }
-        },
-        (('GCCcore', '9.3.0'), ('GCC', '9.3.0')): {
-            'pkg_mapping': {
-                'Qt5': '5.12.8',
-                ('Python','2.7.14','ANY'): '2.7',
-                ('Python',('3.5.4','3.7.0','3.7.2','3.7.4'),'ANY'): '3.7',
-            },
-            'tc_mapping': {
-                'ALL': ('GCCcore', '9.3.0')
-            }
-        },
         (('gmkl','2018.3'),('iimkl','2018.3'),
          ('gomkl','2018.3.312'),('iomkl','2018.3.312'),
          ('gomklc','2018.3.312.100'),('iomklc','2018.3.312.100')): {
@@ -111,47 +92,6 @@ new_version_mapping = {
                 ):('GCC','8.3.0'),
             }
         },
-        (('iccifort','2020.1.217'),('GCC','9.3.0'),
-         ('gmkl','2020a'),('iimkl','2020a'),
-         ('gompi','2020a'),('iompi','2020a'),
-         ('gomkl','2020a'),('iomkl','2020a')): {
-            'pkg_mapping': {
-                'BLAST+': '2.10.0',
-                ('Boost',('1.54.0','1.60.0','1.65.1','1.66.0','1.68.0'),None): '1.72.0',
-                'Bowtie2': '2.3.5.1',
-                'BUFRLIB': '11.3.0',
-                ('CGAL','4.9'): '4.14.3',
-                'CLHEP': '2.4.1.3',
-                'ecCodes': '2.16.0',
-                ('FFTW','ANY',None): '3.3.8',
-                'GDAL': ('3.0.4',None),
-                ('GEOS',('3.4.3','3.6.1'),None): ('3.8.0',None),
-                ('GSL',('2.2.1', '2.3', '2.4', '2.5')) : '2.6' ,
-                ('HDF5','ANY',None): '1.10.6',
-                'HTSlib': '1.10.2',
-                'ITK': '5.0.1',
-                ('libxc','3.0.0'): '3.0.0',
-                ('libxc',('4.2.1', '4.2.3')): '4.3.4',
-                'MAFFT': '7.450',
-                'Mono': '6.8.0.105',
-                'muParser': '2.2.6',
-                ('netCDF','ANY',None): '4.7.4',
-                ('netCDF-C++4','ANY',None):'4.3.1',
-                ('netCDF-Fortran','ANY',None):'4.5.2',
-                'NLopt': '2.6.1',
-                ('OpenImageIO',('1.8.7','1.8.15')): '2.1.10',
-                'OSL': '1.10.9',
-                'PRANK': '170427',
-                ('SAMtools',('1.3.1','1.5','1.8','1.9','1.10')): '1.10',
-                ('SAMtools',('0.1.17','0.1.20')): '0.1.20',
-                ('Trinity','2.4.0','2.8.4'):'2.9.1',
-                'UDUNITS': '2.2.26',
-            },
-            'tc_mapping': {
-                (('iccifort','2020.1.217'),('iimkl','2020a'),('iompi','2020a'),('iomkl','2020a')): ('iccifort','2020.1.217'),
-                (('GCC','9.3.0'),('gmkl','2020a'),('gompi','2020a'),('gomkl','2020a')): ('GCC', '9.3.0')
-            }
-        },
         (('gompi','2018.3.312'),('iompi','2018.3.312'),
          ('gomkl','2018.3.312'),('iomkl','2018.3.312'),
          ('gompic','2018.3.312.100'),('iompic','2018.3.312.100'),
@@ -166,23 +106,6 @@ new_version_mapping = {
             'tc_mapping': {
                 (('gompi','2018.3.312'),('gomkl','2018.3.312'),('gompic','2018.3.312.100'),('gomklc','2018.3.312.100')):('gompi','2018.3.312'),
                 (('iompi','2018.3.312'),('iomkl','2018.3.312'),('iompic','2018.3.312.100'),('iomklc','2018.3.312.100')):('iompi','2018.3.312'),
-            }
-        },
-        (('gompi','2020a'),('iompi','2020a'),
-         ('gomkl','2020a'),('iomkl','2020a')): {
-            'pkg_mapping': {
-                ('Boost','ANY','-mpi'): '1.72.0',
-                ('FFTW','ANY','-mpi'): '3.3.8',
-                ('HDF5','1.8.18','-mpi'): '1.10.6',
-                ('HDF5','1.10.3','-mpi'): '1.10.6',
-                ('netCDF','ANY','-mpi'): '4.7.3',
-                ('netCDF-C++4','ANY','-mpi'):'4.3.1',
-                ('netCDF-Fortran','ANY','-mpi'):'4.5.2',
-                'SCOTCH':'6.0.9',
-            },
-            'tc_mapping': {
-                (('gompi','2020a'),('gomkl','2020a')):('gompi','2020a'),
-                (('iompi','2020a'),('iomkl','2020a')):('iompi','2020a'),
             }
         },
         (('gomkl','2018.3.312'),('iomkl','2018.3.312'),
@@ -200,20 +123,6 @@ new_version_mapping = {
                 (('iomkl','2018.3.312'),('iomklc','2018.3.312.100')):('iomkl','2018.3.312'),
             }
         },
-        (('gomkl','2020a'),('iomkl','2020a')): {
-            'pkg_mapping': {
-                ('ESMF',('7.0.1','7.1.0r')):'8.0.0',
-                ('Hypre','ANY'):'2.18.2',
-                ('PLUMED',('2.3.0','2.3.7')):'2.3.8',
-                ('PLUMED',('2.4.2','2.4.3')):'2.4.7',
-                ('PETSc','ANY','ANY'): '3.12.4',
-                ('Trilinos','12.10.1','ANY'): ('12.10.1',None),
-            },
-            'tc_mapping': {
-                (('gomkl','2020a')):('gomkl','2020a'),
-                (('iomkl','2020a')):('iomkl','2020a'),
-            }
-        }
 }
 new_version_mapping_app_specific = {
         ('BLASR','blasr-libcpp'):{
@@ -224,26 +133,6 @@ new_version_mapping_app_specific = {
                 'tc_mapping': {
                     (('iccifort','2018.3')):('iccifort','2018.3'),
                     (('GCC','7.3.0')):('GCC','7.3.0'),
-                }
-            },
-        },
-        ('intel','gimkl','iomkl','gomkl'):{
-            'ALL': {
-                'pkg_mapping': {
-                    ('imkl','2020.1.217'): '2020.1.217',
-                },
-                'tc_mapping': {
-                    (('iimpi','2020a')):('system','system'),
-                }
-            },
-        },
-        ('foss'):{
-            'ALL': {
-                'pkg_mapping': {
-                    ('FFTW','3.3.8'): '3.3.8',
-                },
-                'tc_mapping': {
-                    (('system','system')):('GCC','9.3.0'),
                 }
             },
         },
