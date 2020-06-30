@@ -472,169 +472,16 @@ def modify_configopts(ec):
             prepend_configopts(ec,buildopts_changes[ec['name']],'installopts')
             prepend_configopts(ec,buildopts_changes[ec['name']],'testopts')
 
-compiler_modluafooter = """
-prepend_path("MODULEPATH", pathJoin("/cvmfs/soft.computecanada.ca/easybuild/modules/%s", os.getenv("RSNT_ARCH"), "%s"))
-if isDir(pathJoin(os.getenv("HOME"), ".local/easybuild/modules/%s", os.getenv("RSNT_ARCH"), "Compiler/%s")) then
-    prepend_path("MODULEPATH", pathJoin(os.getenv("HOME"), ".local/easybuild/modules/%s", os.getenv("RSNT_ARCH"), "%s"))
-end
-
-add_property("type_","tools")
-"""
-
-intel_modluafooter = """
-prepend_path("INTEL_LICENSE_FILE", pathJoin("/cvmfs/soft.computecanada.ca/config/licenses/intel", os.getenv("CC_CLUSTER") .. ".lic"))
-
-if isloaded("imkl") then
-    always_load("imkl/2020.1.217")
-end
-"""
-
-mpi_modluafooter = """
-assert(loadfile("/cvmfs/soft.computecanada.ca/config/lmod/%s_custom.lua"))("%%(version_major_minor)s")
-
-add_property("type_","mpi")
-family("mpi")
-"""
-
-#See compilers_and_libraries_2020.1.217/licensing/compiler/en/credist.txt
-intel_postinstallcmds = '''
-    echo "--sysroot=$EPREFIX" > %(installdir)s/compilers_and_libraries_%(version)s/linux/bin/intel64/icc.cfg
-    echo "--sysroot=$EPREFIX" > %(installdir)s/compilers_and_libraries_%(version)s/linux/bin/intel64/icpc.cfg
-    /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s
-    /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/compilers_and_libraries_%(version)s/linux/compiler/lib --add_origin
-    patchelf --set-rpath '$ORIGIN/../lib:$ORIGIN/../compiler/lib/intel64' %(installdir)s/compilers_and_libraries_%(version)s/linux/lib/LLVMgold.so
-    installdir=%(installdir)s
-    publicdir=${installdir/restricted.computecanada.ca/soft.computecanada.ca}
-    rm -rf $publicdir
-    for i in $(grep -h "compiler.*\.so" $installdir/compilers_and_libraries_%(version)s/licensing/compiler/en/[cf]redist.txt | cut -c 13-); do
-       if [ -f $installdir/$i ]; then
-         mkdir -p $(dirname $publicdir/$i)
-         cp -p $installdir/$i $publicdir/$i
-       fi
-     done
-     cd $installdir
-     for i in compilers_and_libraries_%(version)s/linux/compiler/lib/*; do
-       if [ -L $i ]; then
-         cp -a $i $publicdir/$i
-       fi
-     done
-     ln -s compilers_and_libraries_%(version)s/linux/compiler/lib $publicdir/lib
-'''
-
-# modules with both -mpi and no-mpi varieties
-mpi_modaltsoftname = ['fftw', 'hdf5', 'netcdf-c++4', 'netcdf-c++', 'netcdf-fortran', 'netcdf']
-
-def drop_dependencies(ec, param):
-    if 'EBROOTGENTOO' in os.environ:
-        # dictionary in format <name>:<version under which to drop>
-        to_drop = {
-                'CMake': 'ALL',
-                'ICU': 'ALL',
-                'libxslt': 'ALL',
-                'libzip': 'ALL',
-                'Ninja': 'ALL',
-                'PyQt5': 'ALL',
-                'SQLite': 'ALL',
-        }
-        # iterate over a copy
-        for dep in ec[param][:]:
-            dep_list = list(dep)
-            if dep_list[0] == ec.name:
-                continue
-            if dep_list[0] in to_drop:
-                if to_drop[dep_list[0]] == 'ALL' or LooseVersion(dep_list[1]) < LooseVersion(to_drop[dep_list[0]]):
-                    print("Dropped %s, %s from %s" % (dep_list[0],dep_list[1],param))
-                    ec[param].remove(dep)
-
-
 
 def parse_hook(ec, *args, **kwargs):
     """Example parse hook to inject a patch file for a fictive software package named 'Example'."""
     modify_dependencies(ec,'dependencies')
     modify_dependencies(ec,'builddependencies')
-    drop_dependencies(ec, 'dependencies')
-    drop_dependencies(ec, 'builddependencies')
 
     # always disable multi_deps_load_default when multi_deps is used
     if ec.get('multi_deps', None): 
         ec['multi_deps_load_default'] = False
 
-    if 'EBROOTGENTOO' not in os.environ:
-        return
-    moduleclass = ec.get('moduleclass','')
-    if moduleclass == 'compiler':
-        year = os.environ['EBVERSIONGENTOO']
-        name = ec['name'].lower()
-        if name == 'iccifort':
-            name = 'intel'
-        if name == 'gcccore':
-            # remove .la files, as they mess up rpath when libtool is used
-            ec['postinstallcmds'] = ["find %(installdir)s -name '*.la' -delete"]
-        else:
-            comp = os.path.join('Compiler', name + ec['version'][:ec['version'].find('.')])
-            ec['modluafooter'] = (compiler_modluafooter%(year,comp,year,comp,year,comp)
-                                  + 'family("compiler")\n')
-            if name == 'intel':
-                # set via intel_modluafooter
-                ec['skip_license_file_in_module'] = True
-                ec['modluafooter'] = intel_modluafooter + ec['modluafooter']
-                ec['modaltsoftname'] = name
-                ec['license_file'] = "/cvmfs/soft.computecanada.ca/config/licenses/intel/computecanada.lic"
-                ec['postinstallcmds'] = [intel_postinstallcmds]
-    elif moduleclass == 'mpi':
-        name = ec['name'].lower()
-        if name == 'impi':
-            name = 'intelmpi'
-        ec['modluafooter'] = mpi_modluafooter%name
-        if name == 'openmpi':
-            ec['postinstallcmds'] = ['rm %(installdir)s/lib/*.la %(installdir)s/lib/*/*.la']
-            ec['dependencies'].append(('libfabric', '1.10.1'))
-        elif name == 'intelmpi':
-            ec['modaltsoftname'] = name
-            ec['set_mpi_wrappers_all'] = True
-            # Fix mpirun from IntelMPI to explicitly unset I_MPI_PMI_LIBRARY
-            # it can only be used with srun.
-            ec['postinstallcmds'] = [
-                "sed -i 's@\\(#!/bin/sh.*\\)$@\\1\\nunset I_MPI_PMI_LIBRARY@' %(installdir)s/intel64/bin/mpirun",
-                "/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/intel64/bin --add_path='$ORIGIN/../lib/release'",
-                "for dir in release release_mt debug debug_mt; do /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/intel64/lib/$dir --add_path='$ORIGIN/../../libfabric/lib'; done",
-                "patchelf --set-rpath $EBROOTUCX/lib --force-rpath %(installdir)s/intel64/libfabric/lib/prov/libmlx-fi.so"
-            ]
-    elif ec['name'] == 'CUDAcore':
-        splitversion = ec['version'].split('.')
-        if int(splitversion[0]) < 11:
-            ec['builddependencies'] = [('GCCcore', '8.4.0')]
-        year = os.environ['EBVERSIONGENTOO']
-        comp = os.path.join('CUDA', 'cuda' + '.'.join(splitversion[:2]))
-        ec['modluafooter'] = compiler_modluafooter%(year,comp,year,comp,year,comp)
-    if moduleclass == 'toolchain' or ec['name'] == 'GCCcore':
-        ec['hidden'] = True
-    # add -mpi to module name for various modules with both -mpi and no-mpi varieties
-    toolchain = ec.get('toolchain')
-    if (ec['name'].lower() in mpi_modaltsoftname and
-        ((toolchain and toolchain['name'].endswith('mpi')) or ec['toolchainopts'].get('usempi'))):
-        ec['modaltsoftname'] = ec['name'].lower() + '-mpi'
-
-    # for Python, keep only specific extensions, and add specific paths
-    python_extensions_to_keep = ['setuptools', 'pip', 'wheel', 'virtualenv', 'appdirs', 'distlib', 'filelock',
-                                 'six']
-    if ec['name'].lower() == 'python':
-        if ec['version'].startswith('2.7') or ec['version'].startswith('3.6') or ec['version'].startswith('3.7'):
-            python_extensions_to_keep += ['importlib_metadata', 'importlib_resources', 'zipp']
-        if ec['version'].startswith('2.7'):
-            python_extensions_to_keep += ['contextlib2', 'pathlib2', 'configparser', 'scandir',
-                                          'singledispatch', 'typing']
-        if ec['version'].startswith('3.6') or ec['version'].startswith('3.7'):
-            python_extensions_to_keep += ['more-itertools']
-        new_ext_list = []
-        for ext in ec['exts_list']:
-            if ext[0] in python_extensions_to_keep:
-                new_ext_list += [ext]
-        ec['exts_list'] = new_ext_list
-        ec['modextrapaths'] = {'PYTHONPATH': ['/cvmfs/soft.computecanada.ca/easybuild/python/site-packages']}
-        ec['allow_prepend_abs_path'] = True
-        ec['prebuildopts'] = 'sed -i -e "s;/usr;$EBROOTGENTOO;g" setup.py && '
-        ec['installopts'] = ' && /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_path %(installdir)s/lib --any_interpreter'
 
 def pre_configure_hook(self, *args, **kwargs):
     "Modify configopts (here is more efficient than parse_hook since only called once)"
@@ -643,12 +490,3 @@ def pre_configure_hook(self, *args, **kwargs):
     modify_configopts(self.cfg)
     self.cfg.enable_templating = orig_enable_templating
 
-def post_module_hook(self, *args, **kwargs):
-    "Modify GCCcore toolchain to system toolchain for ebfiles_repo only"
-    # So we get name-version.eb there, but the toolchain inside does not change
-    if 'EBROOTGENTOO' not in os.environ:
-        # only Gentoo for now
-        return
-    toolchain = self.cfg.get('toolchain')
-    if toolchain and toolchain['name'] == 'GCCcore':
-        self.cfg['toolchain'] = EASYCONFIG_CONSTANTS['SYSTEM'][0]

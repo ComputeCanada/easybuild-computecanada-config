@@ -525,27 +525,25 @@ intel_postinstallcmds = '''
 mpi_modaltsoftname = ['fftw', 'hdf5', 'netcdf-c++4', 'netcdf-c++', 'netcdf-fortran', 'netcdf']
 
 def drop_dependencies(ec, param):
-    if 'EBROOTGENTOO' in os.environ:
-        # dictionary in format <name>:<version under which to drop>
-        to_drop = {
-                'CMake': 'ALL',
-                'ICU': 'ALL',
-                'libxslt': 'ALL',
-                'libzip': 'ALL',
-                'Ninja': 'ALL',
-                'PyQt5': 'ALL',
-                'SQLite': 'ALL',
-        }
-        # iterate over a copy
-        for dep in ec[param][:]:
-            dep_list = list(dep)
-            if dep_list[0] == ec.name:
-                continue
-            if dep_list[0] in to_drop:
-                if to_drop[dep_list[0]] == 'ALL' or LooseVersion(dep_list[1]) < LooseVersion(to_drop[dep_list[0]]):
-                    print("Dropped %s, %s from %s" % (dep_list[0],dep_list[1],param))
-                    ec[param].remove(dep)
-
+    # dictionary in format <name>:<version under which to drop>
+    to_drop = {
+            'CMake': 'ALL',
+            'ICU': 'ALL',
+            'libxslt': 'ALL',
+            'libzip': 'ALL',
+            'Ninja': 'ALL',
+            'PyQt5': 'ALL',
+            'SQLite': 'ALL',
+    }
+    # iterate over a copy
+    for dep in ec[param][:]:
+        dep_list = list(dep)
+        if dep_list[0] == ec.name:
+            continue
+        if dep_list[0] in to_drop:
+            if to_drop[dep_list[0]] == 'ALL' or LooseVersion(dep_list[1]) < LooseVersion(to_drop[dep_list[0]]):
+                print("Dropped %s, %s from %s" % (dep_list[0],dep_list[1],param))
+                ec[param].remove(dep)
 
 
 def parse_hook(ec, *args, **kwargs):
@@ -559,8 +557,6 @@ def parse_hook(ec, *args, **kwargs):
     if ec.get('multi_deps', None): 
         ec['multi_deps_load_default'] = False
 
-    if 'EBROOTGENTOO' not in os.environ:
-        return
     moduleclass = ec.get('moduleclass','')
     if moduleclass == 'compiler':
         year = os.environ['EBVERSIONGENTOO']
@@ -646,9 +642,6 @@ def pre_configure_hook(self, *args, **kwargs):
 def post_module_hook(self, *args, **kwargs):
     "Modify GCCcore toolchain to system toolchain for ebfiles_repo only"
     # So we get name-version.eb there, but the toolchain inside does not change
-    if 'EBROOTGENTOO' not in os.environ:
-        # only Gentoo for now
-        return
     toolchain = self.cfg.get('toolchain')
     if toolchain and toolchain['name'] == 'GCCcore':
         self.cfg['toolchain'] = EASYCONFIG_CONSTANTS['SYSTEM'][0]
