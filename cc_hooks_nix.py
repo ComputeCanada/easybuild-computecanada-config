@@ -294,10 +294,8 @@ def replace_dependencies(ec, tc, param, deps_mapping):
 def modify_dependencies(ec,param):
     for tc in new_version_mapping:
         deps_mapping = new_version_mapping[tc]
-        if tc == 'ALL' or tc == 'ALL_GENTOO':
-            if ((tc == 'ALL_GENTOO' and "EBROOTGENTOO" in os.environ) or
-                 tc == 'ALL' and "EBROOTGENTOO" not in os.environ):
-                replace_dependencies(ec,'ALL',param,deps_mapping)
+        if tc == 'ALL':
+            replace_dependencies(ec,'ALL',param,deps_mapping)
         else:
             replace_dependencies(ec,tc,param,deps_mapping)
 

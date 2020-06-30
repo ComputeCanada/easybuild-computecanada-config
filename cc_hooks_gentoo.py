@@ -8,21 +8,6 @@ import os
 new_version_mapping = {
         'ALL': {
             'pkg_mapping': {
-                ('Perl', '5.22.2'): ('5.22.4',None),
-                'JasPer': '1.900.1',
-                'QScintilla':'2.10.7',
-                'QJson':'0.9.0',
-                ('Python','2.7.13','ANY'): ('2.7.14',None),
-                ('Python','3.5.2','ANY'): ('3.5.4',None),
-                ('SciPy-Stack','ANY'): ('2019a',None),
-                ('Java', ('1.7.0_80','1.8.0_121','1.8.0_192')): ('1.8',None),
-            },
-            'tc_mapping': {
-                'ALL':('dummy','dummy'),
-            }
-        },
-        'ALL_GENTOO': {
-            'pkg_mapping': {
                 'JasPer': '2.0.16',
                 ('Eigen','ANY'): ('3.3.7',None),
             },
@@ -292,10 +277,8 @@ def replace_dependencies(ec, tc, param, deps_mapping):
 def modify_dependencies(ec,param):
     for tc in new_version_mapping:
         deps_mapping = new_version_mapping[tc]
-        if tc == 'ALL' or tc == 'ALL_GENTOO':
-            if ((tc == 'ALL_GENTOO' and "EBROOTGENTOO" in os.environ) or
-                 tc == 'ALL' and "EBROOTGENTOO" not in os.environ):
-                replace_dependencies(ec,'ALL',param,deps_mapping)
+        if tc == 'ALL':
+            replace_dependencies(ec,'ALL',param,deps_mapping)
         else:
             replace_dependencies(ec,tc,param,deps_mapping)
 
