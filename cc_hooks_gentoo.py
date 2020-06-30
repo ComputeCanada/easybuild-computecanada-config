@@ -257,8 +257,8 @@ def drop_dependencies(ec, param):
 
 def parse_hook(ec, *args, **kwargs):
     """Example parse hook to inject a patch file for a fictive software package named 'Example'."""
-    modify_dependencies(ec,'dependencies')
-    modify_dependencies(ec,'builddependencies')
+    modify_dependencies(ec,'dependencies', new_version_mapping, new_version_mapping_app_specific)
+    modify_dependencies(ec,'builddependencies', new_version_mapping, new_version_mapping_app_specific)
     drop_dependencies(ec, 'dependencies')
     drop_dependencies(ec, 'builddependencies')
 
@@ -350,6 +350,7 @@ def pre_configure_hook(self, *args, **kwargs):
 
     # additional changes for CMakeMake EasyBlocks
     CMakeMake_configopts_changes = ' -DCMAKE_SKIP_INSTALL_RPATH=ON '
+    ec = self.cfg
     c = get_easyblock_class(ec.easyblock, name=ec.name)
     if c == CMakeMake or issubclass(c,CMakeMake):
         # skip for those

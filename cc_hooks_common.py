@@ -5,28 +5,30 @@ REPLACE = 3
 
 def modify_all_opts(ec, opts_changes):
     if ec['name'] in opts_changes.keys():
-        for opt, value in opts_changes[ec['name']]:
+        for opt, value in opts_changes[ec['name']].items():
             update_opts(ec, value[0], opt, value[1])
 
 def update_opts(ec,changes,key, update_type):
     print("Changing %s from: %s" % (key,ec[key]))
-    if isinstance(ec[key], str):
-        opts = [ec[key]]
-    elif isinstance(ec[key], list):
-        opts = ec[key]
+    if update_type == REPLACE:
+        ec[key] = changes
     else:
-        return
-    for i in range(len(opts)):
-        if not changes in opts[i]:
-            if update_type == PREPEND:
-                opts[i] = changes + opts[i]
-            elif update_type == APPEND:
-                opts[i] = opts[i] + changes
-            elif update_type == REPLACE:
-                opts[i] = changes
+        if isinstance(ec[key], str):
+            opts = [ec[key]]
+        elif isinstance(ec[key], list):
+            opts = ec[key]
+        else:
+            return
+        for i in range(len(opts)):
+            if not changes in opts[i]:
+                if update_type == PREPEND:
+                    opts[i] = changes + opts[i]
+                elif update_type == APPEND:
+                    opts[i] = opts[i] + changes
 
-    if isinstance(ec[key], str):
-        ec[key] = opts[0]
+        if isinstance(ec[key], str):
+            ec[key] = opts[0]
+
     print("New %s: %s" % (key,ec[key]))
 
 def package_match(ref, test):
@@ -113,7 +115,7 @@ def replace_dependencies(ec, tc, param, deps_mapping):
                     dep = tuple(dep)
                     ec[param][n] = dep
 
-def modify_dependencies(ec,param):
+def modify_dependencies(ec,param, new_version_mapping, new_version_mapping_app_specific):
     for tc in new_version_mapping:
         deps_mapping = new_version_mapping[tc]
         if tc == 'ALL':

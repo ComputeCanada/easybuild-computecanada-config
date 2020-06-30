@@ -154,8 +154,8 @@ opts_changes = {
 
 def parse_hook(ec, *args, **kwargs):
     """Example parse hook to inject a patch file for a fictive software package named 'Example'."""
-    modify_dependencies(ec,'dependencies')
-    modify_dependencies(ec,'builddependencies')
+    modify_dependencies(ec,'dependencies', new_version_mapping, new_version_mapping_app_specific)
+    modify_dependencies(ec,'builddependencies', new_version_mapping, new_version_mapping_app_specific)
 
     # always disable multi_deps_load_default when multi_deps is used
     if ec.get('multi_deps', None): 
@@ -168,7 +168,7 @@ def pre_configure_hook(self, *args, **kwargs):
     self.cfg.enable_templating = False
 
     modify_all_opts(self.cfg, opts_changes)
-
+    ec = self.cfg
     # additional changes for CMakeMake EasyBlocks
     CMakeMake_configopts_changes = (' -DZLIB_ROOT=$NIXUSER_PROFILE ' + 
         ' -DOPENGL_INCLUDE_DIR=$NIXUSER_PROFILE/include -DOPENGL_gl_LIBRARY=$NIXUSER_PROFILE/lib/libGL.so ' +
