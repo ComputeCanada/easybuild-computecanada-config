@@ -123,25 +123,25 @@ new_version_mapping_app_specific = {
 }
 preconfigopts_changes = {
         # build EPREFIX-aware GCCcore
-        'GCCcore': ("", "if [ -f ../gcc/gcc.c ]; then sed -i 's/--sysroot=%R//' ../gcc/gcc.c; " +
+        'GCCcore': "if [ -f ../gcc/gcc.c ]; then sed -i 's/--sysroot=%R//' ../gcc/gcc.c; " +
                    "for h in ../gcc/config/*/*linux*.h; do " +
-                    r'sed -i -r "/_DYNAMIC_LINKER/s,([\":])(/lib),\1${EPREFIX}\2,g" $h; done; fi; '),
-        'Clang': ("", """pushd %(builddir)s/llvm-%(version)s.src/tools/clang; """ +
-                      # Use ${EPREFIX} as default sysroot
-                      """sed -i -e "s@DEFAULT_SYSROOT \\"\\"@DEFAULT_SYSROOT \\"${EPREFIX}\\"@" CMakeLists.txt ; """ +
-                      """pushd lib/Driver/ToolChains ; """ +
-                      # Use dynamic linker from ${EPREFIX}
-                      """sed -i -e "/LibDir.*Loader/s@return \\"\/\\"@return \\"${EPREFIX%/}/\\"@" Linux.cpp ; """ +
-                      # Remove --sysroot call on ld for native toolchain
-                      """sed -i -e "$(grep -n -B1 sysroot= Gnu.cpp | sed -ne '{1s/-.*//;1p}'),+1 d" Gnu.cpp ; """ +
-                      """popd; popd ; """)
+                    r'sed -i -r "/_DYNAMIC_LINKER/s,([\":])(/lib),\1${EPREFIX}\2,g" $h; done; fi; ',
+        'Clang': """pushd %(builddir)s/llvm-%(version)s.src/tools/clang; """ +
+                 # Use ${EPREFIX} as default sysroot
+                 """sed -i -e "s@DEFAULT_SYSROOT \\"\\"@DEFAULT_SYSROOT \\"${EPREFIX}\\"@" CMakeLists.txt ; """ +
+                 """pushd lib/Driver/ToolChains ; """ +
+                 # Use dynamic linker from ${EPREFIX}
+                 """sed -i -e "/LibDir.*Loader/s@return \\"\/\\"@return \\"${EPREFIX%/}/\\"@" Linux.cpp ; """ +
+                 # Remove --sysroot call on ld for native toolchain
+                 """sed -i -e "$(grep -n -B1 sysroot= Gnu.cpp | sed -ne '{1s/-.*//;1p}'),+1 d" Gnu.cpp ; """ +
+                 """popd; popd ; """
 }
 
 configopts_changes = {
         # build EPREFIX-aware GCCcore
-        'GCCcore': ("", "--with-sysroot=$EPREFIX"),
+        'GCCcore': "--with-sysroot=$EPREFIX",
         # local customizations for OpenMPI
-        'OpenMPI': ("", '--enable-shared --with-verbs ' +
+        'OpenMPI': '--enable-shared --with-verbs ' +
                     '--with-hwloc=external '  + # hwloc support
                     '--without-usnic ' + # No usnic-via-libfabric
                     # rpath is already done by ld wrapper
@@ -159,23 +159,14 @@ configopts_changes = {
                     'atomic-ucx,btl-openib,btl-uct,' +
                     'coll-hcoll,ess-tm,fs-lustre,mtl-ofi,mtl-psm,mtl-psm2,osc-ucx,' +
                     'plm-tm,pmix-s1,pmix-s2,pml-ucx,pnet-opa,psec-munge,' +
-                    'ras-tm,spml-ucx,sshmem-ucx,hwloc-external'),
+                    'ras-tm,spml-ucx,sshmem-ucx,hwloc-external',
         # local customizations for UCX
-        'UCX':     ("", "--with-rdmacm=$EBROOTGENTOO --with-verbs=$EBROOTGENTOO --with-knem=$EBROOTGENTOO ")
+        'UCX':     "--with-rdmacm=$EBROOTGENTOO --with-verbs=$EBROOTGENTOO --with-knem=$EBROOTGENTOO "
 }
 
 configopts_changes_based_on_easyblock_class_and_name = {
         'ANY': {
-            CMakeMake: (' -DZLIB_ROOT=$NIXUSER_PROFILE ' +
-                   ' -DOPENGL_INCLUDE_DIR=$NIXUSER_PROFILE/include -DOPENGL_gl_LIBRARY=$NIXUSER_PROFILE/lib/libGL.so ' +
-                   ' -DOPENGL_glu_LIBRARY=$NIXUSER_PROFILE/lib/libGLU.so ' +
-                   ' -DJPEG_INCLUDE_DIR=$NIXUSER_PROFILE/include -DJPEG_LIBRARY=$NIXUSER_PROFILE/lib/libjpeg.so ' +
-                   ' -DPNG_PNG_INCLUDE_DIR=$NIXUSER_PROFILE/include -DPNG_LIBRARY=$NIXUSER_PROFILE/lib/libpng.so ' +
-                   ' -DPYTHON_EXECUTABLE=$EBROOTPYTHON/bin/python ' +
-                   ' -DCURL_LIBRARY=$NIXUSER_PROFILE/lib/libcurl.so -DCURL_INCLUDE_DIR=$NIXUSER_PROFILE/include ' +
-                   ' -DCMAKE_SYSTEM_PREFIX_PATH=$NIXUSER_PROFILE ' +
-                   ' -DCMAKE_SKIP_INSTALL_RPATH=ON ',
-                   ' -DCMAKE_SKIP_INSTALL_RPATH=ON ')
+            CMakeMake: ' -DCMAKE_SKIP_INSTALL_RPATH=ON '
         },
         # this version is a fake CMakeMake, it falls back to ./configure
         ('ROOT','5.34.36'): {},
@@ -203,11 +194,6 @@ def prepend_configopts(ec,changes,key="configopts"):
     for i in range(len(configopts)):
         if not changes in configopts[i]:
             configopts[i] = changes + configopts[i]
-        if 'NIXUSER_PROFILE' not in os.environ:
-            optlist = [opt for opt in configopts[i].split() if '$NIXUSER_PROFILE' not in opt and
-                       '$EBROOTNIXPKGS' not in opt and '$EBROOTPYTHON' not in opt]
-            configopts[i] = ' '.join(optlist)
-            print(configopts[i])
 
     if isinstance(ec[key], str):
         ec[key] = configopts[0]
@@ -216,11 +202,11 @@ def prepend_configopts(ec,changes,key="configopts"):
 def modify_configopts(ec):
     if ec['name'] in preconfigopts_changes.keys():
         print("Changing preconfigopts from: %s" % ec['preconfigopts'])
-        prepend_configopts(ec,preconfigopts_changes[ec['name']]['EBROOTGENTOO' in os.environ],'preconfigopts')
+        prepend_configopts(ec,preconfigopts_changes[ec['name']])
 
     if ec['name'] in configopts_changes.keys():
         print("Changing configopts from: %s" % ec['configopts'])
-        prepend_configopts(ec,configopts_changes[ec['name']]['EBROOTGENTOO' in os.environ])
+        prepend_configopts(ec,configopts_changes[ec['name']])
 
     c = get_easyblock_class(ec.easyblock, name=ec.name)
     name_to_be_checked = 'ANY'
@@ -231,11 +217,8 @@ def modify_configopts(ec):
         if c == easyblock_class or issubclass(c,easyblock_class):
             print("Class type %s is subclass of %s:" % (str(c),str(easyblock_class)))
             changes = configopts_changes_based_on_easyblock_class_and_name[name_to_be_checked][easyblock_class]
-            prepend_configopts(ec,changes['EBROOTGENTOO' in os.environ])
+            prepend_configopts(ec,changes)
 
-    if ec['name'] in configopts_changes.keys():
-        print("Changing configopts for %s" % ec['name'])
-        prepend_configopts(ec,configopts_changes[ec['name']]['EBROOTGENTOO' in os.environ])
 
     if ec['name'] in buildopts_changes:
         print("Changing buildopts for %s" % ec['name'])
