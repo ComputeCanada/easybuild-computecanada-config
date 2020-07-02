@@ -1,126 +1,91 @@
 from easybuild.framework.easyconfig.easyconfig import get_easyblock_class
 from easybuild.easyblocks.generic.cmakemake import CMakeMake
+from easybuild.toolchains.system import SystemToolchain
 from easybuild.framework.easyconfig.constants import EASYCONFIG_CONSTANTS
 from distutils.version import LooseVersion
-from cc_hooks_common import package_match, map_dependency_version, replace_dependencies, modify_dependencies
 from cc_hooks_common import modify_all_opts, update_opts, PREPEND, APPEND, REPLACE
+from easybuild.tools.toolchain.utilities import search_toolchain
 import os
 
-new_version_mapping = {
-        'ALL': {
-            'pkg_mapping': {
-                'JasPer': '2.0.16',
-                ('Eigen','ANY'): ('3.3.7',None),
-            },
-            'tc_mapping': {
-                'ALL':('system','system'),
-            }
-        },
-        (('GCCcore', '9.3.0'), ('GCC', '9.3.0')): {
-            'pkg_mapping': {
-                'Qt5': '5.12.8',
-                ('Python','2.7.14','ANY'): '2.7',
-                ('Python',('3.5.4','3.7.0','3.7.2','3.7.4'),'ANY'): '3.7',
-            },
-            'tc_mapping': {
-                'ALL': ('GCCcore', '9.3.0')
-            }
-        },
-        (('iccifort','2020.1.217'),('GCC','9.3.0'),
-         ('gmkl','2020a'),('iimkl','2020a'),
-         ('gompi','2020a'),('iompi','2020a'),
-         ('gomkl','2020a'),('iomkl','2020a')): {
-            'pkg_mapping': {
-                'BLAST+': '2.10.0',
-                ('Boost',('1.54.0','1.60.0','1.65.1','1.66.0','1.68.0'),None): '1.72.0',
-                'Bowtie2': '2.3.5.1',
-                'BUFRLIB': '11.3.0',
-                ('CGAL','4.9'): '4.14.3',
-                'CLHEP': '2.4.1.3',
-                'ecCodes': '2.16.0',
-                ('FFTW','ANY',None): '3.3.8',
-                'GDAL': ('3.0.4',None),
-                ('GEOS',('3.4.3','3.6.1'),None): ('3.8.0',None),
-                ('GSL',('2.2.1', '2.3', '2.4', '2.5')) : '2.6' ,
-                ('HDF5','ANY',None): '1.10.6',
-                'HTSlib': '1.10.2',
-                'ITK': '5.0.1',
-                ('libxc','3.0.0'): '3.0.0',
-                ('libxc',('4.2.1', '4.2.3')): '4.3.4',
-                'MAFFT': '7.450',
-                'Mono': '6.8.0.105',
-                'muParser': '2.2.6',
-                ('netCDF','ANY',None): '4.7.4',
-                ('netCDF-C++4','ANY',None):'4.3.1',
-                ('netCDF-Fortran','ANY',None):'4.5.2',
-                'NLopt': '2.6.1',
-                ('OpenImageIO',('1.8.7','1.8.15')): '2.1.10',
-                'OSL': '1.10.9',
-                'PRANK': '170427',
-                ('SAMtools',('1.3.1','1.5','1.8','1.9','1.10')): '1.10',
-                ('SAMtools',('0.1.17','0.1.20')): '0.1.20',
-                ('Trinity','2.4.0','2.8.4'):'2.9.1',
-                'UDUNITS': '2.2.26',
-            },
-            'tc_mapping': {
-                (('iccifort','2020.1.217'),('iimkl','2020a'),('iompi','2020a'),('iomkl','2020a')): ('iccifort','2020.1.217'),
-                (('GCC','9.3.0'),('gmkl','2020a'),('gompi','2020a'),('gomkl','2020a')): ('GCC', '9.3.0')
-            }
-        },
-        (('gompi','2020a'),('iompi','2020a'),
-         ('gomkl','2020a'),('iomkl','2020a')): {
-            'pkg_mapping': {
-                ('Boost','ANY','-mpi'): '1.72.0',
-                ('FFTW','ANY','-mpi'): '3.3.8',
-                ('HDF5','1.8.18','-mpi'): '1.10.6',
-                ('HDF5','1.10.3','-mpi'): '1.10.6',
-                ('netCDF','ANY','-mpi'): '4.7.3',
-                ('netCDF-C++4','ANY','-mpi'):'4.3.1',
-                ('netCDF-Fortran','ANY','-mpi'):'4.5.2',
-                'SCOTCH':'6.0.9',
-            },
-            'tc_mapping': {
-                (('gompi','2020a'),('gomkl','2020a')):('gompi','2020a'),
-                (('iompi','2020a'),('iomkl','2020a')):('iompi','2020a'),
-            }
-        },
-        (('gomkl','2020a'),('iomkl','2020a')): {
-            'pkg_mapping': {
-                ('ESMF',('7.0.1','7.1.0r')):'8.0.0',
-                ('Hypre','ANY'):'2.18.2',
-                ('PLUMED',('2.3.0','2.3.7')):'2.3.8',
-                ('PLUMED',('2.4.2','2.4.3')):'2.4.7',
-                ('PETSc','ANY','ANY'): '3.12.4',
-                ('Trilinos','12.10.1','ANY'): ('12.10.1',None),
-            },
-            'tc_mapping': {
-                (('gomkl','2020a')):('gomkl','2020a'),
-                (('iomkl','2020a')):('iomkl','2020a'),
-            }
-        }
+SYSTEM = [('system', 'system')]
+GCCCORE93 = [('GCCcore', '9.3.0')]
+GCC93 = [('GCC', '9.3.0')]
+ICC2020a = [('iccifort', '2020a')]
+COMPILERS_2020a = [ICC2020a[0], GCC93[0]]
+cOMPI_2020a = [('iompi', '2020a'),('gompi', '2020a')]
+
+# Dictionnary containing version mapping
+# Keys can be one of :
+# - software name
+# - (software name, software version)
+# - (software name, 'ANY', version suffix)
+# - (software name, software version, version suffix)
+#
+# The most specific key match will be used
+#
+# Values can be one of :
+# - (new software version, list of compatible toolchains)
+# - (new software version, list of compatible toolchains, None)
+new_version_mapping_2020a = {
+        'Boost': ('1.72.0', COMPILERS_2020a),
+        ('Boost','ANY','-mpi'): ('1.72.0', cOMPI_2020a),
+        'CGAL': ('4.14.3', ICC2020a),
+        'FFTW': ('3.3.8', COMPILERS_2020a),
+        ('FFTW','ANY','-mpi'): ('3.3.8', cOMPI_2020a),
+        'Eigen': ('3.3.7', SYSTEM),
+        'GDAL': ('3.0.4', GCC93, None),
+        'GEOS': ('3.8.1', GCCCORE93, None),
+        'GSL': ('2.6', COMPILERS_2020a),
+        ('GSL', '1.16'): ('1.16', COMPILERS_2020a),
+        'JasPer': ('2.0.16', SYSTEM),
+        ('HDF5','ANY',None): ('1.10.6', COMPILERS_2020a),
+        ('HDF5','ANY','-mpi'): ('1.10.6', cOMPI_2020a),
+        ('imkl','2020.1.217'): ('2020.1.217', SYSTEM),
+        ('netCDF','ANY',None): ('4.7.4', COMPILERS_2020a),
+        ('netCDF','ANY','-mpi'): ('4.7.4', cOMPI_2020a),
+        ('netCDF-C++4','ANY',None): ('4.3.1', COMPILERS_2020a),
+        ('netCDF-C++4','ANY','-mpi'): ('4.3.1', cOMPI_2020a),
+        ('netCDF-Fortran','ANY','-mpi'): ('4.5.2', cOMPI_2020a),
+        'UDUNITS': ('2.2.26', SYSTEM),
+        ('Python', '2.7.14'): ('2.7', GCCCORE93),
+        ('Python', '3.5.4'): ('3.7', GCCCORE93),
+        ('Python', '3.7.0'): ('3.7', GCCCORE93),
+        ('Python', '3.7.2'): ('3.7', GCCCORE93),
+        ('Python', '3.7.4'): ('3.7', GCCCORE93),
+        'Qt5': ('5.12.8', GCCCORE93),
+        'SCOTCH': ('6.0.9', cOMPI_2020a),
 }
-new_version_mapping_app_specific = {
-        ('intel','gimkl','iomkl','gomkl'):{
-            'ALL': {
-                'pkg_mapping': {
-                    ('imkl','2020.1.217'): '2020.1.217',
-                },
-                'tc_mapping': {
-                    (('iimpi','2020a')):('system','system'),
-                }
-            },
-        },
-        ('foss'):{
-            'ALL': {
-                'pkg_mapping': {
-                    ('FFTW','3.3.8'): '3.3.8',
-                },
-                'tc_mapping': {
-                    (('system','system')):('GCC','9.3.0'),
-                }
-            },
-        },
-}
+
+def modify_dependencies(ec, param, version_mapping):
+    name = ec["name"]
+    version = ec["version"]
+    toolchain_name = ec.toolchain.name
+
+    for n, dep in enumerate(ec[param]):
+        if isinstance(dep,list): dep = dep[0]
+        dep_name, dep_version, *rest = tuple(dep)
+        dep_version_suffix = rest[0] if len(rest) > 0 else None
+
+        possible_keys = [(dep_name, dep_version, dep_version_suffix), (dep_name, 'ANY', dep_version_suffix), (dep_name, dep_version), dep_name]
+
+        # search through possible matching keys
+        match_found = False
+        for key in possible_keys:
+            if key in version_mapping:
+                new_version, supported_toolchains, *new_version_suffix = version_mapping[key]
+                new_version_suffix = new_version_suffix[0] if len(new_version_suffix) == 1 else dep_version_suffix
+
+                # test if one of the supported toolchains is a subtoolchain of the toolchain with which we are building. If so, a match is found, replace the dependency
+                for tc_name, tc_version in supported_toolchains:
+                    try_tc, _ = search_toolchain(tc_name)
+                    if try_tc == SystemToolchain or try_tc == ec.toolchain.__class__ or issubclass(ec.toolchain.__class__, try_tc):
+                        match_found = True
+                        new_dep = (dep_name, new_version, new_version_suffix, (tc_name, tc_version))
+                        print("Matching updated dependency found. Replacing %s with %s" % (str(dep), str(new_dep)))
+                        ec[param][n] = new_dep
+                        break
+
+                if match_found: break
 
 opts_changes = {
     'Clang': {
@@ -259,6 +224,8 @@ family("mpi")
 # modules with both -mpi and no-mpi varieties
 mpi_modaltsoftname = ['fftw', 'hdf5', 'netcdf-c++4', 'netcdf-c++', 'netcdf-fortran', 'netcdf']
 
+
+
 def drop_dependencies(ec, param):
     # dictionary in format <name>:<version under which to drop>
     to_drop = {
@@ -283,8 +250,8 @@ def drop_dependencies(ec, param):
 
 def parse_hook(ec, *args, **kwargs):
     """Example parse hook to inject a patch file for a fictive software package named 'Example'."""
-    modify_dependencies(ec,'dependencies', new_version_mapping, new_version_mapping_app_specific)
-    modify_dependencies(ec,'builddependencies', new_version_mapping, new_version_mapping_app_specific)
+    modify_dependencies(ec,'dependencies', new_version_mapping_2020a)
+    modify_dependencies(ec,'builddependencies', new_version_mapping_2020a)
     drop_dependencies(ec, 'dependencies')
     drop_dependencies(ec, 'builddependencies')
 
