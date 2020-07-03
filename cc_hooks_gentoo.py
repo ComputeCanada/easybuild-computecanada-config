@@ -78,7 +78,7 @@ def modify_dependencies(ec, param, version_mapping):
                 # test if one of the supported toolchains is a subtoolchain of the toolchain with which we are building. If so, a match is found, replace the dependency
                 for tc_name, tc_version in supported_toolchains:
                     try_tc, _ = search_toolchain(tc_name)
-                    if try_tc == SystemToolchain or try_tc == ec.toolchain.__class__ or issubclass(ec.toolchain.__class__, try_tc):
+                    if try_tc == SystemToolchain or issubclass(ec.toolchain.__class__, try_tc):
                         match_found = True
                         new_dep = (dep_name, new_version, new_version_suffix, (tc_name, tc_version))
                         print("Matching updated dependency found. Replacing %s with %s" % (str(dep), str(new_dep)))
