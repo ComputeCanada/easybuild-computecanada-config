@@ -88,9 +88,9 @@ def modify_dependencies(ec, param, version_mapping):
                 if match_found: break
 
 compiler_modluafooter = """
-prepend_path("MODULEPATH", pathJoin("/cvmfs/soft.computecanada.ca/easybuild/modules/%(year)s", os.getenv("RSNT_ARCH"), "%(sub_path)s"))
-if isDir(pathJoin(os.getenv("HOME"), ".local/easybuild/modules/%(year)s", os.getenv("RSNT_ARCH"), "Compiler/%(sub_path)s")) then
-    prepend_path("MODULEPATH", pathJoin(os.getenv("HOME"), ".local/easybuild/modules/%(year)s", os.getenv("RSNT_ARCH"), "%(sub_path)s"))
+prepend_path("MODULEPATH", pathJoin("/cvmfs/soft.computecanada.ca/easybuild/modules/{year}", os.getenv("RSNT_ARCH"), "{sub_path}"))
+if isDir(pathJoin(os.getenv("HOME"), ".local/easybuild/modules/{year}", os.getenv("RSNT_ARCH"), "Compiler/{sub_path}")) then
+    prepend_path("MODULEPATH", pathJoin(os.getenv("HOME"), ".local/easybuild/modules/{year}", os.getenv("RSNT_ARCH"), "{sub_path}"))
 end
 
 add_property("type_","tools")
