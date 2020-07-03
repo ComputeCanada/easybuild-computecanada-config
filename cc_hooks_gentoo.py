@@ -14,7 +14,7 @@ ICC2020a = [('iccifort', '2020a')]
 COMPILERS_2020a = [ICC2020a[0], GCC93[0]]
 cOMPI_2020a = [('iompi', '2020a'),('gompi', '2020a')]
 
-# Dictionnary containing version mapping
+# Dictionary containing version mapping
 # Keys can be one of :
 # - software name
 # - (software name, software version)
