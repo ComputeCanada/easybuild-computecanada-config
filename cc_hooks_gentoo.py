@@ -297,24 +297,27 @@ def parse_hook(ec, *args, **kwargs):
     if (ec['name'].lower() in mpi_modaltsoftname and
         ((toolchain and toolchain['name'].endswith('mpi')) or ec['toolchainopts'].get('usempi'))):
         ec['modaltsoftname'] = ec['name'].lower() + '-mpi'
+    # special parse hook for Python
+    if ec['name'].lower() == 'python':
+        python_parsehook(ec)
 
-    # for Python, keep only specific extensions, and add specific paths
+
+def python_parsehook(ec):
+    # keep only specific extensions
     python_extensions_to_keep = ['setuptools', 'pip', 'wheel', 'virtualenv', 'appdirs', 'distlib', 'filelock',
                                  'six']
-    if ec['name'].lower() == 'python':
-        ver = LooseVersion(ec['version'])
-        if ver < LooseVersion('3.8'):
-            python_extensions_to_keep += ['importlib_metadata', 'importlib_resources', 'zipp']
-            if ver < LooseVersion('3.0'): # 2.7
-                python_extensions_to_keep += ['contextlib2', 'pathlib2', 'configparser', 'scandir',
-                                              'singledispatch', 'typing']
-            else: # 3.6, 3.7
-                python_extensions_to_keep += ['more-itertools']
-        new_ext_list = []
-        for ext in ec['exts_list']:
-            if ext[0] in python_extensions_to_keep:
-                new_ext_list += [ext]
-        ec['exts_list'] = new_ext_list
+    ver = LooseVersion(ec['version'])
+    if ver < LooseVersion('3.8'):
+        python_extensions_to_keep += ['importlib_metadata', 'importlib_resources', 'zipp']
+    if ver < LooseVersion('3.0'): # 2.7
+        python_extensions_to_keep += ['contextlib2', 'pathlib2', 'configparser', 'scandir',
+                                      'singledispatch', 'typing']
+    else: # 3.6, 3.7
+        python_extensions_to_keep += ['more-itertools']
+
+    new_ext_list = [ext for ext in ec['exts_list'] if ext[0] in python_extensions_to_keep]
+    ec['exts_list'] = new_ext_list
+
 
 def pre_configure_hook(self, *args, **kwargs):
     "Modify configopts (here is more efficient than parse_hook since only called once)"
