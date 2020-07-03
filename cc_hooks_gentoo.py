@@ -87,6 +87,22 @@ def modify_dependencies(ec, param, version_mapping):
 
                 if match_found: break
 
+compiler_modluafooter = """
+prepend_path("MODULEPATH", pathJoin("/cvmfs/soft.computecanada.ca/easybuild/modules/%(year)s", os.getenv("RSNT_ARCH"), "%(sub_path)s"))
+if isDir(pathJoin(os.getenv("HOME"), ".local/easybuild/modules/%(year)s", os.getenv("RSNT_ARCH"), "Compiler/%(sub_path)s")) then
+    prepend_path("MODULEPATH", pathJoin(os.getenv("HOME"), ".local/easybuild/modules/%(year)s", os.getenv("RSNT_ARCH"), "%(sub_path)s"))
+end
+
+add_property("type_","tools")
+"""
+
+mpi_modluafooter = """
+assert(loadfile("/cvmfs/soft.computecanada.ca/config/lmod/%s_custom.lua"))("%%(version_major_minor)s")
+
+add_property("type_","mpi")
+family("mpi")
+"""
+
 opts_changes = {
     'Clang': {
         'preconfigopts': ("""pushd %(builddir)s/llvm-%(version)s.src/tools/clang; """ +
@@ -115,7 +131,6 @@ opts_changes = {
         'postinstallcmds': (["find %(installdir)s -name '*.la' -delete"], REPLACE),
     },
     'iccifort': {
-        'modaltsoftname': ('intel', REPLACE),
         'skip_license_file_in_module': (True, REPLACE),
         'license_file': ("/cvmfs/soft.computecanada.ca/config/licenses/intel/computecanada.lic", REPLACE),
         #See compilers_and_libraries_2020.1.217/licensing/compiler/en/credist.txt
@@ -151,7 +166,6 @@ end
 """, APPEND),
     },
     'impi': {
-        'modaltsoftname': ('intelmpi', REPLACE),
         'set_mpi_wrappers_all': (True, REPLACE),
         # Fix mpirun from IntelMPI to explicitly unset I_MPI_PMI_LIBRARY
         # it can only be used with srun.
@@ -161,6 +175,7 @@ end
                 "for dir in release release_mt debug debug_mt; do /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/intel64/lib/$dir --add_path='$ORIGIN/../../libfabric/lib'; done",
                 "patchelf --set-rpath $EBROOTUCX/lib --force-rpath %(installdir)s/intel64/libfabric/lib/prov/libmlx-fi.so"
             ], REPLACE),
+        'modluafooter': (mpi_modluafooter % 'intelmpi', REPLACE),
     },
     'OpenBLAS': {
         **dict.fromkeys(['buildopts','installopts','testopts'],
@@ -193,6 +208,7 @@ end
                     'ras-tm,spml-ucx,sshmem-ucx,hwloc-external',
                     PREPEND),
         'postinstallcmds': (['rm %(installdir)s/lib/*.la %(installdir)s/lib/*/*.la'], REPLACE),
+        'modluafooter': (mpi_modluafooter % 'openmpi', REPLACE),
         'dependencies': [('libfabric', '1.10.1'), APPEND_LIST],
     },
     'Python': {
@@ -207,26 +223,41 @@ end
     },
 }
 
-compiler_modluafooter = """
-prepend_path("MODULEPATH", pathJoin("/cvmfs/soft.computecanada.ca/easybuild/modules/%s", os.getenv("RSNT_ARCH"), "%s"))
-if isDir(pathJoin(os.getenv("HOME"), ".local/easybuild/modules/%s", os.getenv("RSNT_ARCH"), "Compiler/%s")) then
-    prepend_path("MODULEPATH", pathJoin(os.getenv("HOME"), ".local/easybuild/modules/%s", os.getenv("RSNT_ARCH"), "%s"))
-end
-
-add_property("type_","tools")
-"""
-
-
-mpi_modluafooter = """
-assert(loadfile("/cvmfs/soft.computecanada.ca/config/lmod/%s_custom.lua"))("%%(version_major_minor)s")
-
-add_property("type_","mpi")
-family("mpi")
-"""
 
 
 # modules with both -mpi and no-mpi varieties
 mpi_modaltsoftname = ['fftw', 'hdf5', 'netcdf-c++4', 'netcdf-c++', 'netcdf-fortran', 'netcdf']
+modaltsoftnames = {
+    "iccifort": "intel",
+    "impi": "intelmpi",
+}
+def set_modaltsoftname(ec):
+    if ec['name'] in modaltsoftnames:
+        ec['modaltsoftname'] = modaltsoftnames[ec['name']]
+
+    # add -mpi to module name for various modules with both -mpi and no-mpi varieties
+    toolchain = ec.get('toolchain')
+    if (ec['name'].lower() in mpi_modaltsoftname and
+        ((toolchain and toolchain['name'].endswith('mpi')) or ec['toolchainopts'].get('usempi'))):
+        ec['modaltsoftname'] = ec['name'].lower() + '-mpi'
+
+
+def set_modluafooter(ec):
+    if ec['name'] in opts_changes:
+        if 'modluafooter' in opts_changes[ec['name']]:
+            update_opts(ec, opts_changes[ec['name']]['modluafooter'][0], 'modluafooter', opts_changes[ec['name']]['modluafooter'][1])
+
+    moduleclass = ec.get('moduleclass','')
+    year = os.environ['EBVERSIONGENTOO']
+    name = ec['name'].lower()
+    if moduleclass == 'compiler' and not name == 'gcccore':
+        if name == 'iccifort':
+            name = 'intel'
+        comp = os.path.join('Compiler', name + ec['version'][:ec['version'].find('.')])
+        ec['modluafooter'] = (compiler_modluafooter.format(year=year,sub_path=comp) + 'family("compiler")\n')
+    if ec['name'] == 'CUDAcore':
+        comp = os.path.join('CUDA', 'cuda' + '.'.join(ec['version'].split('.')[:2]))
+        ec['modluafooter'] = compiler_modluafooter.format(year=year, sub_path=comp)
 
 
 def add_dependencies(ec, keyword):
@@ -265,38 +296,17 @@ def parse_hook(ec, *args, **kwargs):
     drop_dependencies(ec, 'builddependencies')
     add_dependencies(ec, 'dependencies')
     add_dependencies(ec, 'builddependencies')
+    set_modaltsoftname(ec)
+    set_modluafooter(ec)
 
     # always disable multi_deps_load_default when multi_deps is used
     if ec.get('multi_deps', None): 
         ec['multi_deps_load_default'] = False
 
-    moduleclass = ec.get('moduleclass','')
-    year = os.environ['EBVERSIONGENTOO']
-    name = ec['name'].lower()
-    if moduleclass == 'compiler' and not name == 'gcccore':
-        if name == 'iccifort':
-            name = 'intel'
-        else:
-            comp = os.path.join('Compiler', name + ec['version'][:ec['version'].find('.')])
-            ec['modluafooter'] = (compiler_modluafooter%(year,comp,year,comp,year,comp)
-                                  + 'family("compiler")\n')
-    elif moduleclass == 'mpi':
-        if name == 'impi':
-            name = 'intelmpi'
-        ec['modluafooter'] = mpi_modluafooter%name
-    elif ec['name'] == 'CUDAcore':
-        splitversion = ec['version'].split('.')
-        comp = os.path.join('CUDA', 'cuda' + '.'.join(splitversion[:2]))
-        ec['modluafooter'] = compiler_modluafooter%(year,comp,year,comp,year,comp)
-
-    if moduleclass == 'toolchain' or ec['name'] == 'GCCcore':
+    # hide toolchains
+    if ec.get('moduleclass','') == 'toolchain' or ec['name'] == 'GCCcore':
         ec['hidden'] = True
 
-    # add -mpi to module name for various modules with both -mpi and no-mpi varieties
-    toolchain = ec.get('toolchain')
-    if (ec['name'].lower() in mpi_modaltsoftname and
-        ((toolchain and toolchain['name'].endswith('mpi')) or ec['toolchainopts'].get('usempi'))):
-        ec['modaltsoftname'] = ec['name'].lower() + '-mpi'
     # special parse hook for Python
     if ec['name'].lower() == 'python':
         python_parsehook(ec)
