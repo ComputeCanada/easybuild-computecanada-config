@@ -10,7 +10,7 @@ import os
 SYSTEM = [('system', 'system')]
 GCCCORE93 = [('GCCcore', '9.3.0')]
 GCC93 = [('GCC', '9.3.0')]
-ICC2020a = [('iccifort', '2020a')]
+ICC2020a = [('iccifort', '2020.1.217')]
 COMPILERS_2020a = [ICC2020a[0], GCC93[0]]
 cOMPI_2020a = [('iompi', '2020a'),('gompi', '2020a')]
 
