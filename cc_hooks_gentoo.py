@@ -3,7 +3,7 @@ from easybuild.easyblocks.generic.cmakemake import CMakeMake
 from easybuild.toolchains.system import SystemToolchain
 from easybuild.framework.easyconfig.constants import EASYCONFIG_CONSTANTS
 from distutils.version import LooseVersion
-from cc_hooks_common import modify_all_opts, update_opts, PREPEND, APPEND, REPLACE
+from cc_hooks_common import modify_all_opts, update_opts, PREPEND, APPEND, REPLACE, APPEND_LIST
 from easybuild.tools.toolchain.utilities import search_toolchain
 import os
 
