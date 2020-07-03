@@ -244,6 +244,7 @@ def drop_dependencies(ec, param):
             'Ninja': 'ALL',
             'PyQt5': 'ALL',
             'SQLite': 'ALL',
+            'pybind11': 'ALL',
     }
     # iterate over a copy
     for dep in ec[param][:]:
