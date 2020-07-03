@@ -100,6 +100,9 @@ opts_changes = {
                  """popd; popd ; """,
                  PREPEND)
     },
+    ('CUDAcore','10.2.89'): {
+        'builddependencies': ([('GCCcore', '8.4.0')], REPLACE)
+    },
     'GCCcore': {
         # build EPREFIX-aware GCCcore
         'preconfigopts': (
@@ -190,6 +193,7 @@ end
                     'ras-tm,spml-ucx,sshmem-ucx,hwloc-external',
                     PREPEND),
         'postinstallcmds': (['rm %(installdir)s/lib/*.la %(installdir)s/lib/*/*.la'], REPLACE),
+        'dependencies': [('libfabric', '1.10.1'), APPEND_LIST],
     },
     'Python': {
         'modextrapaths': ({'PYTHONPATH': ['/cvmfs/soft.computecanada.ca/easybuild/python/site-packages']}, REPLACE),
@@ -225,6 +229,10 @@ family("mpi")
 mpi_modaltsoftname = ['fftw', 'hdf5', 'netcdf-c++4', 'netcdf-c++', 'netcdf-fortran', 'netcdf']
 
 
+def add_dependencies(ec, keyword):
+    for key in [ec['name'], (ec['name'], ec['version'])]:
+        if key in opts_changes and keyword in opts_changes[key]:
+            update_opts(ec, opts_changes[key][keyword][0], keyword, opts_changes[key][keyword][1])
 
 def drop_dependencies(ec, param):
     # dictionary in format <name>:<version under which to drop>
@@ -250,10 +258,12 @@ def drop_dependencies(ec, param):
 
 def parse_hook(ec, *args, **kwargs):
     """Example parse hook to inject a patch file for a fictive software package named 'Example'."""
-    modify_dependencies(ec,'dependencies', new_version_mapping_2020a)
-    modify_dependencies(ec,'builddependencies', new_version_mapping_2020a)
+    modify_dependencies(ec, 'dependencies', new_version_mapping_2020a)
+    modify_dependencies(ec, 'builddependencies', new_version_mapping_2020a)
     drop_dependencies(ec, 'dependencies')
     drop_dependencies(ec, 'builddependencies')
+    add_dependencies(ec, 'dependencies')
+    add_dependencies(ec, 'builddependencies')
 
     # always disable multi_deps_load_default when multi_deps is used
     if ec.get('multi_deps', None): 
@@ -272,13 +282,9 @@ def parse_hook(ec, *args, **kwargs):
     elif moduleclass == 'mpi':
         if name == 'impi':
             name = 'intelmpi'
-        if name == 'openmpi':
-            ec['dependencies'].append(('libfabric', '1.10.1'))
         ec['modluafooter'] = mpi_modluafooter%name
     elif ec['name'] == 'CUDAcore':
         splitversion = ec['version'].split('.')
-        if int(splitversion[0]) < 11:
-            ec['builddependencies'] = [('GCCcore', '8.4.0')]
         comp = os.path.join('CUDA', 'cuda' + '.'.join(splitversion[:2]))
         ec['modluafooter'] = compiler_modluafooter%(year,comp,year,comp,year,comp)
 
