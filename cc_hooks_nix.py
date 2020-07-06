@@ -141,12 +141,21 @@ new_version_mapping_app_specific = {
 
 opts_changes = {
     'OpenBLAS': {
-        **dict.fromkeys(['buildopts','installopts','testopts'],
-                        ({'sse3': 'DYNAMIC_ARCH=1',
-                        'avx': 'TARGET=SANDYBRIDGE',
-                        'avx2': 'DYNAMIC_ARCH=1 DYNAMIC_LIST="HASWELL ZEN SKYLAKEX"',
-                        'avx512': 'TARGET=SKYLAKEX'}[os.getenv('RSNT_ARCH')] + ' NUM_THREADS=64',
-                        PREPEND))
+        'buildopts': ({'sse3': 'DYNAMIC_ARCH=1',
+                       'avx': 'TARGET=SANDYBRIDGE',
+                       'avx2': 'DYNAMIC_ARCH=1 DYNAMIC_LIST="HASWELL ZEN SKYLAKEX"',
+                       'avx512': 'TARGET=SKYLAKEX'}[os.getenv('RSNT_ARCH')] + ' NUM_THREADS=64',
+                       PREPEND)),
+        'installopts': ({'sse3': 'DYNAMIC_ARCH=1',
+                       'avx': 'TARGET=SANDYBRIDGE',
+                       'avx2': 'DYNAMIC_ARCH=1 DYNAMIC_LIST="HASWELL ZEN SKYLAKEX"',
+                       'avx512': 'TARGET=SKYLAKEX'}[os.getenv('RSNT_ARCH')] + ' NUM_THREADS=64',
+                       PREPEND)),
+        'testopts': ({'sse3': 'DYNAMIC_ARCH=1',
+                       'avx': 'TARGET=SANDYBRIDGE',
+                       'avx2': 'DYNAMIC_ARCH=1 DYNAMIC_LIST="HASWELL ZEN SKYLAKEX"',
+                       'avx512': 'TARGET=SKYLAKEX'}[os.getenv('RSNT_ARCH')] + ' NUM_THREADS=64',
+                       PREPEND)),
     }
 }
 
