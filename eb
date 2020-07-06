@@ -69,7 +69,7 @@ elif [ "$(id -ng)" != "ebuser" ] ; then
 fi
 export EASYBUILD_ROBOT_PATHS=$EASYBUILD_ROOT/easyconfigs:$EASYBUILD_ROBOT_PATHS
 if [[ -n "$USE_GENTOO" ]]; then
-	export EASYBUILD_HOOKS=$EASYBUILD_ROOT/cc_hooks_nix.py
+	export EASYBUILD_HOOKS=$EASYBUILD_ROOT/cc_hooks_gentoo.py
 else
 	export EASYBUILD_HOOKS=$EASYBUILD_ROOT/cc_hooks_nix.py
 fi
