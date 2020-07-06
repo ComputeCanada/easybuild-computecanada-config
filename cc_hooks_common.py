@@ -5,10 +5,15 @@ REPLACE = 3
 APPEND_LIST = 4
 
 def modify_all_opts(ec, opts_changes):
-    if ec['name'] in opts_changes.keys():
-        for opt, value in opts_changes[ec['name']].items():
+    if 'modaltsoftname' in ec and ec['modaltsoftname'] in opts_changes:
+        name = ec['modaltsoftname']
+    else:
+        name = ec['name']
+
+    if name in opts_changes.keys():
+        for opt, value in opts_changes[name].items():
             # we don't modify those in this stage
-            if opt in ['builddependencies', 'dependencies', 'modluafooter']:
+            if opt in ['builddependencies', 'dependencies', 'modluafooter', 'toolchainopts']:
                 continue
             update_opts(ec, value[0], opt, value[1])
 
