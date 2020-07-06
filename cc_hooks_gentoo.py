@@ -64,7 +64,7 @@ def modify_dependencies(ec, param, version_mapping):
     for n, dep in enumerate(ec[param]):
         if isinstance(dep,list): dep = dep[0]
         dep_name, dep_version, *rest = tuple(dep)
-        dep_version_suffix = rest[0] if len(rest) > 0 else None
+        dep_version_suffix = rest[0] if len(rest) > 0 else ""
 
         possible_keys = [(dep_name, dep_version, dep_version_suffix), (dep_name, 'ANY', dep_version_suffix), (dep_name, dep_version), dep_name]
 
