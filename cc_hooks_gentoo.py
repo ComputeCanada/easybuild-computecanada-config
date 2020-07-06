@@ -177,6 +177,15 @@ end
             ], REPLACE),
         'modluafooter': (mpi_modluafooter % 'intelmpi', REPLACE),
     },
+    'IQ-TREE': {
+        'toolchainopts': ({}, REPLACE),
+        'configopts': ('-DIQTREE_FLAGS=omp', REPLACE),
+        'sanity_check_paths': ({'files': ['bin/iqtree'], 'dirs': []}, REPLACE),
+    },
+    'iq-tree-mpi': {
+        'configopts': ('-DIQTREE_FLAGS=mpi', REPLACE),
+        'sanity_check_paths': ({'files': ['bin/iqtree-mpi'], 'dirs': []}, REPLACE),
+    },
     'OpenBLAS': {
         **dict.fromkeys(['buildopts','installopts','testopts'],
                         ({'sse3': 'DYNAMIC_ARCH=1',
@@ -226,7 +235,7 @@ end
 
 
 # modules with both -mpi and no-mpi varieties
-mpi_modaltsoftname = ['fftw', 'hdf5', 'netcdf-c++4', 'netcdf-c++', 'netcdf-fortran', 'netcdf']
+mpi_modaltsoftname = ['fftw', 'hdf5', 'netcdf-c++4', 'netcdf-c++', 'netcdf-fortran', 'netcdf', 'iq-tree']
 modaltsoftnames = {
     "iccifort": "intel",
     "impi": "intelmpi",
@@ -240,6 +249,15 @@ def set_modaltsoftname(ec):
     if (ec['name'].lower() in mpi_modaltsoftname and
         ((toolchain and toolchain['name'].endswith('mpi')) or ec['toolchainopts'].get('usempi'))):
         ec['modaltsoftname'] = ec['name'].lower() + '-mpi'
+
+
+def disable_use_mpi_for_non_mpi_toolchains(ec):
+    toolchain = ec.get('toolchain')
+    toolchain_instance, _ = search_toolchain(toolchain['name'])
+    if ec['toolchainopts'] and ec['toolchainopts'].get('usempi') and not toolchain_instance(version=toolchain['version']).mpi_family():
+        print("usempi option found, but using a non-MPI toolchain. Disabling it")
+        del ec['toolchainopts']['usempi']
+        print("New toolchainopts:%s" % str(ec['toolchainopts']))
 
 
 def set_modluafooter(ec):
@@ -290,6 +308,7 @@ def drop_dependencies(ec, param):
 
 def parse_hook(ec, *args, **kwargs):
     """Example parse hook to inject a patch file for a fictive software package named 'Example'."""
+    disable_use_mpi_for_non_mpi_toolchains(ec)
     modify_dependencies(ec, 'dependencies', new_version_mapping_2020a)
     modify_dependencies(ec, 'builddependencies', new_version_mapping_2020a)
     drop_dependencies(ec, 'dependencies')
