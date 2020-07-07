@@ -117,7 +117,11 @@ opts_changes = {
                  PREPEND)
     },
     ('CUDAcore','10.2.89'): {
-        'builddependencies': ([('GCCcore', '8.4.0')], REPLACE)
+        'builddependencies': ([('GCCcore', '8.4.0')], REPLACE),
+        'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_origin'], REPLACE),
+    },
+    'CUDAcore': {
+        'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_origin'], REPLACE),
     },
     'GCCcore': {
         # build EPREFIX-aware GCCcore
@@ -325,7 +329,7 @@ def parse_hook(ec, *args, **kwargs):
         ec['multi_deps_load_default'] = False
 
     # hide toolchains
-    if ec.get('moduleclass','') == 'toolchain' or ec['name'] == 'GCCcore':
+    if ec.get('moduleclass','') == 'toolchain' or ec['name'] == 'GCCcore' or ec['name'] == 'CUDAcore':
         ec['hidden'] = True
 
     # special parse hook for Python
