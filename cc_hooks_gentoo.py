@@ -319,8 +319,7 @@ def parse_hook(ec, *args, **kwargs):
     modify_dependencies(ec, 'builddependencies', new_version_mapping_2020a)
     drop_dependencies(ec, 'dependencies')
     drop_dependencies(ec, 'builddependencies')
-    add_dependencies(ec, 'dependencies')
-    add_dependencies(ec, 'builddependencies')
+    modify_all_opts(ec, opts_changes, opts_to_skip=[], opts_to_change=['dependencies', 'builddependencies', 'license_file'])
     set_modaltsoftname(ec)
     set_modluafooter(ec)
 
