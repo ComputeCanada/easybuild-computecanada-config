@@ -246,15 +246,17 @@ def set_modaltsoftname(ec):
 
     # add -mpi to module name for various modules with both -mpi and no-mpi varieties
     toolchain = ec.get('toolchain')
+    toolchain_class, _ = search_toolchain(toolchain['name'])
     if (ec['name'].lower() in mpi_modaltsoftname and
-        ((toolchain and toolchain['name'].endswith('mpi')) or ec['toolchainopts'].get('usempi'))):
+        (toolchain_class(version=toolchain['version']).mpi_family() or ec['toolchainopts'].get('usempi'))
+       ):
         ec['modaltsoftname'] = ec['name'].lower() + '-mpi'
 
 
 def disable_use_mpi_for_non_mpi_toolchains(ec):
     toolchain = ec.get('toolchain')
-    toolchain_instance, _ = search_toolchain(toolchain['name'])
-    if ec['toolchainopts'] and ec['toolchainopts'].get('usempi') and not toolchain_instance(version=toolchain['version']).mpi_family():
+    toolchain_class, _ = search_toolchain(toolchain['name'])
+    if ec['toolchainopts'] and ec['toolchainopts'].get('usempi') and not toolchain_class(version=toolchain['version']).mpi_family():
         print("usempi option found, but using a non-MPI toolchain. Disabling it")
         del ec['toolchainopts']['usempi']
         print("New toolchainopts:%s" % str(ec['toolchainopts']))
