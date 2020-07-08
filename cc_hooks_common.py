@@ -12,13 +12,17 @@ def modify_all_opts(ec, opts_changes,
     else:
         name = ec['name']
 
-    if name in opts_changes.keys():
-        for opt, value in opts_changes[name].items():
-            # we don't modify those in this stage
-            if opt in opts_to_skip:
-                continue
-            if opts_to_skip == 'ALL' or opt in opts_to_change:
-                update_opts(ec, value[0], opt, value[1])
+    possible_keys = [(name, ec['version']), name]
+
+    for key in possible_keys:
+        if key in opts_changes.keys():
+            for opt, value in opts_changes[key].items():
+                # we don't modify those in this stage
+                if opt in opts_to_skip:
+                    continue
+                if opts_to_skip == 'ALL' or opt in opts_to_change:
+                    update_opts(ec, value[0], opt, value[1])
+            break
 
 def update_opts(ec,changes,key, update_type):
     print("Changing %s from: %s" % (key,ec[key]))
