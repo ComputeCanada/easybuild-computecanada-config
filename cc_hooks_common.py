@@ -20,7 +20,7 @@ def modify_all_opts(ec, opts_changes,
                 # we don't modify those in this stage
                 if opt in opts_to_skip:
                     continue
-                if opts_to_skip == 'ALL' or opt in opts_to_change:
+                if opts_to_change == 'ALL' or opt in opts_to_change:
                     update_opts(ec, value[0], opt, value[1])
             break
 
