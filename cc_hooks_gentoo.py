@@ -29,6 +29,7 @@ cOMPI_2020a = [('iompi', '2020a'),('gompi', '2020a')]
 new_version_mapping_2020a = {
         'Boost': ('1.72.0', COMPILERS_2020a),
         ('Boost','ANY','-mpi'): ('1.72.0', cOMPI_2020a),
+        ('CUDA', '11.0.2'): ('11.0', COMPILERS_2020a),
         'CGAL': ('4.14.3', ICC2020a),
         'FFTW': ('3.3.8', COMPILERS_2020a),
         ('FFTW','ANY','-mpi'): ('3.3.8', cOMPI_2020a),
@@ -115,6 +116,9 @@ opts_changes = {
                  """sed -i -e "$(grep -n -B1 sysroot= Gnu.cpp | sed -ne '{1s/-.*//;1p}'),+1 d" Gnu.cpp ; """ +
                  """popd; popd ; """,
                  PREPEND)
+    },
+    ('CUDA', '11.0.2'): {
+        'version': ('11.0', REPLACE),
     },
     ('CUDAcore','10.2.89'): {
         'builddependencies': ([('GCCcore', '8.4.0')], REPLACE),
@@ -315,11 +319,11 @@ def drop_dependencies(ec, param):
 def parse_hook(ec, *args, **kwargs):
     """Example parse hook to inject a patch file for a fictive software package named 'Example'."""
     disable_use_mpi_for_non_mpi_toolchains(ec)
+    modify_all_opts(ec, opts_changes, opts_to_skip=[], opts_to_change=['dependencies', 'builddependencies', 'license_file', 'version'])
     modify_dependencies(ec, 'dependencies', new_version_mapping_2020a)
     modify_dependencies(ec, 'builddependencies', new_version_mapping_2020a)
     drop_dependencies(ec, 'dependencies')
     drop_dependencies(ec, 'builddependencies')
-    modify_all_opts(ec, opts_changes, opts_to_skip=[], opts_to_change=['dependencies', 'builddependencies', 'license_file'])
     set_modaltsoftname(ec)
     set_modluafooter(ec)
 
