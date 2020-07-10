@@ -1,6 +1,7 @@
-from easybuild.framework.easyconfig.easyconfig import get_easyblock_class
+from easybuild.framework.easyconfig.easyconfig import get_easyblock_class, get_toolchain_hierarchy
 from easybuild.easyblocks.generic.cmakemake import CMakeMake
 from easybuild.toolchains.system import SystemToolchain
+from easybuild.toolchains.gcccore import GCCcore
 from easybuild.framework.easyconfig.constants import EASYCONFIG_CONSTANTS
 from distutils.version import LooseVersion
 from cc_hooks_common import modify_all_opts, update_opts, PREPEND, APPEND, REPLACE, APPEND_LIST
@@ -79,7 +80,7 @@ def modify_dependencies(ec, param, version_mapping):
                 # test if one of the supported toolchains is a subtoolchain of the toolchain with which we are building. If so, a match is found, replace the dependency
                 for tc_name, tc_version in supported_toolchains:
                     try_tc, _ = search_toolchain(tc_name)
-                    if try_tc == SystemToolchain or issubclass(ec.toolchain.__class__, try_tc):
+                    if try_tc == SystemToolchain or try_tc == GCCcore or issubclass(ec.toolchain.__class__, try_tc):
                         match_found = True
                         new_dep = (dep_name, new_version, new_version_suffix, (tc_name, tc_version))
                         print("Matching updated dependency found. Replacing %s with %s" % (str(dep), str(new_dep)))
