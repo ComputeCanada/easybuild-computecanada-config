@@ -290,7 +290,7 @@ def pre_configure_hook(self, *args, **kwargs):
         ' -DCMAKE_SYSTEM_PREFIX_PATH=$NIXUSER_PROFILE ' +
         ' -DCMAKE_SKIP_INSTALL_RPATH=ON ')
 
-    if isinstance(ec.easyblock, str):
+    if ec.easyblock is None or isinstance(ec.easyblock, str):
         c = get_easyblock_class(ec.easyblock, name=ec.name)
     elif isinstance(ec.easyblock, type):
         c = ec.easyblock
