@@ -368,7 +368,10 @@ def pre_configure_hook(self, *args, **kwargs):
     # additional changes for CMakeMake EasyBlocks
     CMakeMake_configopts_changes = ' -DCMAKE_SKIP_INSTALL_RPATH=ON '
     ec = self.cfg
-    c = get_easyblock_class(ec.easyblock, name=ec.name)
+    if isinstance(ec.easyblock, str):
+        c = get_easyblock_class(ec.easyblock, name=ec.name)
+    elif isinstance(ec.easyblock, type):
+        c = ec.easyblock
     if c == CMakeMake or issubclass(c,CMakeMake):
         # skip for those
         if (ec['name'],ec['version']) in [('ROOT','5.34.36'), ('mariadb', '10.4.11')]:

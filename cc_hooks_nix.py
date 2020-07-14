@@ -289,7 +289,11 @@ def pre_configure_hook(self, *args, **kwargs):
         ' -DCURL_LIBRARY=$NIXUSER_PROFILE/lib/libcurl.so -DCURL_INCLUDE_DIR=$NIXUSER_PROFILE/include ' +
         ' -DCMAKE_SYSTEM_PREFIX_PATH=$NIXUSER_PROFILE ' +
         ' -DCMAKE_SKIP_INSTALL_RPATH=ON ')
-    c = get_easyblock_class(ec.easyblock, name=ec.name)
+
+    if isinstance(ec.easyblock, str):
+        c = get_easyblock_class(ec.easyblock, name=ec.name)
+    elif isinstance(ec.easyblock, type):
+        c = ec.easyblock
     if c == CMakeMake or issubclass(c,CMakeMake):
         # skip for those
         if (ec['name'],ec['version']) in [('ROOT','5.34.36'), ('mariadb', '10.4.11')]:
