@@ -125,6 +125,7 @@ new_version_mapping = {
             }
         },
         (('iomkl','2018.3.312'),('iomklc','2018.3.312.100')): {
+            'pkg_mapping': {
                 ('PETSc','ANY','ANY'): '3.10.5',
             },
             'tc_mapping': {
