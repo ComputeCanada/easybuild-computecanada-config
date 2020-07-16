@@ -260,6 +260,7 @@ def set_modaltsoftname(ec):
         (toolchain_class(version=toolchain['version']).mpi_family() or ec['toolchainopts'].get('usempi'))
        ):
         ec['modaltsoftname'] = ec['name'].lower() + '-mpi'
+        ec['versionsuffix'] = '-mpi'
 
 
 def disable_use_mpi_for_non_mpi_toolchains(ec):
