@@ -22,7 +22,13 @@ def modify_all_opts(ec, opts_changes,
                 if opt in opts_to_skip:
                     continue
                 if opts_to_change == 'ALL' or opt in opts_to_change:
-                    update_opts(ec, value[0], opt, value[1])
+                    if isinstance(value, list):
+                        values = value
+                    else:
+                        values = [value]
+
+                    for v in values:
+                        update_opts(ec, v[0], opt, v[1])
             break
 
 def update_opts(ec,changes,key, update_type):
