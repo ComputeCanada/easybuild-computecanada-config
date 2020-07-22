@@ -88,6 +88,10 @@ def modify_dependencies(ec, param, version_mapping):
                         break
 
                 if match_found: break
+        if dep_name == 'SciPy-bundle':
+            new_dep = ('SciPy-Stack', '2020a')
+            print("Replacing %s with %s" % (str(dep), str(new_dep)))
+            ec[param][n] = new_dep
 
 compiler_modluafooter = """
 prepend_path("MODULEPATH", pathJoin("/cvmfs/soft.computecanada.ca/easybuild/modules/{year}", os.getenv("RSNT_ARCH"), "{sub_path}"))
