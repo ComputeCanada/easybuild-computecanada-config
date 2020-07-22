@@ -3,6 +3,7 @@ PREPEND = 1
 APPEND = 2
 REPLACE = 3
 APPEND_LIST = 4
+DROP = 5
 
 def modify_all_opts(ec, opts_changes,
         opts_to_skip=['builddependencies', 'dependencies', 'modluafooter', 'toolchainopts', 'version'],
@@ -46,6 +47,8 @@ def update_opts(ec,changes,key, update_type):
                     opts[i] = changes + opts[i]
                 elif update_type == APPEND:
                     opts[i] = opts[i] + changes
+            elif update_type == DROP:
+                opts[i] = opts[i].replace(changes,'')
 
         if isinstance(ec[key], str):
             ec[key] = opts[0]
