@@ -116,11 +116,19 @@ new_version_mapping = {
                 ('Hypre','ANY'):'2.15.1',
                 ('PLUMED','2.3.0'):'2.3.7',
                 ('PLUMED','2.4.2'):'2.4.3',
-                ('PETSc','ANY','ANY'): '3.10.5',
+                ('PETSc','ANY','ANY'): '3.10.2',
                 ('Trilinos','12.10.1','ANY'): ('12.10.1',None),
             },
             'tc_mapping': {
                 (('gomkl','2018.3.312'),('gomklc','2018.3.312.100')):('gomkl','2018.3.312'),
+                (('iomkl','2018.3.312'),('iomklc','2018.3.312.100')):('iomkl','2018.3.312'),
+            }
+        },
+        (('iomkl','2018.3.312'),('iomklc','2018.3.312.100')): {
+            'pkg_mapping': {
+                ('PETSc','ANY','ANY'): '3.10.5',
+            },
+            'tc_mapping': {
                 (('iomkl','2018.3.312'),('iomklc','2018.3.312.100')):('iomkl','2018.3.312'),
             }
         },
@@ -290,7 +298,7 @@ def pre_configure_hook(self, *args, **kwargs):
         ' -DCMAKE_SYSTEM_PREFIX_PATH=$NIXUSER_PROFILE ' +
         ' -DCMAKE_SKIP_INSTALL_RPATH=ON ')
 
-    if isinstance(ec.easyblock, str):
+    if ec.easyblock is None or isinstance(ec.easyblock, str):
         c = get_easyblock_class(ec.easyblock, name=ec.name)
     elif isinstance(ec.easyblock, type):
         c = ec.easyblock

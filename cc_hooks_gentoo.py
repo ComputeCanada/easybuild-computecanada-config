@@ -272,6 +272,7 @@ def set_modaltsoftname(ec):
         (toolchain_class(version=toolchain['version']).mpi_family() or ec['toolchainopts'].get('usempi'))
        ):
         ec['modaltsoftname'] = ec['name'].lower() + '-mpi'
+        ec['versionsuffix'] = '-mpi'
 
 
 def disable_use_mpi_for_non_mpi_toolchains(ec):
@@ -380,7 +381,7 @@ def pre_configure_hook(self, *args, **kwargs):
     # additional changes for CMakeMake EasyBlocks
     CMakeMake_configopts_changes = ' -DCMAKE_SKIP_INSTALL_RPATH=ON '
     ec = self.cfg
-    if isinstance(ec.easyblock, str):
+    if ec.easyblock is None or isinstance(ec.easyblock, str):
         c = get_easyblock_class(ec.easyblock, name=ec.name)
     elif isinstance(ec.easyblock, type):
         c = ec.easyblock
