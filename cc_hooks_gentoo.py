@@ -40,6 +40,7 @@ new_version_mapping_2020a = {
         'GSL': ('2.6', COMPILERS_2020a),
         ('GSL', '1.16'): ('1.16', COMPILERS_2020a),
         'JasPer': ('2.0.16', SYSTEM),
+        ('Java', '11'): ('13', SYSTEM),
         ('HDF5','ANY',""): ('1.10.6', COMPILERS_2020a),
         ('HDF5','ANY','-mpi'): ('1.10.6', cOMPI_2020a),
         ('imkl','2020.1.217'): ('2020.1.217', SYSTEM),
