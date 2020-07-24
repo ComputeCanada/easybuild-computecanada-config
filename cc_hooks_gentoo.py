@@ -59,12 +59,15 @@ new_version_mapping_2020a = {
         'SCOTCH': ('6.0.9', cOMPI_2020a),
 }
 
-def modify_dependencies(ec, param, version_mapping):
+def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
     name = ec["name"]
     version = ec["version"]
     toolchain_name = ec.toolchain.name
+    if not list_of_deps or not isinstance(list_of_deps[0], tuple): 
+        print("Error, modify_list_of_dependencies did not receive a list of tuples")
+        return
 
-    for n, dep in enumerate(ec[param]):
+    for n, dep in enumerate(list_of_deps):
         if isinstance(dep,list): dep = dep[0]
         dep_name, dep_version, *rest = tuple(dep)
         dep_version_suffix = rest[0] if len(rest) > 0 else ""
@@ -84,11 +87,25 @@ def modify_dependencies(ec, param, version_mapping):
                     if try_tc == SystemToolchain or try_tc == GCCcore or issubclass(ec.toolchain.__class__, try_tc):
                         match_found = True
                         new_dep = (dep_name, new_version, new_version_suffix, (tc_name, tc_version))
-                        print("Matching updated dependency found. Replacing %s with %s" % (str(dep), str(new_dep)))
-                        ec[param][n] = new_dep
+                        print("Matching updated %s found. Replacing %s with %s" % (param, str(dep), str(new_dep)))
+                        list_of_deps[n] = new_dep
                         break
 
                 if match_found: break
+
+    return list_of_deps
+
+def modify_dependencies(ec, param, version_mapping):
+    name = ec["name"]
+    version = ec["version"]
+    toolchain_name = ec.toolchain.name
+    if ec[param] and isinstance(ec[param][0], list) and ec[param][0] and isinstance(ec[param][0][0], tuple):
+        for n, deps in enumerate(ec[param]):
+            ec[param][n] = modify_list_of_dependencies(ec, param, version_mapping, ec[param][n])
+    elif ec[param] and isinstance(ec[param][0], tuple):
+        ec[param] = modify_list_of_dependencies(ec, param, version_mapping, ec[param])
+
+
 
 compiler_modluafooter = """
 prepend_path("MODULEPATH", pathJoin("/cvmfs/soft.computecanada.ca/easybuild/modules/{year}", os.getenv("RSNT_ARCH"), "{sub_path}"))
