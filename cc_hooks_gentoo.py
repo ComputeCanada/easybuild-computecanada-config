@@ -247,18 +247,6 @@ end
         'modluafooter': (mpi_modluafooter % 'openmpi', REPLACE),
         'dependencies': (('libfabric', '1.10.1'), APPEND_LIST),
     },
-    'ParaView': {
-            'configopts': [("-DPARAVIEW_USE_OSPRAY=ON -DOSPRAY_INSTALL_DIR=$EBROOTGENTOO -DVTK_RENDERING_BACKEND=OpenGL2 -DVTK_USE_X=ON ", APPEND),
-                           ("-DOPENGL_INCLUDE_DIR=$EBROOTMESA/include", DROP),
-                           ("-DOPENGL_gl_LIBRARY=$EBROOTMESA/lib/libGL.so", DROP),
-                           ("-DOSMESA_INCLUDE_DIR=$EBROOTMESA/include", DROP),
-                           ("-DOSMESA_LIBRARY=$EBROOTMESA/lib/libOSMesa.so", DROP),
-                           ("-DOPENGL_glu_LIBRARY=$EBROOTLIBGLU/lib/libGLU.so", DROP),
-                           ],
-            'postinstallcmds': (["/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/lib/python3.8 --add_path %(installdir)s/lib",
-                                 "/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/lib/paraview-%(version_major_minor)s --add_path %(installdir)s/lib"], 
-                                 REPLACE),
-    },
     'Python': {
         'modextrapaths': ({'PYTHONPATH': ['/cvmfs/soft.computecanada.ca/easybuild/python/site-packages']}, REPLACE),
         'allow_prepend_abs_path': (True, REPLACE),
