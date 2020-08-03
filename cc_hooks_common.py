@@ -6,7 +6,7 @@ APPEND_LIST = 4
 DROP = 5
 
 def modify_all_opts(ec, opts_changes,
-        opts_to_skip=['builddependencies', 'dependencies', 'modluafooter', 'toolchainopts', 'version'],
+        opts_to_skip=['builddependencies', 'dependencies', 'modluafooter', 'toolchainopts', 'version', 'multi_deps'],
         opts_to_change='ALL'):
     if 'modaltsoftname' in ec and ec['modaltsoftname'] in opts_changes:
         name = ec['modaltsoftname']
