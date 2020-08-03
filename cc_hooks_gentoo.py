@@ -276,7 +276,7 @@ def set_modaltsoftname(ec):
     toolchain = ec.get('toolchain')
     toolchain_class, _ = search_toolchain(toolchain['name'])
     if (ec['name'].lower() in mpi_modaltsoftname and
-        (toolchain_class(version=toolchain['version']).mpi_family() or ec['toolchainopts'].get('usempi'))
+        (toolchain_class(version=toolchain['version']).mpi_family() or (ec['toolchainopts'] and ec['toolchainopts'].get('usempi')))
        ):
         ec['modaltsoftname'] = ec['name'].lower() + '-mpi'
         ec['versionsuffix'] = '-mpi'
