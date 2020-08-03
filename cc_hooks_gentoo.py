@@ -29,7 +29,7 @@ cOMPI_2020a = [('iompi', '2020a'),('gompi', '2020a')]
 # - (new software version, list of compatible toolchains, None)
 new_version_mapping_2020a = {
         'Boost': ('1.72.0', COMPILERS_2020a),
-        ('Boost','ANY','-mpi'): ('1.72.0', cOMPI_2020a),
+        ('Boost','ANY','-mpi'): ('1.72.0', cOMPI_2020a, None),
         ('CUDA', '11.0.2'): ('11.0', COMPILERS_2020a),
         'CGAL': ('4.14.3', ICC2020a),
         'FFTW': ('3.3.8', COMPILERS_2020a),
@@ -45,10 +45,10 @@ new_version_mapping_2020a = {
         ('HDF5','ANY','-mpi'): ('1.10.6', cOMPI_2020a),
         ('imkl','2020.1.217'): ('2020.1.217', SYSTEM),
         ('netCDF','ANY',""): ('4.7.4', COMPILERS_2020a),
-        ('netCDF','ANY','-mpi'): ('4.7.4', cOMPI_2020a),
+        ('netCDF','ANY','-mpi'): ('4.7.4', cOMPI_2020a, None),
         ('netCDF-C++4','ANY',""): ('4.3.1', COMPILERS_2020a),
-        ('netCDF-C++4','ANY','-mpi'): ('4.3.1', cOMPI_2020a),
-        ('netCDF-Fortran','ANY','-mpi'): ('4.5.2', cOMPI_2020a),
+        ('netCDF-C++4','ANY','-mpi'): ('4.3.1', cOMPI_2020a, None),
+        ('netCDF-Fortran','ANY','-mpi'): ('4.5.2', cOMPI_2020a, None),
         'UDUNITS': ('2.2.26', SYSTEM),
         **dict.fromkeys([('Python', '2.7.%s' % str(x)) for x in range(0,18)], ('2.7', GCCCORE93)),
         **dict.fromkeys([('Python', '3.5.%s' % str(x)) for x in range(0,8)], ('3.7', GCCCORE93)),
