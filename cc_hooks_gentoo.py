@@ -328,13 +328,23 @@ def drop_dependencies(ec, param):
     }
     # iterate over a copy
     for dep in ec[param][:]:
-        dep_list = list(dep)
-        if dep_list[0] == ec.name:
-            continue
-        if dep_list[0] in to_drop:
-            if to_drop[dep_list[0]] == 'ALL' or LooseVersion(dep_list[1]) < LooseVersion(to_drop[dep_list[0]]):
-                print("Dropped %s, %s from %s" % (dep_list[0],dep_list[1],param))
-                ec[param].remove(dep)
+        if isinstance(dep, list):
+            dep_copy = dep[:]
+            for d in dep_copy:
+                name, version = d[0], d[1]
+                if name in to_drop:
+                    if to_drop[name] == 'ALL' or LooseVersion(version) < LooseVersion(to_drop[name]):
+                        print("Dropped %s, %s from %s" % (name, version, param))
+                        dep.remove(d)
+
+        else:
+            dep_list = list(dep)
+            if dep_list[0] == ec.name:
+                continue
+            if dep_list[0] in to_drop:
+                if to_drop[dep_list[0]] == 'ALL' or LooseVersion(dep_list[1]) < LooseVersion(to_drop[dep_list[0]]):
+                    print("Dropped %s, %s from %s" % (dep_list[0],dep_list[1],param))
+                    ec[param].remove(dep)
 
 
 def parse_hook(ec, *args, **kwargs):
