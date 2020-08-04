@@ -79,6 +79,9 @@ def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
         match_found = False
         for key in possible_keys:
             if key in version_mapping:
+                # Skip dependencies on the same name
+                if name == key or name == key[0]:
+                    continue
                 new_version, supported_toolchains, *new_version_suffix = version_mapping[key]
                 new_version_suffix = new_version_suffix[0] if len(new_version_suffix) == 1 else dep_version_suffix
 
