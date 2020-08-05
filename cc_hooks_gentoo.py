@@ -217,6 +217,9 @@ end
         'configopts': ('-DIQTREE_FLAGS=mpi', REPLACE),
         'sanity_check_paths': ({'files': ['bin/iqtree-mpi'], 'dirs': []}, REPLACE),
     },
+    'Java': {
+        'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s'], REPLACE),
+    },
     'OpenBLAS': {
         **dict.fromkeys(['buildopts','installopts','testopts'],
                         ({'sse3': 'DYNAMIC_ARCH=1',
