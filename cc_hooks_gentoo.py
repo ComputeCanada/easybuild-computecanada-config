@@ -32,6 +32,7 @@ new_version_mapping_2020a = {
         ('Boost','ANY','-mpi'): ('1.72.0', cOMPI_2020a),
         ('CUDA', '11.0.2'): ('11.0', COMPILERS_2020a),
         'CGAL': ('4.14.3', ICC2020a),
+        'ETSF_IO': ('1.0.4', [('iompi', '2020a'), ('iccifort', '2020.1.217')]),
         'FFTW': ('3.3.8', COMPILERS_2020a),
         ('FFTW','ANY','-mpi'): ('3.3.8', cOMPI_2020a),
         'Eigen': ('3.3.7', SYSTEM),
