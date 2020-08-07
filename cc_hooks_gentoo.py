@@ -41,13 +41,14 @@ new_version_mapping_2020a = {
         ('GSL', '1.16'): ('1.16', COMPILERS_2020a),
         'JasPer': ('2.0.16', SYSTEM),
         ('Java', '11'): ('13', SYSTEM),
-        ('HDF5','ANY',""): ('1.10.6', COMPILERS_2020a),
+        ('HDF5','ANY',""): ('1.10.6', cOMPI_2020a + COMPILERS_2020a, None),
         ('HDF5','ANY','-mpi'): ('1.10.6', cOMPI_2020a),
         ('imkl','2020.1.217'): ('2020.1.217', SYSTEM),
-        ('netCDF','ANY',""): ('4.7.4', COMPILERS_2020a),
+        ('netCDF','ANY',""): ('4.7.4', cOMPI_2020a + COMPILERS_2020a, None),
         ('netCDF','ANY','-mpi'): ('4.7.4', cOMPI_2020a, None),
-        ('netCDF-C++4','ANY',""): ('4.3.1', COMPILERS_2020a),
+        ('netCDF-C++4','ANY', ""): ('4.3.1', cOMPI_2020a + COMPILERS_2020a, None),
         ('netCDF-C++4','ANY','-mpi'): ('4.3.1', cOMPI_2020a, None),
+        ('netCDF-Fortran','ANY', ""): ('4.5.2', cOMPI_2020a + COMPILERS_2020a, None),
         ('netCDF-Fortran','ANY','-mpi'): ('4.5.2', cOMPI_2020a, None),
         'Perl': ('5.30', SYSTEM),
         'UDUNITS': ('2.2.26', SYSTEM),
@@ -269,7 +270,7 @@ end
 
 
 # modules with both -mpi and no-mpi varieties
-mpi_modaltsoftname = ['fftw', 'hdf5', 'netcdf-c++4', 'netcdf-c++', 'netcdf-fortran', 'netcdf', 'iq-tree', 'boost', 'vtk', 'libgridxc']
+mpi_modaltsoftname = ['fftw', 'hdf5', 'netcdf-c++4', 'netcdf-c++', 'netcdf-fortran', 'netcdf', 'iq-tree', 'boost', 'vtk', 'libgridxc', 'etsf_io']
 modaltsoftnames = {
     "iccifort": "intel",
     "impi": "intelmpi",
