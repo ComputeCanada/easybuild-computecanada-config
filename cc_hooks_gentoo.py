@@ -331,6 +331,7 @@ def drop_dependencies(ec, param):
             'ICU': 'ALL',
             'libxslt': 'ALL',
             'libzip': 'ALL',
+            'Meson': 'ALL',
             'Ninja': 'ALL',
             'PyQt5': 'ALL',
             'SQLite': 'ALL',
