@@ -1,5 +1,6 @@
 from easybuild.framework.easyconfig.easyconfig import get_easyblock_class, get_toolchain_hierarchy
 from easybuild.easyblocks.generic.cmakemake import CMakeMake
+from easybuild.easyblocks.generic.mesonninja import MesonNinja
 from easybuild.toolchains.system import SystemToolchain
 from easybuild.toolchains.gcccore import GCCcore
 from easybuild.framework.easyconfig.constants import EASYCONFIG_CONSTANTS
@@ -419,6 +420,10 @@ def pre_configure_hook(self, *args, **kwargs):
             pass
         else:
             update_opts(ec, CMakeMake_configopts_changes, 'configopts', PREPEND)
+
+    # additional changes for MesonNinja EasyBlocks
+    if c == MesonNinja or issubclass(c,MesonNinja):
+        update_opts(ec, False, 'fail_on_missing_ninja_meson_dep', REPLACE)
 
     self.cfg.enable_templating = orig_enable_templating
 
