@@ -408,7 +408,6 @@ def pre_configure_hook(self, *args, **kwargs):
     modify_all_opts(self.cfg, opts_changes)
 
     # additional changes for CMakeMake EasyBlocks
-    CMakeMake_configopts_changes = ' -DCMAKE_SKIP_INSTALL_RPATH=ON '
     ec = self.cfg
     if ec.easyblock is None or isinstance(ec.easyblock, str):
         c = get_easyblock_class(ec.easyblock, name=ec.name)
@@ -419,7 +418,7 @@ def pre_configure_hook(self, *args, **kwargs):
         if (ec['name'],ec['version']) in [('ROOT','5.34.36'), ('mariadb', '10.4.11')]:
             pass
         else:
-            update_opts(ec, CMakeMake_configopts_changes, 'configopts', PREPEND)
+            update_opts(ec, ' -DCMAKE_SKIP_INSTALL_RPATH=ON ', 'configopts', PREPEND)
 
     # additional changes for MesonNinja EasyBlocks
     if c == MesonNinja or issubclass(c,MesonNinja):
