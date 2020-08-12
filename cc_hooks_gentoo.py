@@ -145,6 +145,10 @@ opts_changes = {
                  """popd; popd ; """,
                  PREPEND)
     },
+    'cram': {
+        'multi_deps': ({'Python': ['2.7', '3.6', '3.7', '3.8']}, REPLACE),
+        'modluafooter': ('depends_on("python")', REPLACE),
+    },
     ('CUDA', '11.0.2'): {
         'version': ('11.0', REPLACE),
     },
