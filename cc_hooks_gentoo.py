@@ -133,6 +133,9 @@ opts_changes = {
     'BioPerl': {
         'dependencies': ([('Perl', '5.30.2'), ('XML-LibXML', '2.0205')], REPLACE),
     },
+    'BOLT-LMM': {
+        'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s '], REPLACE),
+    },
     'Clang': {
         'preconfigopts': ("""pushd %(builddir)s/llvm-%(version)s.src/tools/clang; """ +
                  # Use ${EPREFIX} as default sysroot
