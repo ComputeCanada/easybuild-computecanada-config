@@ -77,6 +77,7 @@ function patch_zip {
 	# Extract all and patch every binary file, and update the archive
 	unzip -q $fullname
 	for fname in $(find . -type f); do
+	        chmod u+w $fname
 		patch_rpath $fname;
 	done
 	zip -rq $fullname .
