@@ -52,6 +52,7 @@ new_version_mapping_2020a = {
         ('netCDF-C++4','ANY','-mpi'): ('4.3.1', cOMPI_2020a, None),
         ('netCDF-Fortran','ANY', ""): ('4.5.2', cOMPI_2020a + COMPILERS_2020a, None),
         ('netCDF-Fortran','ANY','-mpi'): ('4.5.2', cOMPI_2020a, None),
+        'PLUMED': ('2.6.1', cOMPI_2020a, None),
         'UDUNITS': ('2.2.26', SYSTEM),
         **dict.fromkeys([('Python', '2.7.%s' % str(x)) for x in range(0,18)], ('2.7', GCCCORE93)),
         **dict.fromkeys([('Python', '3.5.%s' % str(x)) for x in range(0,8)], ('3.7', GCCCORE93)),
