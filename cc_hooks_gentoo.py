@@ -103,6 +103,11 @@ def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
             new_dep = ('SciPy-Stack', '2020a')
             print("Replacing %s with %s" % (str(dep), str(new_dep)))
             ec[param][n] = new_dep
+        if dep_name == 'Boost.Serial':
+            new_dep = ('Boost', dep_version)
+            print("Replacing %s with %s" % (str(dep), str(new_dep)))
+            ec[param][n] = new_dep
+
 
     return list_of_deps
 
@@ -135,6 +140,17 @@ family("mpi")
 """
 
 opts_changes = {
+    'Boost.Serial': {
+        'name': ('Boost', REPLACE),
+        'multi_deps': ({'Python': ['2.7', '3.6', '3.7', '3.8']}, REPLACE),
+        'builddependencies': ([[('SciPy-Stack', '2020a'), ('Python', v)] for v in ['2.7', '3.6', '3.7', '3.8'] ], REPLACE),
+    },
+    'Boost': {
+        'configopts': ('--without-libraries=python', DROP),
+        'patches': (['Boost-1.65.1_python3.patch'], REPLACE),
+        'checksums': ('d86d34cf48fdbc4b9a36ae7706b3f3353f9ad521ff1d5a716cce750ae9f5dd33', APPEND_LIST),
+        'prebuildopts': ('[ "$(ls -A %(installdir)s)" ] && mv %(installdir)s/* %(builddir)s/obj ; ', REPLACE),
+    },
     'BioPerl': {
         'dependencies': ([('Perl', '5.30.2'), ('XML-LibXML', '2.0205')], REPLACE),
     },
@@ -375,7 +391,7 @@ def parse_hook(ec, *args, **kwargs):
     """Example parse hook to inject a patch file for a fictive software package named 'Example'."""
     disable_use_mpi_for_non_mpi_toolchains(ec)
     set_modaltsoftname(ec)
-    modify_all_opts(ec, opts_changes, opts_to_skip=[], opts_to_change=['dependencies', 'builddependencies', 'license_file', 'version', 'multi_deps'])
+    modify_all_opts(ec, opts_changes, opts_to_skip=[], opts_to_change=['multi_deps', 'dependencies', 'builddependencies', 'license_file', 'version', 'name'])
     modify_dependencies(ec, 'dependencies', new_version_mapping_2020a)
     modify_dependencies(ec, 'builddependencies', new_version_mapping_2020a)
     drop_dependencies(ec, 'dependencies')
