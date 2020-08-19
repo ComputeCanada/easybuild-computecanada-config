@@ -98,6 +98,10 @@ def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
                         break
 
                 if match_found: break
+        if dep_name == 'SciPy-bundle':
+            new_dep = ('SciPy-Stack', '2020a')
+            print("Replacing %s with %s" % (str(dep), str(new_dep)))
+            ec[param][n] = new_dep
 
     return list_of_deps
 
