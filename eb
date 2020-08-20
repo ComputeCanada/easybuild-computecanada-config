@@ -13,11 +13,11 @@ if [ -n "$USE_GENTOO" ]; then
 	module load gentoo/$USE_GENTOO_VERSION
 	YEAR=$USE_GENTOO_VERSION
 	export EASYBUILD_ALLOW_LOADED_MODULES=gentoo
-	export EASYBUILD_CONFIGFILES=$EASYBUILD_ROOT/config.cfg,$EASYBUILD_ROOT/config-gentoo.cfg
+	export LOCAL_EASYBUILD_CONFIGFILES=$EASYBUILD_ROOT/config.cfg,$EASYBUILD_ROOT/config-gentoo.cfg
 else
 	module load nixpkgs/16.09
 	YEAR=2017
-	export EASYBUILD_CONFIGFILES=$EASYBUILD_ROOT/config.cfg,$EASYBUILD_ROOT/config-nix.cfg
+	export LOCAL_EASYBUILD_CONFIGFILES=$EASYBUILD_ROOT/config.cfg,$EASYBUILD_ROOT/config-nix.cfg
 fi
 export EASYBUILD_SUBDIR_MODULES=modules/$YEAR
 export EASYBUILD_SUBDIR_SOFTWARE=software/$YEAR
@@ -83,4 +83,4 @@ if [ ! -d /cvmfs/local ]; then
 fi
 export PYTHONPATH=$EASYBUILD_ROOT:$EASYBUILD_ROOT/site-packages
 export RSNT_EASYBUILD_MAGIC_COOKIE=263ca73bb634185aab1d1b41627fdbba
-exec $EASYBUILD_ROOT/framework/eb ${1+"$@"}
+exec $EASYBUILD_ROOT/framework/eb --configfiles=$LOCAL_EASYBUILD_CONFIGFILES ${1+"$@"}
