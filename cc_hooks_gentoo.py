@@ -107,6 +107,10 @@ def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
             new_dep = ('Boost', dep_version)
             print("Replacing %s with %s" % (str(dep), str(new_dep)))
             ec[param][n] = new_dep
+        if dep_name == 'HDF5.Serial':
+            new_dep = ('HDF5', dep_version)
+            print("Replacing %s with %s" % (str(dep), str(new_dep)))
+            ec[param][n] = new_dep
 
 
     return list_of_deps
@@ -193,6 +197,9 @@ opts_changes = {
         'configopts': ("--with-sysroot=$EPREFIX", PREPEND),
         # remove .la files, as they mess up rpath when libtool is used
         'postinstallcmds': (["find %(installdir)s -name '*.la' -delete"], REPLACE),
+    },
+    'HDF5.Serial': {
+        'name': ('HDF5', REPLACE),
     },
     'iccifort': {
         'skip_license_file_in_module': (True, REPLACE),
