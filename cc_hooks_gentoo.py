@@ -144,6 +144,116 @@ add_property("type_","mpi")
 family("mpi")
 """
 
+openfoam_modluafooter = """
+local wm_compiler = "%s"
+local wm_label_size = "32"
+
+-- Nothing below this line should need changing for a different version or compiler
+local version = "%%(version)s"
+local wm_project = "%%(name)s"
+local wm_project_dir = pathJoin(root, wm_project .. "-" .. version)
+local wm_thirdparty_dir = pathJoin(root, "ThirdParty-" .. version)
+local wm_project_user_dir = pathJoin(os.getenv("HOME"), wm_project, os.getenv("USER") .. "-" .. version)
+local wm_options_no_opt = "linux64" .. wm_compiler .. "DPInt" .. wm_label_size
+local wm_options = wm_options_no_opt .. "Opt"
+
+local foam_site_dir = pathJoin(root, "site", version, "platforms", wm_options)
+local platform_dir = pathJoin(wm_project_dir, "platforms", wm_options)
+local foam_usr_dir = pathJoin(wm_project_user_dir, "platforms", wm_options)
+
+setenv("WM_THIRD_PARTY_DIR", wm_thirdparty_dir)
+setenv("FOAM_EXT_LIBBIN", pathJoin(wm_thirdparty_dir,"platforms",wm_options_no_opt,"lib"))
+setenv("BOOST_ARCH_PATH", "")
+setenv("CGAL_ARCH_PATH", "")
+setenv("FOAMY_HEX_MESH", "yes")
+setenv("FOAM_APP", pathJoin(wm_project_dir, "applications"))
+setenv("FOAM_APPBIN", pathJoin(platform_dir, "bin"))
+setenv("FOAM_ETC", pathJoin(wm_project_dir, "etc"))
+setenv("FOAM_JOB_DIR", pathJoin(root, "jobControl"))
+setenv("FOAM_LIBBIN", pathJoin(platform_dir, "lib"))
+setenv("FOAM_MPI", "mpi")
+setenv("FOAM_RUN", pathJoin(wm_project_user_dir, "run"))
+setenv("FOAM_SETTINGS", "")
+setenv("FOAM_SIGFPE", "")
+setenv("FOAM_SITE_APPBIN", pathJoin(foam_site_dir, "bin"))
+setenv("FOAM_SITE_LIBBIN", pathJoin(foam_site_dir, "lib"))
+setenv("FOAM_SOLVERS", pathJoin(wm_project_dir, "applications", "solvers"))
+setenv("FOAM_SRC", pathJoin(wm_project_dir, "src"))
+setenv("FOAM_TUTORIALS", pathJoin(wm_project_dir, "tutorials"))
+setenv("FOAM_USER_APPBIN", pathJoin(foam_usr_dir, "bin"))
+setenv("FOAM_USER_LIBBIN", pathJoin(foam_usr_dir, "lib"))
+setenv("FOAM_UTILITIES", pathJoin(wm_project_dir, "applications" , "utilities"))
+prepend_path("LD_LIBRARY_PATH", pathJoin(wm_project_dir,"platforms",wm_options,"lib","dummy"))
+prepend_path("LD_LIBRARY_PATH", pathJoin(wm_thirdparty_dir,"platforms",wm_options_no_opt,"lib"))
+prepend_path("LD_LIBRARY_PATH", pathJoin(platform_dir,"lib"))
+prepend_path("LD_LIBRARY_PATH", pathJoin(foam_site_dir,"lib"))
+prepend_path("LD_LIBRARY_PATH", pathJoin(foam_usr_dir,"lib"))
+prepend_path("LD_LIBRARY_PATH", pathJoin(wm_thirdparty_dir,"platforms",wm_options_no_opt,"lib","mpi"))
+prepend_path("LD_LIBRARY_PATH", pathJoin(platform_dir,"lib","mpi"))
+prepend_path("PATH", pathJoin(wm_project_dir, "bin"))
+prepend_path("PATH", pathJoin(wm_project_dir, "wmake"))
+prepend_path("PATH", pathJoin(platform_dir, "bin"))
+prepend_path("PATH", pathJoin(foam_site_dir, "bin"))
+prepend_path("PATH", pathJoin(foam_usr_dir, "bin"))
+setenv("MPI_BUFFER_SIZE", "20000000")
+setenv("WM_ARCH", "linux64")
+setenv("WM_ARCH_OPTION", "64")
+setenv("WM_CC", "")
+setenv("WM_CFLAGS", "")
+setenv("WM_COMPILER_LIB_ARCH", "64")
+setenv("WM_COMPILER_TYPE", "system")
+setenv("WM_COMPILE_OPTION", "Opt")
+setenv("WM_CXX", "")
+setenv("WM_CXXFLAGS", "")
+setenv("WM_DIR", pathJoin(wm_project_dir, "wmake"))
+setenv("WM_LABEL_OPTION", "Int" .. wm_label_size)
+setenv("WM_LDFLAGS", "")
+setenv("WM_LINK_LANGUAGE", "c++")
+setenv("WM_OPTIONS", wm_options)
+setenv("WM_OSTYPE", "POSIX")
+setenv("WM_PRECISION_OPTION", "DP")
+setenv("WM_PROJECT", "OpenFOAM")
+setenv("WM_PROJECT_DIR", wm_project_dir)
+setenv("WM_PROJECT_INST_DIR", root)
+setenv("WM_PROJECT_USER_DIR", wm_project_user_dir)
+
+set_alias("app", 'cd $FOAM_APP')
+set_alias("foam", 'cd $WM_PROJECT_DIR')
+set_alias("foam3rdParty", 'cd $WM_THIRD_PARTY_DIR')
+set_alias("foamApps", 'cd $FOAM_APP')
+set_alias("foamSite", 'cd $WM_PROJECT_INST_DIR/site')
+set_alias("foamSol", 'cd $FOAM_SOLVERS')
+set_alias("foamTuts", 'cd $FOAM_TUTORIALS')
+set_alias("foamUtils", 'cd $FOAM_UTILITIES')
+set_alias("foamfv", 'cd $FOAM_SRC/finiteVolume')
+set_alias("foamsrc", 'cd $FOAM_SRC/$WM_PROJECT')
+set_alias("lib", 'cd $FOAM_LIBBIN')
+set_alias("run", 'cd $FOAM_RUN')
+set_alias("sol", 'cd $FOAM_SOLVERS')
+set_alias("src", 'cd $FOAM_SRC')
+set_alias("tut", 'cd $FOAM_TUTORIALS')
+set_alias("util", 'cd $FOAM_UTILITIES')
+set_alias("wm32", 'wmSET WM_ARCH_OPTION=32')
+set_alias("wm64", 'wmSET WM_ARCH_OPTION=64')
+set_alias("wmDP", 'wmSET WM_PRECISION_OPTION=DP')
+set_alias("wmSET", '. $WM_PROJECT_DIR/etc/bashrc')
+set_alias("wmSP", 'wmSET WM_PRECISION_OPTION=SP')
+set_alias("wmSchedOFF", 'unset WM_SCHEDULER')
+set_alias("wmSchedON", 'export WM_SCHEDULER=$WM_PROJECT_DIR/wmake/wmakeScheduler')
+set_alias("wmUNSET", '. $WM_PROJECT_DIR/etc/config/unset.sh')
+
+local paraview_dir = os.getenv("EBROOTPARAVIEW") or ""
+local paraview_ver = "%s"
+local paraview_major = "%s"
+pushenv("ParaView_DIR", paraview_dir)
+pushenv("ParaView_GL","mesa")
+pushenv("ParaView_INCLUDE_DIR", pathJoin(paraview_dir, "include", "paraview-" .. paraview_major))
+pushenv("ParaView_LIB_DIR", pathJoin(paraview_dir, "lib64"))
+setenv("ParaView_MAJOR", paraview_major)
+setenv("ParaView_VERSION", paraview_ver)
+setenv("PV_PLUGIN_PATH", pathJoin(platform_dir, "lib", "paraview-" .. paraview_major))
+"""
+
 opts_changes = {
     'Boost.Serial': {
         'name': ('Boost', REPLACE),
@@ -269,6 +379,11 @@ end
                         'avx512': 'TARGET=SKYLAKEX'}[os.getenv('RSNT_ARCH')] + ' NUM_THREADS=64',
                         PREPEND))
     },
+    ("OpenFOAM", "8"): {
+        'patches': (['OpenFOAM-8-cleanup-cc.patch'], APPEND_LIST),
+        'checksums': ('51ef17739ced32c1cbf239c377bbf4abfa4e4f12eaf19a635c432e071ce58197', APPEND_LIST),
+        'modluafooter': (openfoam_modluafooter % ('Gcc', '5.8.0', '5.8'), REPLACE),
+    },
     "OpenMPI": {
         # local customizations for OpenMPI
         'configopts': ('--enable-shared --with-verbs ' +
@@ -339,9 +454,9 @@ def disable_use_mpi_for_non_mpi_toolchains(ec):
 
 
 def set_modluafooter(ec):
-    if ec['name'] in opts_changes:
-        if 'modluafooter' in opts_changes[ec['name']]:
-            update_opts(ec, opts_changes[ec['name']]['modluafooter'][0], 'modluafooter', opts_changes[ec['name']]['modluafooter'][1])
+    for key in [ec['name'], (ec['name'], ec['version'])]:
+        if key in opts_changes and 'modluafooter' in opts_changes[key]:
+            update_opts(ec, opts_changes[key]['modluafooter'][0], 'modluafooter', opts_changes[key]['modluafooter'][1])
 
     moduleclass = ec.get('moduleclass','')
     year = os.environ['EBVERSIONGENTOO']
