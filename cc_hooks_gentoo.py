@@ -7,6 +7,7 @@ from easybuild.framework.easyconfig.constants import EASYCONFIG_CONSTANTS
 from distutils.version import LooseVersion
 from cc_hooks_common import modify_all_opts, update_opts, PREPEND, APPEND, REPLACE, APPEND_LIST, DROP
 from easybuild.tools.toolchain.utilities import search_toolchain
+from easybuild.tools.environment import setvar
 import os
 
 SYSTEM = [('system', 'system')]
@@ -589,3 +590,7 @@ def post_module_hook(self, *args, **kwargs):
     toolchain = self.cfg.get('toolchain')
     if toolchain and toolchain['name'] == 'GCCcore':
         self.cfg['toolchain'] = EASYCONFIG_CONSTANTS['SYSTEM'][0]
+
+def pre_prepare_hook(self, *args, **kwargs):
+    setvar("EBROOTLIBXML2", os.environ["EBROOTGENTOO"])
+
