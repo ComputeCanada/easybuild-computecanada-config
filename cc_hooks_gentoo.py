@@ -39,6 +39,7 @@ new_version_mapping_2020a = {
         'Eigen': ('3.3.7', SYSTEM),
         'GDAL': ('3.0.4', GCC93, None),
         'GEOS': ('3.8.1', GCCCORE93, None),
+        'GObject-Introspection': ('1.64.0', SYSTEM, None),
         'GSL': ('2.6', COMPILERS_2020a),
         ('GSL', '1.16'): ('1.16', COMPILERS_2020a),
         'JasPer': ('2.0.16', SYSTEM),
@@ -309,6 +310,11 @@ opts_changes = {
         # remove .la files, as they mess up rpath when libtool is used
         'postinstallcmds': (["find %(installdir)s -name '*.la' -delete"], REPLACE),
     },
+    'GObject-Introspection': {
+        'dependencies': ([], REPLACE),
+        'modluafooter': ('depends_on(atleast("python", "3"))', REPLACE),
+        'versionsuffix': ('', REPLACE),
+    },
     'HDF5.Serial': {
         'name': ('HDF5', REPLACE),
     },
@@ -514,7 +520,7 @@ def parse_hook(ec, *args, **kwargs):
     """Example parse hook to inject a patch file for a fictive software package named 'Example'."""
     disable_use_mpi_for_non_mpi_toolchains(ec)
     set_modaltsoftname(ec)
-    modify_all_opts(ec, opts_changes, opts_to_skip=[], opts_to_change=['multi_deps', 'dependencies', 'builddependencies', 'license_file', 'version', 'name', 'patches', 'checksums'])
+    modify_all_opts(ec, opts_changes, opts_to_skip=[], opts_to_change=['multi_deps', 'dependencies', 'builddependencies', 'license_file', 'version', 'name', 'patches', 'checksums', 'versionsuffix'])
     modify_dependencies(ec, 'dependencies', new_version_mapping_2020a)
     modify_dependencies(ec, 'builddependencies', new_version_mapping_2020a)
     drop_dependencies(ec, 'dependencies')
