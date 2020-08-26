@@ -6,6 +6,7 @@ from easybuild.toolchains.gcccore import GCCcore
 from easybuild.framework.easyconfig.constants import EASYCONFIG_CONSTANTS
 from distutils.version import LooseVersion
 from cc_hooks_common import modify_all_opts, update_opts, PREPEND, APPEND, REPLACE, APPEND_LIST, DROP
+from cc_hooks_common import get_matching_keys
 from easybuild.tools.toolchain.utilities import search_toolchain
 from easybuild.tools.environment import setvar
 import os
@@ -79,29 +80,28 @@ def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
         dep_name, dep_version, *rest = tuple(dep)
         dep_version_suffix = rest[0] if len(rest) > 0 else ""
 
-        possible_keys = [(dep_name, dep_version, dep_version_suffix), (dep_name, 'ANY', dep_version_suffix), (dep_name, dep_version), dep_name]
-
+        matching_keys = get_matching_keys(ec, version_mapping)
         # search through possible matching keys
         match_found = False
-        for key in possible_keys:
-            if key in version_mapping:
-                # Skip dependencies on the same name
-                if name == key or name == key[0]:
-                    continue
-                new_version, supported_toolchains, *new_version_suffix = version_mapping[key]
-                new_version_suffix = new_version_suffix[0] if len(new_version_suffix) == 1 else dep_version_suffix
+        for key in matching_keys:
+            # Skip dependencies on the same name
+            if name == key or name == key[0]:
+                continue
+            new_version, supported_toolchains, *new_version_suffix = version_mapping[key]
+            new_version_suffix = new_version_suffix[0] if len(new_version_suffix) == 1 else dep_version_suffix
 
-                # test if one of the supported toolchains is a subtoolchain of the toolchain with which we are building. If so, a match is found, replace the dependency
-                for tc_name, tc_version in supported_toolchains:
-                    try_tc, _ = search_toolchain(tc_name)
-                    if try_tc == SystemToolchain or try_tc == GCCcore or issubclass(ec.toolchain.__class__, try_tc):
-                        match_found = True
-                        new_dep = (dep_name, new_version, new_version_suffix, (tc_name, tc_version))
-                        print("Matching updated %s found. Replacing %s with %s" % (param, str(dep), str(new_dep)))
-                        list_of_deps[n] = new_dep
-                        break
+            # test if one of the supported toolchains is a subtoolchain of the toolchain with which we are building. If so, a match is found, replace the dependency
+            for tc_name, tc_version in supported_toolchains:
+                try_tc, _ = search_toolchain(tc_name)
+                if try_tc == SystemToolchain or try_tc == GCCcore or issubclass(ec.toolchain.__class__, try_tc):
+                    match_found = True
+                    new_dep = (dep_name, new_version, new_version_suffix, (tc_name, tc_version))
+                    print("Matching updated %s found. Replacing %s with %s" % (param, str(dep), str(new_dep)))
+                    list_of_deps[n] = new_dep
+                    break
 
-                if match_found: break
+            if match_found: break
+
         if dep_name == 'SciPy-bundle':
             new_dep = ('SciPy-Stack', '2020a')
             print("Replacing %s with %s" % (str(dep), str(new_dep)))
@@ -461,8 +461,9 @@ def disable_use_mpi_for_non_mpi_toolchains(ec):
 
 
 def set_modluafooter(ec):
-    for key in [ec['name'], (ec['name'], ec['version'])]:
-        if key in opts_changes and 'modluafooter' in opts_changes[key]:
+    matching_keys = get_matching_keys(ec, opts_changes)
+    for key in matching_keys:
+        if 'modluafooter' in opts_changes[key]:
             update_opts(ec, opts_changes[key]['modluafooter'][0], 'modluafooter', opts_changes[key]['modluafooter'][1])
 
     moduleclass = ec.get('moduleclass','')
@@ -479,8 +480,9 @@ def set_modluafooter(ec):
 
 
 def add_dependencies(ec, keyword):
-    for key in [ec['name'], (ec['name'], ec['version'])]:
-        if key in opts_changes and keyword in opts_changes[key]:
+    matching_keys = get_matching_keys(ec, opts_changes)
+    for key in matching_keys:
+        if keyword in opts_changes[key]:
             update_opts(ec, opts_changes[key][keyword][0], keyword, opts_changes[key][keyword][1])
 
 def drop_dependencies(ec, param):
