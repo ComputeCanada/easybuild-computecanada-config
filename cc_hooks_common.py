@@ -5,25 +5,24 @@ REPLACE = 3
 APPEND_LIST = 4
 DROP = 5
 
-def get_matching_keys(ec, dictionary):
-    matching_keys = []
-
+def get_matching_keys_from_ec(ec, dictionary):
     if 'modaltsoftname' in ec:
-        name = ec['modaltsoftname']
-        try_keys = [name, (name, ec['version']), (name, ec['version'], ec['versionsuffix']), (name, 'ANY', ec['versionsuffix'])]
-        matching_keys = [key for key in try_keys if key in dictionary]
-
+        matching_keys = get_matching_keys(ec['modaltsoftname'], ec['version'], ec['versionsuffix'], dictionary)
     if not matching_keys:
-        name = ec['name']
-        try_keys = [name, (name, ec['version']), (name, ec['version'], ec['versionsuffix']), (name, 'ANY', ec['versionsuffix'])]
-        matching_keys = [key for key in try_keys if key in dictionary]
+        matching_keys = get_matching_keys(ec['name'], ec['version'], ec['versionsuffix'], dictionary)
+    return matching_keys
+
+def get_matching_keys(name, version, versionsuffix, dictionary):
+    matching_keys = []
+    try_keys = [name, (name, version), (name, version, versionsuffix), (name, 'ANY', versionsuffix)]
+    matching_keys = [key for key in try_keys if key in dictionary]
 
     return matching_keys
 
 def modify_all_opts(ec, opts_changes,
         opts_to_skip=['builddependencies', 'dependencies', 'modluafooter', 'toolchainopts', 'version', 'multi_deps'],
         opts_to_change='ALL'):
-    matching_keys = get_matching_keys(ec, opts_changes)
+    matching_keys = get_matching_keys_from_ec(ec, opts_changes)
 
     for key in matching_keys:
         if key in opts_changes.keys():

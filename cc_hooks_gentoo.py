@@ -6,7 +6,7 @@ from easybuild.toolchains.gcccore import GCCcore
 from easybuild.framework.easyconfig.constants import EASYCONFIG_CONSTANTS
 from distutils.version import LooseVersion
 from cc_hooks_common import modify_all_opts, update_opts, PREPEND, APPEND, REPLACE, APPEND_LIST, DROP
-from cc_hooks_common import get_matching_keys
+from cc_hooks_common import get_matching_keys, get_matching_keys_from_ec
 from easybuild.tools.toolchain.utilities import search_toolchain
 from easybuild.tools.environment import setvar
 import os
@@ -80,7 +80,7 @@ def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
         dep_name, dep_version, *rest = tuple(dep)
         dep_version_suffix = rest[0] if len(rest) > 0 else ""
 
-        matching_keys = get_matching_keys(ec, version_mapping)
+        matching_keys = get_matching_keys(dep_name, dep_version, dep_version_suffix, version_mapping)
         # search through possible matching keys
         match_found = False
         for key in matching_keys:
@@ -464,7 +464,7 @@ def disable_use_mpi_for_non_mpi_toolchains(ec):
 
 
 def set_modluafooter(ec):
-    matching_keys = get_matching_keys(ec, opts_changes)
+    matching_keys = get_matching_keys_from_ec(ec, opts_changes)
     for key in matching_keys:
         if 'modluafooter' in opts_changes[key]:
             update_opts(ec, opts_changes[key]['modluafooter'][0], 'modluafooter', opts_changes[key]['modluafooter'][1])
@@ -483,7 +483,7 @@ def set_modluafooter(ec):
 
 
 def add_dependencies(ec, keyword):
-    matching_keys = get_matching_keys(ec, opts_changes)
+    matching_keys = get_matching_keys_from_ec(ec, opts_changes)
     for key in matching_keys:
         if keyword in opts_changes[key]:
             update_opts(ec, opts_changes[key][keyword][0], keyword, opts_changes[key][keyword][1])
