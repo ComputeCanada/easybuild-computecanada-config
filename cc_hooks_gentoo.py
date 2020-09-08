@@ -399,7 +399,7 @@ end
                     # rpath is already done by ld wrapper
                     '--disable-wrapper-runpath --disable-wrapper-rpath ' +
                     '--with-munge ' + #enable Munge in PMIx
-                    '--with-slurm --with-pmi=$EBROOTGENTOO ' +
+                    '--with-slurm --with-pmi=/opt/software/slurm ' +
                     '--enable-mpi-cxx ' +
                     '--with-hcoll ' +
                     '--disable-show-load-errors-by-default ' +
@@ -413,7 +413,11 @@ end
                     'plm-tm,pmix-s1,pmix-s2,pml-ucx,pnet-opa,psec-munge,' +
                     'ras-tm,spml-ucx,sshmem-ucx,hwloc-external',
                     PREPEND),
-        'postinstallcmds': (['rm %(installdir)s/lib/*.la %(installdir)s/lib/*/*.la'], REPLACE),
+        'postinstallcmds': (['rm %(installdir)s/lib/*.la %(installdir)s/lib/*/*.la',
+                             'for i in %(installdir)s/lib/openmpi/mca_pmix_s[12].so; '
+                             'do patchelf --set-rpath '
+                             '$(patchelf --print-rpath $i):/opt/software/slurm/lib:/opt/software/slurm/lib64:/opt/slurm/lib64 $i;'
+                             'done'], REPLACE),
         'modluafooter': (mpi_modluafooter % 'openmpi', REPLACE),
         'dependencies': (('libfabric', '1.10.1'), APPEND_LIST),
     },
