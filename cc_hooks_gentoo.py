@@ -17,6 +17,7 @@ GCC93 = [('GCC', '9.3.0')]
 ICC2020a = [('iccifort', '2020.1.217')]
 COMPILERS_2020a = [ICC2020a[0], GCC93[0]]
 cOMPI_2020a = [('iompi', '2020a'),('gompi', '2020a')]
+cOMKL_2020a = [('iomkl', '2020a'),('gomkl', '2020a')]
 
 # Dictionary containing version mapping
 # Keys can be one of :
@@ -56,7 +57,7 @@ new_version_mapping_2020a = {
         ('netCDF-Fortran','ANY', ""): ('4.5.2', cOMPI_2020a + COMPILERS_2020a, None),
         ('netCDF-Fortran','ANY','-mpi'): ('4.5.2', cOMPI_2020a, None),
         ('ParaView', '5.8.0'): ('5.8.0', [('gompi', '2020a')], None),
-        'PLUMED': ('2.6.1', cOMPI_2020a, None),
+        'PLUMED': ('2.6.1', cOMKL_2020a, None),
         'UDUNITS': ('2.2.26', SYSTEM),
         **dict.fromkeys([('Python', '2.7.%s' % str(x)) for x in range(0,18)], ('2.7', GCCCORE93)),
         **dict.fromkeys([('Python', '3.5.%s' % str(x)) for x in range(0,8)], ('3.7', GCCCORE93)),
