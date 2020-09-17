@@ -313,6 +313,9 @@ opts_changes = {
         'postinstallcmds': (["find %(installdir)s -name '*.la' -delete"], REPLACE),
     },
     'GObject-Introspection': {
+        'multi_deps': ({'Python': ['3.6', '3.7', '3.8']}, REPLACE),
+        'builddependencies': ([[('Python', v)] for v in ['2.7', '3.6', '3.7', '3.8'] ], REPLACE),
+        'modextrapaths': ({'PYTHONPATH': ['lib/gobject-introspection']}, REPLACE),
         'dependencies': ([], REPLACE),
         'modluafooter': ('depends_on(atleast("python", "3"))', REPLACE),
         'versionsuffix': ('', REPLACE),
