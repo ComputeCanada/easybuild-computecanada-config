@@ -382,6 +382,30 @@ end
     'Java': {
         'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s'], REPLACE),
     },
+    ('MATLAB', '2020a'): {
+        'modluafooter': ("""require("SitePackage")
+local found = find_and_define_license_file("MLM_LICENSE_FILE","matlab")
+if (not found) then
+        local error_message = [[
+        We did not find a suitable license for Matlab. If you have access to one, you can create the file $HOME/.licenses/matlab.lic with the license information. If you think you should have access to one as    part of your institution, please write to support@computecanada.ca so that we can configure it.
+
+        Nous n'avons pas trouve de licence utilisable pour Matlab. Si vous avez acces a une licence de Matlab, vous pouvez creer le fichier $HOME/.licenses/matlab.lic avec l'information de la licence. Si vous    pensez que vous devriez automatiquement avoir acces a une licence via votre institution, veuillez ecrire a support@calculcanada.ca pour que nous puissions la configurer.
+        ]]
+        LmodError(error_message)
+end
+setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
+        'dependencies': ([('Java', '13')], REPLACE),
+        'postinstallcmds': ([
+        'chmod -R u+w %(installdir)s ',
+        # install the python engines with both python 2.7, 3.6, 3.7
+        'module load python/2.7 && pushd %(installdir)s/extern/engines/python && python setup.py install --prefix=%(installdir)s/extern/engines/python && popd ',
+        'module load python/3.6 && pushd %(installdir)s/extern/engines/python && python setup.py install --prefix=%(installdir)s/extern/engines/python && popd ',
+        'module load python/3.7 && pushd %(installdir)s/extern/engines/python && python setup.py install --prefix=%(installdir)s/extern/engines/python && popd ',
+        '/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_origin --add_path $EBROOTPREFIX/lib',
+        '/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/extern/engines/python --add_path %(installdir)s/bin/glnxa64 --add_origin --any_interpreter '
+], REPLACE),
+        'modextrapaths': ({'EBPYTHONPREFIXES': ['extern/engines/python']}, REPLACE),
+    },
     'OpenBLAS': {
         **dict.fromkeys(['buildopts','installopts','testopts'],
                         ({'sse3': 'DYNAMIC_ARCH=1',
