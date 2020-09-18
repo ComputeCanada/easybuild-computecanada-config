@@ -1,4 +1,4 @@
-
+import collections
 PREPEND = 1
 APPEND = 2
 REPLACE = 3
@@ -14,7 +14,11 @@ def get_matching_keys_from_ec(ec, dictionary):
 
 def get_matching_keys(name, version, versionsuffix, dictionary):
     matching_keys = []
-    try_keys = [name, (name, version), (name, version, versionsuffix), (name, 'ANY', versionsuffix)]
+    #version can sometimes be a dictionary, which is not hashable
+    if isinstance(version, collections.Hashable):
+        try_keys = [name, (name, version), (name, version, versionsuffix), (name, 'ANY', versionsuffix)]
+    else:
+        try_keys = [name, (name, 'ANY', versionsuffix)]
     matching_keys = [key for key in try_keys if key in dictionary]
 
     return matching_keys
