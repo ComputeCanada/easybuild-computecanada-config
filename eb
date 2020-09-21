@@ -10,9 +10,10 @@ unset LD_LIBRARY_PATH
 export PATH=/usr/bin
 EASYBUILD_ROOT=/cvmfs/soft.computecanada.ca/easybuild
 if [ -n "$USE_GENTOO" ]; then
-	module load gentoo/$USE_GENTOO_VERSION
+	module load StdEnv/2020 gentoo/$USE_GENTOO_VERSION
+	module unload imkl intel openmpi
 	YEAR=$USE_GENTOO_VERSION
-	export EASYBUILD_ALLOW_LOADED_MODULES=gentoo
+	export EASYBUILD_ALLOW_LOADED_MODULES=StdEnv/2020,gentoo
 	export LOCAL_EASYBUILD_CONFIGFILES=$EASYBUILD_ROOT/config.cfg,$EASYBUILD_ROOT/config-gentoo.cfg
 else
 	module load nixpkgs/16.09
