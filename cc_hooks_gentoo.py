@@ -334,7 +334,7 @@ opts_changes = {
     /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/compilers_and_libraries_%(version)s/linux/compiler/lib --add_origin
     patchelf --set-rpath '$ORIGIN/../lib:$ORIGIN/../compiler/lib/intel64' %(installdir)s/compilers_and_libraries_%(version)s/linux/lib/LLVMgold.so
     installdir=%(installdir)s
-    publicdir=${installdir/restricted.computecanada.ca/soft.computecanada.ca}
+    publicdir=$(echo $installdir | sed -e "s;$RSNT_LOCAL_RESTRICTED_PATH;/cvmfs/soft.computecanada.ca;g")
     rm -rf $publicdir
     for i in $(grep -h "compiler.*\.so" $installdir/compilers_and_libraries_%(version)s/licensing/compiler/en/[cf]redist.txt | cut -c 13-); do
        if [ -f $installdir/$i ]; then
