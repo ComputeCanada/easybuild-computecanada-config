@@ -629,8 +629,5 @@ def post_module_hook(self, *args, **kwargs):
         self.cfg['toolchain'] = EASYCONFIG_CONSTANTS['SYSTEM'][0]
 
 def pre_prepare_hook(self, *args, **kwargs):
-    packages_in_gentoo = ["EBROOTLIBXML2", "EBROOTLIBJPEGMINTURBO", "EBROOTLIBPNG", "EBROOTLIBTIFF", "EBROOTZLIB"]
-    ebrootgentoo = os.environ["EBROOTGENTOO"]
-    for package in packages_in_gentoo:
-        setvar(package, ebrootgentoo)
+    setvar("EBROOTLIBXML2", os.environ["EBROOTGENTOO"])
 
