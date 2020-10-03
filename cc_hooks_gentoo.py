@@ -508,10 +508,10 @@ def set_modluafooter(ec):
         if name == 'iccifort':
             name = 'intel'
         comp = os.path.join('Compiler', name + ec['version'][:ec['version'].find('.')])
-        ec['modluafooter'] = (compiler_modluafooter.format(year=year,sub_path=comp) + 'family("compiler")\n')
+        ec['modluafooter'] += (compiler_modluafooter.format(year=year,sub_path=comp) + 'family("compiler")\n')
     if ec['name'] == 'CUDAcore':
         comp = os.path.join('CUDA', 'cuda' + '.'.join(ec['version'].split('.')[:2]))
-        ec['modluafooter'] = compiler_modluafooter.format(year=year, sub_path=comp)
+        ec['modluafooter'] += compiler_modluafooter.format(year=year, sub_path=comp)
 
 
 def add_dependencies(ec, keyword):
