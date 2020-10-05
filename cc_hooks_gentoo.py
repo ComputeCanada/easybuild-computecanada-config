@@ -325,7 +325,7 @@ opts_changes = {
     },
     'iccifort': {
         'skip_license_file_in_module': (True, REPLACE),
-        'license_file': ("/cvmfs/soft.computecanada.ca/config/licenses/intel/computecanada.lic", REPLACE),
+        'license_file': ("/cvmfs/restricted.computecanada.ca/config/licenses/intel/2020/build-node.lic", REPLACE),
         #See compilers_and_libraries_2020.1.217/licensing/compiler/en/credist.txt
         'postinstallcmds': (['''
     echo "--sysroot=$EPREFIX" > %(installdir)s/compilers_and_libraries_%(version)s/linux/bin/intel64/icc.cfg
