@@ -351,7 +351,7 @@ opts_changes = {
      ln -s compilers_and_libraries_%(version)s/linux/compiler/lib $publicdir/lib
 '''], REPLACE),
         "modluafooter": ("""
-prepend_path("INTEL_LICENSE_FILE", pathJoin("/cvmfs/soft.computecanada.ca/config/licenses/intel", os.getenv("CC_CLUSTER") .. ".lic"))
+prepend_path("INTEL_LICENSE_FILE", pathJoin("/cvmfs/restricted.computecanada.ca/config/licenses/intel/2020", os.getenv("CC_CLUSTER") .. ".lic"))
 
 if isloaded("imkl") then
     always_load("imkl/2020.1.217")
