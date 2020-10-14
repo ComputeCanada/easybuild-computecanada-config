@@ -18,6 +18,8 @@ else
 	module load nixpkgs/16.09
 	YEAR=2017
 	export LOCAL_EASYBUILD_CONFIGFILES=$EASYBUILD_ROOT/config.cfg,$EASYBUILD_ROOT/config-nix.cfg
+	# use Gentoo Python 3.7.7 even here, only for EasyBuild itself
+	export EB_PYTHON=/cvmfs/soft.computecanada.ca/gentoo/2020/usr/bin/python
 fi
 export EASYBUILD_SUBDIR_MODULES=modules/$YEAR
 export EASYBUILD_SUBDIR_SOFTWARE=software/$YEAR
