@@ -382,6 +382,9 @@ end
     'Java': {
         'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s'], REPLACE),
     },
+    'libfabric': {
+        'configopts': ('--disable-efa', PREPEND),
+    },
     ('MATLAB', '2020a'): {
         'modluafooter': ("""require("SitePackage")
 local found = find_and_define_license_file("MLM_LICENSE_FILE","matlab")
