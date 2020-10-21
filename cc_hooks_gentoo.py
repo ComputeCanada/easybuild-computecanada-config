@@ -536,7 +536,7 @@ def add_dependencies(ec, keyword):
 def drop_dependencies(ec, param):
     # dictionary in format <name>:<version under which to drop>
     to_drop = {
-            'CMake': 'ALL',
+            'CMake': '3.18.4',
             'ICU': 'ALL',
             'libxslt': 'ALL',
             'libzip': 'ALL',
