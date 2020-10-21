@@ -383,7 +383,7 @@ end
         'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s'], REPLACE),
     },
     'libfabric': {
-        'configopts': ('--disable-efa', PREPEND),
+        'configopts': ('--disable-efa ', PREPEND),
     },
     ('MATLAB', '2020a'): {
         'modluafooter': ("""require("SitePackage")
