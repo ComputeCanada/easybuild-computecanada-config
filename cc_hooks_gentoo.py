@@ -287,6 +287,16 @@ opts_changes = {
                  """popd; popd ; """,
                  PREPEND)
     },
+    'CMake': {
+        'patches': (['cmake-3.14.0_rc3-prefix-dirs.patch'], REPLACE),
+        'checksums': (['4c2daf971ea0edd9c2b200e96fca011eb858513252124a7c4daa974cd091c6bc'], APPEND_LIST),
+        'preconfigopts': ('sed -i ' +
+                          '-e "s|@GENTOO_PORTAGE_GCCLIBDIR@|$EBROOTGENTOO/$(gcc -dumpmachine)/lib/|g" ' +
+                          '-e "/@GENTOO_HOST@/d" ' +
+                          '-e "s|@GENTOO_PORTAGE_EPREFIX@|${EPREFIX}/|g" ' +
+                          'Modules/Platform/{UnixPaths,Darwin}.cmake && ',
+                          PREPEND)
+    },
     'cram': {
         'multi_deps': ({'Python': ['2.7', '3.6', '3.7', '3.8']}, REPLACE),
         'modluafooter': ('depends_on("python")', REPLACE),
