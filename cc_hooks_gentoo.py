@@ -115,6 +115,10 @@ def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
             new_dep = ('HDF5', dep_version)
             print("Replacing %s with %s" % (str(dep), str(new_dep)))
             ec[param][n] = new_dep
+        if dep_name == 'netCDF.Serial':
+            new_dep = ('netCDF', dep_version)
+            print("Replacing %s with %s" % (str(dep), str(new_dep)))
+            ec[param][n] = new_dep
 
 
     return list_of_deps
