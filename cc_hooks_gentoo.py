@@ -434,7 +434,7 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
         rm -rf $publicdir
         mkdir -p $publicdir
         cp -a $installdir/REDIST/* $publicdir
-        '''])
+        '''], REPLACE),
     },
     'OpenBLAS': {
         **dict.fromkeys(['buildopts','installopts','testopts'],
