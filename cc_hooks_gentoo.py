@@ -434,6 +434,11 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
         rm -rf $publicdir
         mkdir -p $publicdir
         cp -a $installdir/REDIST/* $publicdir
+        for i in $(find $publicdir); do
+            if ! test -L $(dirname $i)/$(readlink $i); then
+                cp -p ${i/soft.computecanada.ca/restricted.computecanada.ca} $i
+            fi
+        done
         '''], REPLACE),
     },
     'OpenBLAS': {
