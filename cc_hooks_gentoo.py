@@ -436,6 +436,7 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
         cp -a $installdir/REDIST/* $publicdir
         for i in $(find $publicdir); do
             if ! test -L $(dirname $i)/$(readlink $i); then
+                rm $i
                 cp -p ${i/soft.computecanada.ca/restricted.computecanada.ca} $i
             fi
         done
