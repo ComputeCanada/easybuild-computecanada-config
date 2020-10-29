@@ -78,7 +78,7 @@ function patch_zip {
 	unzip -q $fullname
 	for fname in $(find . -type f); do
 	        oldperm=$(stat --format %a $fname)
-	        chmod u+w $fname
+	        chmod u+rwx $fname
 		patch_rpath $fname;
 		chmod $oldperm $fname
 	done
