@@ -423,6 +423,19 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
 ], REPLACE),
         'modextrapaths': ({'EBPYTHONPREFIXES': ['extern/engines/python']}, REPLACE),
     },
+    'NVHPC': {
+        'postinstallcmds': (['''
+        installdir=%(installdir)s/Linux_x86_64/%(version)s
+        /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path $installdir
+        sed -i "s@append LDLIBARGS=-L@#append LDLIBARGS=-L@" $installdir/compilers/bin/siterc
+        echo "set DEFLIBDIR=$EBROOTGENTOO/lib;" >> $installdir/compilers/bin/localrc
+        echo "set DEFSTDOBJDIR=$EBROOTGENTOO/lib;" >> $installdir/compilers/bin/localrc
+        publicdir=${installdir/restricted.computecanada.ca/soft.computecanada.ca}
+        rm -rf $publicdir
+        mkdir -p $publicdir
+        cp -a $installdir/REDIST/* $publicdir
+        '''])
+    },
     'OpenBLAS': {
         **dict.fromkeys(['buildopts','installopts','testopts'],
                         ({'sse3': 'DYNAMIC_ARCH=1',
