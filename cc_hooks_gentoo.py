@@ -493,6 +493,10 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
         'prebuildopts': ('sed -i -e "s;/usr;$EBROOTGENTOO;g" setup.py && ', REPLACE),
         'installopts': (' && /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_path %(installdir)s/lib --any_interpreter', REPLACE),
     },
+    'ROOT': {
+        # Cling needs to know about different sysroot
+        'configopts': ("-DDEFAULT_SYSROOT=$EPREFIX", PREPEND),
+    },
     'UCX': {
         # local customizations for UCX
         'configopts': ("--with-rdmacm=$EBROOTGENTOO --with-verbs=$EBROOTGENTOO --with-knem=$EBROOTGENTOO ", PREPEND)
