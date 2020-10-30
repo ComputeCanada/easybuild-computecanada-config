@@ -50,6 +50,7 @@ new_version_mapping_2020a = {
         ('HDF5','ANY',""): ('1.10.6', cOMPI_2020a + COMPILERS_2020a, None),
         ('HDF5','ANY','-mpi'): ('1.10.6', cOMPI_2020a),
         ('imkl','2020.1.217'): ('2020.1.217', SYSTEM),
+        ('libbeef', '0.1.2'): ('0.1.2', COMPILERS_2020a),
         ('netCDF','ANY',""): ('4.7.4', cOMPI_2020a + COMPILERS_2020a, None),
         ('netCDF','ANY','-mpi'): ('4.7.4', cOMPI_2020a, None),
         ('netCDF-C++4','ANY', ""): ('4.3.1', cOMPI_2020a + COMPILERS_2020a, None),
@@ -57,7 +58,7 @@ new_version_mapping_2020a = {
         ('netCDF-Fortran','ANY', ""): ('4.5.2', cOMPI_2020a + COMPILERS_2020a, None),
         ('netCDF-Fortran','ANY','-mpi'): ('4.5.2', cOMPI_2020a, None),
         ('ParaView', '5.8.0'): ('5.8.0', [('gompi', '2020a')], None),
-        'PLUMED': ('2.6.1', cOMKL_2020a, None),
+        'PLUMED': ('2.6.2', cOMKL_2020a, None),
         'UDUNITS': ('2.2.26', SYSTEM),
         **dict.fromkeys([('Python', '2.7.%s' % str(x)) for x in range(0,18)], ('2.7', GCCCORE93)),
         **dict.fromkeys([('Python', '3.5.%s' % str(x)) for x in range(0,8)], ('3.7', GCCCORE93)),
@@ -422,6 +423,26 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
         '/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/extern/engines/python --add_path %(installdir)s/bin/glnxa64 --add_origin --any_interpreter '
 ], REPLACE),
         'modextrapaths': ({'EBPYTHONPREFIXES': ['extern/engines/python']}, REPLACE),
+    },
+    'NVHPC': {
+        'postinstallcmds': (['''
+        installdir=%(installdir)s/Linux_x86_64/%(version)s
+        /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path $installdir
+        sed -i "s@append LDLIBARGS=-L@#append LDLIBARGS=-L@" $installdir/compilers/bin/siterc
+        echo "set DEFLIBDIR=$EBROOTGENTOO/lib;" >> $installdir/compilers/bin/localrc
+        echo "set DEFSTDOBJDIR=$EBROOTGENTOO/lib;" >> $installdir/compilers/bin/localrc
+        echo "set NORPATH=YES;" >> $installdir/compilers/bin/localrc
+        publicdir=${installdir/restricted.computecanada.ca/soft.computecanada.ca}
+        rm -rf $publicdir
+        mkdir -p $publicdir
+        cp -a $installdir/REDIST/* $publicdir
+        for i in $(find $publicdir); do
+            if ! test -L $(dirname $i)/$(readlink $i); then
+                rm $i
+                cp -p ${i/soft.computecanada.ca/restricted.computecanada.ca} $i
+            fi
+        done
+        '''], REPLACE),
     },
     'OpenBLAS': {
         **dict.fromkeys(['buildopts','installopts','testopts'],

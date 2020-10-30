@@ -39,7 +39,7 @@ fi
 
 if [ "$RSNT_ARCH" == avx2 ]; then
 	if [ -n "$USE_GENTOO" ]; then
-	    export EASYBUILD_OPTARCH='PGI:tp=haswell;Intel:march=core-avx2 -axCore-AVX512;GCC:march=core-avx2'
+	    export EASYBUILD_OPTARCH='NVHPC:tp=haswell;Intel:march=core-avx2 -axCore-AVX512;GCC:march=core-avx2'
 	else
 	    export EASYBUILD_OPTARCH='PGI:tp=haswell;Intel:xCore-AVX2;GCC:march=core-avx2'
 	fi

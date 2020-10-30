@@ -74,6 +74,8 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
     def __init__(self, *args, **kwargs):
         # required for use of pgicuda toolchain
         COMP_NAME_VERSION_TEMPLATES['CUDA,PGI'] = ('PGI-CUDA', '%(PGI)s-%(CUDA)s')
+        # required for use of nvhpccuda toolchain
+        COMP_NAME_VERSION_TEMPLATES['CUDA,NVHPC'] = ('NVHPC-CUDA', '%(NVHPC)s-%(CUDA)s')
         # required for use of gcccorecuda toolchain
         COMP_NAME_VERSION_TEMPLATES['CUDAcore,GCCcore'] = ('GCCcore-CUDAcore', '%(GCCcore)s-%(CUDAcore)s')
         super(SoftCCHierarchicalMNS, self).__init__(*args, **kwargs)
@@ -185,6 +187,7 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
         # use one-digit version for newer compilers and MPIs.
         if ((ec['name'].lower() in ['gcc', 'gcccore'] and major >=8) or
             (ec['name'] in ['intel', 'icc', 'ifort', 'iccifort', 'impi', 'intelmpi'] and major >= 2019) or
+            (ec['name'].lower() == 'nvhpc') or
             (ec['name'].lower() == 'openmpi' and major >= 4)):
             version = str(major)
         return version
@@ -204,8 +207,8 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
         if modclass == MODULECLASS_COMPILER or ec['name'] in ['iccifort']:
             # obtain list of compilers based on that extend $MODULEPATH in some way other than <name>/<version>
             extend_comps = []
-            # exclude GCC and PGI for which <name>/<version> is used as $MODULEPATH extension
-            excluded_comps = ['GCC', 'PGI']
+            # exclude GCC, PGI, and NVHPC for which <name>/<version> is used as $MODULEPATH extension
+            excluded_comps = ['GCC', 'PGI', 'NVHPC']
             for comps in COMP_NAME_VERSION_TEMPLATES.keys():
                 extend_comps.extend([comp for comp in comps.split(',') if comp not in excluded_comps])
 
