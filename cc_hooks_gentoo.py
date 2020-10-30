@@ -678,4 +678,5 @@ def pre_prepare_hook(self, *args, **kwargs):
         setvar(package, ebrootgentoo)
 
     setvar("EBVERSIONTCL", "8.6")
+    setvar("EBVERSIONTK", "8.6")
 
