@@ -164,7 +164,11 @@ opts_changes = {
                        'avx2': 'DYNAMIC_ARCH=1 DYNAMIC_LIST="HASWELL ZEN SKYLAKEX"',
                        'avx512': 'TARGET=SKYLAKEX'}[os.getenv('RSNT_ARCH')] + ' NUM_THREADS=64',
                        PREPEND),
-    }
+    },
+    'ROOT': {
+        # Cling needs to know about different sysroot
+        'configopts': ("-DDEFAULT_SYSROOT=/cvmfs/soft.computecanada.ca/nix/var/nix/profiles/glibc-2.24", PREPEND),
+    },
 }
 
 def map_dependency_version(dep, new_dep, tc_mapping, mytc):

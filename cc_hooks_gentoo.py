@@ -437,7 +437,7 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
         mkdir -p $publicdir
         cp -a $installdir/REDIST/* $publicdir
         for i in $(find $publicdir); do
-            if ! test -L $(dirname $i)/$(readlink $i); then
+            if [[ $(readlink $i) == ../../../* ]]; then
                 rm $i
                 cp -p ${i/soft.computecanada.ca/restricted.computecanada.ca} $i
             fi
@@ -492,6 +492,10 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
         'allow_prepend_abs_path': (True, REPLACE),
         'prebuildopts': ('sed -i -e "s;/usr;$EBROOTGENTOO;g" setup.py && ', REPLACE),
         'installopts': (' && /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_path %(installdir)s/lib --any_interpreter', REPLACE),
+    },
+    'ROOT': {
+        # Cling needs to know about different sysroot
+        'configopts': ("-DDEFAULT_SYSROOT=$EPREFIX", PREPEND),
     },
     'UCX': {
         # local customizations for UCX
@@ -674,6 +678,7 @@ def pre_prepare_hook(self, *args, **kwargs):
         setvar(package, ebrootgentoo)
 
     setvar("EBVERSIONTCL", "8.6")
+    setvar("EBVERSIONTK", "8.6")
 
 def post_prepare_hook(self, *args, **kwargs):
     # we need to define variables such as EBROOTHDF5SERIAL even though we don't use this naming scheme
