@@ -263,6 +263,10 @@ setenv("PV_PLUGIN_PATH", pathJoin(platform_dir, "lib", "paraview-" .. paraview_m
 """
 
 opts_changes = {
+    'Bazel': {
+        # Bazel really needs to use Java 11, not 13
+        'dependencies': ([('Java', '11', '', True)], REPLACE)
+    },
     'Boost.Serial': {
         'name': ('Boost', REPLACE),
         'multi_deps': ({'Python': ['2.7', '3.6', '3.7', '3.8']}, REPLACE),
@@ -599,12 +603,12 @@ def drop_dependencies(ec, param):
 def parse_hook(ec, *args, **kwargs):
     """Example parse hook to inject a patch file for a fictive software package named 'Example'."""
     disable_use_mpi_for_non_mpi_toolchains(ec)
-    set_modaltsoftname(ec)
-    modify_all_opts(ec, opts_changes, opts_to_skip=[], opts_to_change=['multi_deps', 'dependencies', 'builddependencies', 'license_file', 'version', 'name', 'patches', 'checksums', 'versionsuffix', 'modaltsoftname', 'skip_license_file_in_module'])
     modify_dependencies(ec, 'dependencies', new_version_mapping_2020a)
     modify_dependencies(ec, 'builddependencies', new_version_mapping_2020a)
     drop_dependencies(ec, 'dependencies')
     drop_dependencies(ec, 'builddependencies')
+    set_modaltsoftname(ec)
+    modify_all_opts(ec, opts_changes, opts_to_skip=[], opts_to_change=['multi_deps', 'dependencies', 'builddependencies', 'license_file', 'version', 'name', 'patches', 'checksums', 'versionsuffix', 'modaltsoftname', 'skip_license_file_in_module'])
     set_modluafooter(ec)
 
     # always disable multi_deps_load_default when multi_deps is used
