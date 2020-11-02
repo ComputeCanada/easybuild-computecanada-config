@@ -675,3 +675,11 @@ def pre_prepare_hook(self, *args, **kwargs):
 
     setvar("EBVERSIONTCL", "8.6")
 
+def post_prepare_hook(self, *args, **kwargs):
+    # we need to define variables such as EBROOTHDF5SERIAL even though we don't use this naming scheme
+    serial_to_no_qualifier = ["HDF5", "BOOST", "NETCDF"]
+    for pkg in serial_to_no_qualifier:
+        to_check = "EBROOT" + pkg
+        to_set = "EBROOT" + pkg + "SERIAL"
+        if to_check in os.environ:
+            setvar(to_set, os.environ[to_check])
