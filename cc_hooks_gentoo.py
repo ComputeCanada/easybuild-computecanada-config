@@ -473,8 +473,8 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
                     '--enable-mca-dso=common-ucx,common-verbs,event-external,' +
                     'atomic-ucx,btl-openib,btl-uct,' +
                     'coll-hcoll,ess-tm,fs-lustre,mtl-ofi,mtl-psm,mtl-psm2,osc-ucx,' +
-                    'plm-tm,pmix-pmix3x,pmix-s1,pmix-s2,pml-ucx,pnet-opa,psec-munge,' +
-                    'ras-tm,rtc-hwloc,spml-ucx,sshmem-ucx,hwloc-external',
+                    'plm-tm,pmix-ext3x,pmix-s1,pmix-s2,pml-ucx,pnet-opa,psec-munge,' +
+                    'ras-tm,spml-ucx,sshmem-ucx,hwloc-external',
                     PREPEND),
         'postinstallcmds': (['rm %(installdir)s/lib/*.la %(installdir)s/lib/*/*.la',
                              'for i in %(installdir)s/lib/openmpi/mca_pmix_s[12].so; '
