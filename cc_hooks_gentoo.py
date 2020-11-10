@@ -324,13 +324,6 @@ opts_changes = {
         'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_origin'], REPLACE),
     },
     'GCCcore': {
-        # build EPREFIX-aware GCCcore
-        'preconfigopts': (
-                    "if [ -f ../gcc/gcc.c ]; then sed -i 's/--sysroot=%R//' ../gcc/gcc.c; " +
-                    "for h in ../gcc/config/*/*linux*.h; do " +
-                    r'sed -i -r "/_DYNAMIC_LINKER/s,([\":])(/lib),\1${EPREFIX}\2,g" $h; done; fi; ',
-                    PREPEND ),
-        'configopts': ("--with-sysroot=$EPREFIX", PREPEND),
         # remove .la files, as they mess up rpath when libtool is used
         'postinstallcmds': (["find %(installdir)s -name '*.la' -delete"], REPLACE),
     },
@@ -483,7 +476,7 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
                     '--enable-mca-dso=common-ucx,common-verbs,event-external,' +
                     'atomic-ucx,btl-openib,btl-uct,' +
                     'coll-hcoll,ess-tm,fs-lustre,mtl-ofi,mtl-psm,mtl-psm2,osc-ucx,' +
-                    'plm-tm,pmix-s1,pmix-s2,pml-ucx,pnet-opa,psec-munge,' +
+                    'plm-tm,pmix-ext3x,pmix-s1,pmix-s2,pml-ucx,pnet-opa,psec-munge,' +
                     'ras-tm,spml-ucx,sshmem-ucx,hwloc-external',
                     PREPEND),
         'postinstallcmds': (['rm %(installdir)s/lib/*.la %(installdir)s/lib/*/*.la',
@@ -497,7 +490,6 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
     'Python': {
         'modextrapaths': ({'PYTHONPATH': ['/cvmfs/soft.computecanada.ca/easybuild/python/site-packages']}, REPLACE),
         'allow_prepend_abs_path': (True, REPLACE),
-        'prebuildopts': ('sed -i -e "s;/usr;$EBROOTGENTOO;g" setup.py && ', REPLACE),
         'installopts': (' && /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_path %(installdir)s/lib --any_interpreter', REPLACE),
     },
     'ROOT': {
