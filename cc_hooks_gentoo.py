@@ -335,6 +335,10 @@ opts_changes = {
         'modluafooter': ('depends_on(atleast("python", "3"))', REPLACE),
         'versionsuffix': ('', REPLACE),
     },
+    'HDF': {
+        'preconfigopts': ('CPATH=$EBROOTGENTOO/include/tirpc:$CPATH LDFLAGS="$LDFLAGS -ltirpc" ', REPLACE),
+        'prebuildopts': ('CPATH=$EBROOTGENTOO/include/tirpc:$CPATH LDFLAGS="$LDFLAGS -ltirpc" ', REPLACE),
+    },
     'HDF5.Serial': {
         'name': ('HDF5', REPLACE),
     },
