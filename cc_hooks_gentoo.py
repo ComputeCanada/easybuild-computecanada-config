@@ -672,7 +672,7 @@ def post_module_hook(self, *args, **kwargs):
 def pre_prepare_hook(self, *args, **kwargs):
     packages_in_gentoo = ["EBROOTLIBXML2", "EBROOTLIBJPEGMINTURBO", "EBROOTLIBPNG", "EBROOTLIBTIFF", "EBROOTZLIB",
                           "EBROOTLIBGLU", "EBROOTMESA", "EBROOTFLTK", "EBROOTTCL", "EBROOTTK", "EBROOTBZIP2",
-                          "EBROOTZSTD", "EBROOTLIBREADLINE", "EBROOTFREETYPE"]
+                          "EBROOTZSTD", "EBROOTFREETYPE"]
     ebrootgentoo = os.environ["EBROOTGENTOO"]
     for package in packages_in_gentoo:
         setvar(package, ebrootgentoo)
