@@ -40,7 +40,7 @@ new_version_mapping_2020a = {
         ('FFTW', 'ANY', ""): ('3.3.8', COMPILERS_2020a),
         ('FFTW','ANY','-mpi'): ('3.3.8', cOMPI_2020a, None),
         'Eigen': ('3.3.7', SYSTEM),
-        'GDAL': ('3.0.4', GCC93, None),
+        'GDAL': ('3.0.4', COMPILERS_2020a, None),
         'GEOS': ('3.8.1', GCCCORE93, None),
         'GObject-Introspection': ('1.64.0', SYSTEM, None),
         'GSL': ('2.6', COMPILERS_2020a),
