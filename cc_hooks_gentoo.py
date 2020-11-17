@@ -324,6 +324,7 @@ opts_changes = {
         'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_origin'], REPLACE),
     },
     'GCCcore': {
+        'withnvptx': (True, REPLACE),
         # remove .la files, as they mess up rpath when libtool is used
         'postinstallcmds': (["find %(installdir)s -name '*.la' -delete"], REPLACE),
     },
@@ -607,7 +608,7 @@ def parse_hook(ec, *args, **kwargs):
     drop_dependencies(ec, 'dependencies')
     drop_dependencies(ec, 'builddependencies')
     set_modaltsoftname(ec)
-    modify_all_opts(ec, opts_changes, opts_to_skip=[], opts_to_change=['multi_deps', 'dependencies', 'builddependencies', 'license_file', 'version', 'name', 'patches', 'checksums', 'versionsuffix', 'modaltsoftname', 'skip_license_file_in_module'])
+    modify_all_opts(ec, opts_changes, opts_to_skip=[], opts_to_change=['multi_deps', 'dependencies', 'builddependencies', 'license_file', 'version', 'name', 'patches', 'checksums', 'versionsuffix', 'modaltsoftname', 'skip_license_file_in_module', 'withnvptx'])
     set_modluafooter(ec)
 
     # always disable multi_deps_load_default when multi_deps is used
