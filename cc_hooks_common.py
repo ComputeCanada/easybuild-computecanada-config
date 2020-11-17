@@ -53,7 +53,6 @@ def update_opts(ec,changes,key, update_type):
         if not isinstance(changes,list):
             changes = [changes]
         for change in changes:
-            ec[key].append(change)
             if update_type == APPEND_LIST:
                 ec[key].append(change)
             else:
