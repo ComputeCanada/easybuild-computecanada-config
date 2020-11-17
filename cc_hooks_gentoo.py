@@ -324,6 +324,12 @@ opts_changes = {
         'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_origin'], REPLACE),
     },
     'GCCcore': {
+        'source_urls': (['ftp://sourceware.org/pub/newlib/',
+                         'https://github.com/MentorEmbedded/nvptx-tools/archive'], APPEND_LIST),
+        'sources': (['newlib-3.3.0.tar.gz', '5f6f343.tar.gz'], APPEND_LIST),
+        'checksums': (['58dd9e3eaedf519360d92d84205c3deef0b3fc286685d1c562e245914ef72c66',
+                       'a25b6f7761bb61c0d8e2a183bcf51fbaaeeac26868dcfc015e3b16a33fe11705'],
+                      APPEND_LIST),
         'withnvptx': (True, REPLACE),
         # remove .la files, as they mess up rpath when libtool is used
         'postinstallcmds': (["find %(installdir)s -name '*.la' -delete"], REPLACE),
@@ -608,7 +614,10 @@ def parse_hook(ec, *args, **kwargs):
     drop_dependencies(ec, 'dependencies')
     drop_dependencies(ec, 'builddependencies')
     set_modaltsoftname(ec)
-    modify_all_opts(ec, opts_changes, opts_to_skip=[], opts_to_change=['multi_deps', 'dependencies', 'builddependencies', 'license_file', 'version', 'name', 'patches', 'checksums', 'versionsuffix', 'modaltsoftname', 'skip_license_file_in_module', 'withnvptx'])
+    modify_all_opts(ec, opts_changes, opts_to_skip=[], opts_to_change=[
+        'multi_deps', 'dependencies', 'builddependencies', 'license_file', 'version', 'name',
+        'source_urls', 'sources', 'patches', 'checksums', 'versionsuffix', 'modaltsoftname',
+        'skip_license_file_in_module', 'withnvptx'])
     set_modluafooter(ec)
 
     # always disable multi_deps_load_default when multi_deps is used
@@ -623,6 +632,11 @@ def parse_hook(ec, *args, **kwargs):
     if ec['name'].lower() == 'python':
         python_parsehook(ec)
 
+    # GCCcore needs checksum adjustment to put 2 new source checksums before the patch checksums
+    if ec['name'] == 'GCCcore':
+        checksums = ec['checksums']
+        srclen = len(ec['sources'])
+        ec['checksums'] = checksums[0:srclen-2] + checksums[-2:] + checksums[srclen-2:-2]
 
 def python_parsehook(ec):
     # keep only specific extensions
