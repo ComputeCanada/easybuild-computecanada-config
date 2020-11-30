@@ -95,7 +95,9 @@ def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
             # test if one of the supported toolchains is a subtoolchain of the toolchain with which we are building. If so, a match is found, replace the dependency
             for tc_name, tc_version in supported_toolchains:
                 try_tc, _ = search_toolchain(tc_name)
-                if try_tc == SystemToolchain or try_tc == GCCcore or issubclass(ec.toolchain.__class__, try_tc):
+                # for whatever reason, issubclass and class comparison does not work. It is the same class name, but not the same class, so comparing strings
+                str_mro = [str(x) for x in ec.toolchain.__class__.__mro__]
+                if try_tc == SystemToolchain or str(try_tc) in str_mro:
                     match_found = True
                     new_dep = (dep_name, new_version, new_version_suffix, (tc_name, tc_version))
                     print("Matching updated %s found. Replacing %s with %s" % (param, str(dep), str(new_dep)))
