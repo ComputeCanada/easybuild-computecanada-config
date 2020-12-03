@@ -38,7 +38,7 @@ new_version_mapping_2020a = {
         'CGAL': ('4.14.3', COMPILERS_2020a, None),
         'ETSF_IO': ('1.0.4', [('iompi', '2020a'), ('iccifort', '2020.1.217')]),
         ('FFTW', 'ANY', ""): ('3.3.8', COMPILERS_2020a),
-        ('FFTW','ANY','-mpi'): ('3.3.8', cOMPI_2020a, None),
+        ('FFTW','ANY','-mpi'): ('3.3.8', cOMPI_2020a),
         'Eigen': ('3.3.7', SYSTEM),
         'GDAL': ('3.0.4', COMPILERS_2020a, None),
         'GEOS': ('3.8.1', GCCCORE93, None),
