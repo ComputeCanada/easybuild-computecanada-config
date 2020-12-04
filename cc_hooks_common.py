@@ -5,6 +5,7 @@ REPLACE = 3
 APPEND_LIST = 4
 DROP = 5
 PREPEND_LIST = 6
+DROP_FROM_LIST = 7
 
 def get_matching_keys_from_ec(ec, dictionary):
     if 'modaltsoftname' in ec:
@@ -49,12 +50,14 @@ def update_opts(ec,changes,key, update_type):
     print("Changing %s from: %s" % (key,ec[key]))
     if update_type == REPLACE:
         ec[key] = changes
-    elif update_type in [APPEND_LIST, PREPEND_LIST]:
+    elif update_type in [APPEND_LIST, PREPEND_LIST, DROP_FROM_LIST]:
         if not isinstance(changes,list):
             changes = [changes]
         for change in changes:
             if update_type == APPEND_LIST:
                 ec[key].append(change)
+            elif update_type == DROP_FROM_LIST:
+                ec[key] = [x for x in ec[key] if x not in changes]
             else:
                 ec[key].insert(0, change)
     else:

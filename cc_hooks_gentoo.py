@@ -6,7 +6,7 @@ from easybuild.toolchains.system import SystemToolchain
 from easybuild.toolchains.gcccore import GCCcore
 from easybuild.framework.easyconfig.constants import EASYCONFIG_CONSTANTS
 from distutils.version import LooseVersion
-from cc_hooks_common import modify_all_opts, update_opts, PREPEND, APPEND, REPLACE, APPEND_LIST, DROP
+from cc_hooks_common import modify_all_opts, update_opts, PREPEND, APPEND, REPLACE, APPEND_LIST, DROP, DROP_FROM_LIST
 from cc_hooks_common import get_matching_keys, get_matching_keys_from_ec
 from easybuild.tools.toolchain.utilities import search_toolchain
 from easybuild.tools.environment import setvar
@@ -512,6 +512,10 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
     'ROOT': {
         # Cling needs to know about different sysroot
         'configopts': ("-DDEFAULT_SYSROOT=$EPREFIX", PREPEND),
+    },
+    'Togl': {
+            'patches': ('Togl-2.0_configure.patch', DROP_FROM_LIST),
+            'checksums': ('da97f36b60cd107444cd92453809135b14dc1e8775146b3ba0731da8002e6f9f', DROP_FROM_LIST),
     },
     'UCX': {
         # local customizations for UCX
