@@ -414,6 +414,9 @@ end
     'libfabric': {
         'configopts': ('--disable-efa ', PREPEND),
     },
+    'LLDB': {
+        'dependencies': ([], REPLACE),
+    },
     ('MATLAB', '2020a'): {
         'modluafooter': ("""require("SitePackage")
 local found = find_and_define_license_file("MLM_LICENSE_FILE","matlab")
