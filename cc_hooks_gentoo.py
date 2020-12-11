@@ -521,6 +521,10 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
         # local customizations for UCX
         'configopts': ("--with-rdmacm=$EBROOTGENTOO --with-verbs=$EBROOTGENTOO --with-knem=$EBROOTGENTOO ", PREPEND)
     },
+    'Valgrind': {
+        # tell correct location of debuginfo files
+        'configopts': (' && sed -i "s@/usr/lib/debug@$EPREFIX/usr/lib/debug@g" coregrind/m_debuginfo/readelf.c', APPEND)
+    },
     ('Wannier90', '2.0.1.1', '-abinit'): {
         'modaltsoftname': ('wannier90-abinit', REPLACE),
     },
@@ -529,7 +533,7 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
 
 
 # modules with both -mpi and no-mpi varieties
-mpi_modaltsoftname = ['fftw', 'hdf5', 'netcdf-c++4', 'netcdf-c++', 'netcdf-fortran', 'netcdf', 'iq-tree', 'boost', 'vtk', 'libgridxc', 'etsf_io']
+mpi_modaltsoftname = ['fftw', 'hdf5', 'netcdf-c++4', 'netcdf-c++', 'netcdf-fortran', 'netcdf', 'iq-tree', 'boost', 'vtk', 'libgridxc', 'etsf_io', 'valgrind']
 modaltsoftnames = {
     "iccifort": "intel",
     "impi": "intelmpi",
