@@ -33,7 +33,7 @@ cOMKL_2020a = [('iomkl', '2020a'),('gomkl', '2020a')]
 # - (new software version, list of compatible toolchains)
 # - (new software version, list of compatible toolchains, None)
 new_version_mapping_2020a = {
-        'Boost': ('1.72.0', COMPILERS_2020a),
+        ('Boost', 'ANY', ''): ('1.72.0', COMPILERS_2020a),
         ('Boost','ANY','-mpi'): ('1.72.0', cOMPI_2020a),
         ('CUDA', '11.0.2'): ('11.0', COMPILERS_2020a),
         'CGAL': ('4.14.3', COMPILERS_2020a, None),
