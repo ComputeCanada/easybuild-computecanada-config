@@ -1,7 +1,8 @@
 #!/bin/sh
-# remember EBROOTGENTOO before cleaning environment
+# remember NIXUSER_PROFILE before cleaning environment
 USE_GENTOO="$EBROOTGENTOO"
 USE_GENTOO_VERSION="$EBVERSIONGENTOO"
+USE_NIX="$NIXUSER_PROFILE"
 # clean environment incl. user variables
 module --force purge
 unset CPATH
@@ -9,7 +10,7 @@ unset LIBRARY_PATH
 unset LD_LIBRARY_PATH
 export PATH=/usr/bin
 EASYBUILD_ROOT=/cvmfs/soft.computecanada.ca/easybuild
-if [ -n "$USE_GENTOO" ]; then
+if [ -z "$USE_NIX" ]; then
 	module load gentoo/$USE_GENTOO_VERSION
 	YEAR=$USE_GENTOO_VERSION
 	export EASYBUILD_ALLOW_LOADED_MODULES=gentoo
