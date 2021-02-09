@@ -18,9 +18,9 @@ def get_matching_keys(name, version, versionsuffix, dictionary):
     matching_keys = []
     #version can sometimes be a dictionary, which is not hashable
     if isinstance(version, collections.Hashable):
-        try_keys = [name, (name, version), (name, version, versionsuffix), (name, 'ANY', versionsuffix)]
+        try_keys = [(name, version, versionsuffix), (name, version), (name, 'ANY', versionsuffix), name ]
     else:
-        try_keys = [name, (name, 'ANY', versionsuffix)]
+        try_keys = [(name, 'ANY', versionsuffix), name]
     matching_keys = [key for key in try_keys if key in dictionary]
 
     return matching_keys
