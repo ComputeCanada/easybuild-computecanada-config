@@ -483,6 +483,9 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
         'checksums': ('0bf60076f8c9aad9bd080f9e9327707f7f4d389c283b2eb08f1ea1f607381fda', APPEND_LIST),
         'modluafooter': (openfoam_modluafooter % ('Gcc', '5.8.0', '5.8'), REPLACE),
     },
+    ("OpenFOAM", "v2012"): {
+        'modluafooter': (openfoam_modluafooter % ('Gcc', '5.8.0', '5.8'), REPLACE),
+    },
     "OpenMPI": {
         # local customizations for OpenMPI
         'configopts': ('--enable-shared --with-verbs ' +
@@ -718,6 +721,11 @@ def pre_prepare_hook(self, *args, **kwargs):
     ebrootgentoo = os.environ["EBROOTGENTOO"]
     for package in packages_in_gentoo:
         setvar(package, ebrootgentoo)
+
+    # this can not be set in general because it causes issues with Python. It however avoids having to patch
+    # OpenFOAM locally to find readline in gentoo
+    if self.cfg['name'] == 'OpenFOAM':
+        setvar("EBROOTLIBREADLINE", ebrootgentoo)
 
     setvar("EBVERSIONTCL", "8.6")
     setvar("EBVERSIONTK", "8.6")
