@@ -157,6 +157,7 @@ family("mpi")
 
 openfoam_modluafooter = """
 local wm_compiler = "%s"
+local wm_mpi = "%s"
 local wm_label_size = "32"
 
 -- Nothing below this line should need changing for a different version or compiler
@@ -182,7 +183,7 @@ setenv("FOAM_APPBIN", pathJoin(platform_dir, "bin"))
 setenv("FOAM_ETC", pathJoin(wm_project_dir, "etc"))
 setenv("FOAM_JOB_DIR", pathJoin(root, "jobControl"))
 setenv("FOAM_LIBBIN", pathJoin(platform_dir, "lib"))
-setenv("FOAM_MPI", "mpi")
+setenv("FOAM_MPI", wm_mpi)
 setenv("FOAM_RUN", pathJoin(wm_project_user_dir, "run"))
 setenv("FOAM_SETTINGS", "")
 setenv("FOAM_SIGFPE", "")
@@ -199,8 +200,8 @@ prepend_path("LD_LIBRARY_PATH", pathJoin(wm_thirdparty_dir,"platforms",wm_option
 prepend_path("LD_LIBRARY_PATH", pathJoin(platform_dir,"lib"))
 prepend_path("LD_LIBRARY_PATH", pathJoin(foam_site_dir,"lib"))
 prepend_path("LD_LIBRARY_PATH", pathJoin(foam_usr_dir,"lib"))
-prepend_path("LD_LIBRARY_PATH", pathJoin(wm_thirdparty_dir,"platforms",wm_options_no_opt,"lib","mpi"))
-prepend_path("LD_LIBRARY_PATH", pathJoin(platform_dir,"lib","mpi"))
+prepend_path("LD_LIBRARY_PATH", pathJoin(wm_thirdparty_dir,"platforms",wm_options_no_opt,"lib", wm_mpi))
+prepend_path("LD_LIBRARY_PATH", pathJoin(platform_dir,"lib", wm_mpi))
 prepend_path("PATH", pathJoin(wm_project_dir, "bin"))
 prepend_path("PATH", pathJoin(wm_project_dir, "wmake"))
 prepend_path("PATH", pathJoin(platform_dir, "bin"))
@@ -476,15 +477,15 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
     ("OpenFOAM", "8"): {
         'patches': (['OpenFOAM-8-cleanup-cc.patch'], APPEND_LIST),
         'checksums': ('51ef17739ced32c1cbf239c377bbf4abfa4e4f12eaf19a635c432e071ce58197', APPEND_LIST),
-        'modluafooter': (openfoam_modluafooter % ('Gcc', '5.8.0', '5.8'), REPLACE),
+        'modluafooter': (openfoam_modluafooter % ('Gcc', 'mpi', '5.8.0', '5.8'), REPLACE),
     },
     ("OpenFOAM", "v2006"): {
         'patches': (['OpenFOAM-v2006-cleanup-cc.patch'], APPEND_LIST),
         'checksums': ('0bf60076f8c9aad9bd080f9e9327707f7f4d389c283b2eb08f1ea1f607381fda', APPEND_LIST),
-        'modluafooter': (openfoam_modluafooter % ('Gcc', '5.8.0', '5.8'), REPLACE),
+        'modluafooter': (openfoam_modluafooter % ('Gcc', 'mpi', '5.8.0', '5.8'), REPLACE),
     },
     ("OpenFOAM", "v2012"): {
-        'modluafooter': (openfoam_modluafooter % ('Gcc', '5.8.0', '5.8'), REPLACE),
+        'modluafooter': (openfoam_modluafooter % ('Gcc', 'eb-mpi', '5.8.0', '5.8'), REPLACE),
     },
     "OpenMPI": {
         # local customizations for OpenMPI
