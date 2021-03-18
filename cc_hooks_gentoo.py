@@ -697,7 +697,7 @@ def pre_configure_hook(self, *args, **kwargs):
         if (ec['name'],ec['version']) in [('ROOT','5.34.36'), ('mariadb', '10.4.11')]:
             pass
         else:
-            update_opts(ec, ' -DCMAKE_SKIP_INSTALL_RPATH=ON ', 'configopts', PREPEND)
+            update_opts(ec, ' -DCMAKE_SKIP_INSTALL_RPATH=ON -DENABLE_XHOST=OFF ', 'configopts', PREPEND)
 
     # additional changes for MesonNinja EasyBlocks
     if (c == MesonNinja or issubclass(c,MesonNinja)) and c != CMakeNinja:
