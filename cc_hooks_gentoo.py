@@ -439,6 +439,10 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
 ], REPLACE),
         'modextrapaths': ({'EBPYTHONPREFIXES': ['extern/engines/python']}, REPLACE),
     },
+    'Nextflow': {
+        # Nextflow really needs to use Java 11, not 13
+        'dependencies': ([('Java', '11', '', True)], REPLACE)
+    },
     'NVHPC': {
         'postinstallcmds': (['''
         installdir=%(installdir)s/Linux_x86_64/%(version)s
