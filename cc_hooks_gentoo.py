@@ -529,7 +529,9 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
     },
     'UCX': {
         # local customizations for UCX
-        'configopts': ("--with-rdmacm=$EBROOTGENTOO --with-verbs=$EBROOTGENTOO --with-knem=$EBROOTGENTOO ", PREPEND)
+        'configopts': ("--with-rdmacm=$EBROOTGENTOO --with-verbs=$EBROOTGENTOO --with-knem=$EBROOTGENTOO " +
+                       {'sse3': '--without-avx --without-sse41 --without-sse42 '}.get(os.getenv('RSNT_ARCH'), ''),
+                       PREPEND)
     },
     'Valgrind': {
         # tell correct location of debuginfo files
