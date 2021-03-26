@@ -35,13 +35,14 @@ cOMKL_2020a = [('iomkl', '2020a'),('gomkl', '2020a')]
 new_version_mapping_2020a = {
         ('Boost', 'ANY', ''): ('1.72.0', COMPILERS_2020a),
         ('Boost','ANY','-mpi'): ('1.72.0', cOMPI_2020a),
+        ('CUDA', '10.2.89'): ('10.2', COMPILERS_2020a),
         ('CUDA', '11.0.2'): ('11.0', COMPILERS_2020a),
         'CGAL': ('4.14.3', COMPILERS_2020a, None),
         'ETSF_IO': ('1.0.4', [('iompi', '2020a'), ('iccifort', '2020.1.217')]),
         ('FFTW', 'ANY', ""): ('3.3.8', COMPILERS_2020a),
         ('FFTW','ANY','-mpi'): ('3.3.8', cOMPI_2020a),
         'Eigen': ('3.3.7', SYSTEM),
-        'GDAL': ('3.0.4', COMPILERS_2020a, None),
+        ('GDAL','ANY',""): ('3.0.4', COMPILERS_2020a, None),
         'GEOS': ('3.8.1', GCCCORE93, None),
         'GObject-Introspection': ('1.64.0', SYSTEM, None),
         'GSL': ('2.6', COMPILERS_2020a),
@@ -52,6 +53,7 @@ new_version_mapping_2020a = {
         ('HDF5','ANY','-mpi'): ('1.10.6', cOMPI_2020a),
         ('imkl','2020.1.217'): ('2020.1.217', SYSTEM),
         ('libbeef', '0.1.2'): ('0.1.2', COMPILERS_2020a),
+        ('libspatialite', '4.3.0a'): ('4.3.0a', GCCCORE93, None),
         ('netCDF','ANY',""): ('4.7.4', cOMPI_2020a + COMPILERS_2020a, None),
         ('netCDF','ANY','-mpi'): ('4.7.4', cOMPI_2020a, None),
         ('netCDF-C++4','ANY', ""): ('4.3.1', cOMPI_2020a + COMPILERS_2020a, None),
@@ -319,6 +321,9 @@ opts_changes = {
     },
     ('CUDA', '11.0.2'): {
         'version': ('11.0', REPLACE),
+    },
+    ('CUDA', '10.2.89'): {
+        'version': ('10.2', REPLACE),
     },
     ('CUDAcore','10.1.243'): {
         'builddependencies': ([('GCCcore', '8.4.0')], REPLACE),
@@ -699,7 +704,11 @@ def pre_configure_hook(self, *args, **kwargs):
         if (ec['name'],ec['version']) in [('ROOT','5.34.36'), ('mariadb', '10.4.11')]:
             pass
         else:
-            update_opts(ec, ' -DCMAKE_SKIP_INSTALL_RPATH=ON -DENABLE_XHOST=OFF ', 'configopts', PREPEND)
+            update_opts(ec, ' -DCMAKE_SKIP_INSTALL_RPATH=ON ', 'configopts', PREPEND)
+        # disable XHOST
+        update_opts(ec, ' -DENABLE_XHOST=OFF ', 'configopts', PREPEND)
+        # use verbose makefile to get the command lines that are executed
+        update_opts(ec, ' -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ', 'configopts', PREPEND)
 
     # additional changes for MesonNinja EasyBlocks
     if (c == MesonNinja or issubclass(c,MesonNinja)) and c != CMakeNinja:
