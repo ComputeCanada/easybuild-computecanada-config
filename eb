@@ -104,20 +104,17 @@ export RSNT_EASYBUILD_MAGIC_COOKIE=263ca73bb634185aab1d1b41627fdbba
 
 # argument validation
 for argument in "$@"; do
-	echo $argument
-	if [[ $CC_CLUSTER == "build-node" ]]; then
+	if [[ "$CURRENT_USER" == "ebuser" ]]; then
+		if [[ $argument =~ --inject-checksums* || $argument =~ --robot* || "$argument" == "-r" ]]; then
+			echo "Please do not use $argument as $CURRENT_USER"
+			exit 1
+		fi
 		if [[ $argument =~ .*.eb$ ]]; then
 			if [[ $argument =~ .*/.* ]]; then
 				echo "Please do not use a path to specify the easyconfig."
 				echo "Error on argument: $argument"
 				exit 1
 			fi
-		fi
-	fi
-	if [[ "$CURRENT_USER" == "ebuser" ]]; then
-		if [[ $argument =~ --inject-checksums* || $argument =~ --robot* || "$argument" == "-r" ]]; then
-			echo "Please do not use $argument as $CURRENT_USER"
-			exit 1
 		fi
 	fi
 done
