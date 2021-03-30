@@ -110,7 +110,10 @@ for argument in "$@"; do
 			exit 1
 		fi
 		if [[ $argument =~ .*.eb$ ]]; then
-			if [[ $argument =~ .*/.* ]]; then
+			if [[ $argument =~ ^/cvmfs/soft.computecanada.ca/easybuild/software/.* ]]; then
+				# accept this path, it is used by the auto recompilation
+				continue 
+			elif [[ $argument =~ .*/.* ]]; then
 				echo "Please do not use a path to specify the easyconfig."
 				echo "Error on argument: $argument"
 				exit 1
