@@ -72,7 +72,8 @@ if [ -z $USE_GENTOO ]; then
     export EASYBUILD_OPTARCH="$EASYBUILD_OPTARCH;GCCcore:GENERIC"
 fi
 
-if [ "$(whoami)" != "ebuser" ] ; then
+CURRENT_USER="$(whoami)"
+if [ "$CURRENT_USER" != "ebuser" ] ; then
 	export EASYBUILD_PREFIX=$HOME/.local/easybuild
 	export EASYBUILD_SUBDIR_USER_MODULES=''
         export EASYBUILD_REPOSITORY='FileRepository'
@@ -100,4 +101,25 @@ if [ ! -d /cvmfs/local ]; then
 fi
 export PYTHONPATH=$EASYBUILD_ROOT:$EASYBUILD_ROOT/site-packages
 export RSNT_EASYBUILD_MAGIC_COOKIE=263ca73bb634185aab1d1b41627fdbba
+
+# argument validation
+for argument in "$@"; do
+	if [[ "$CURRENT_USER" == "ebuser" ]]; then
+		if [[ $argument =~ --inject-checksums* || $argument =~ --robot* || "$argument" == "-r" ]]; then
+			echo "Please do not use $argument as $CURRENT_USER"
+			exit 1
+		fi
+		if [[ $argument =~ .*.eb$ ]]; then
+			if [[ $argument =~ ^/cvmfs/soft.computecanada.ca/easybuild/software/.* ]]; then
+				# accept this path, it is used by the auto recompilation
+				continue 
+			elif [[ $argument =~ .*/.* ]]; then
+				echo "Please do not use a path to specify the easyconfig."
+				echo "Error on argument: $argument"
+				exit 1
+			fi
+		fi
+	fi
+done
+
 exec $EASYBUILD_ROOT/framework/eb --configfiles=$LOCAL_EASYBUILD_CONFIGFILES ${1+"$@"}
