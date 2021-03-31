@@ -268,7 +268,7 @@ setenv("PV_PLUGIN_PATH", pathJoin(platform_dir, "lib", "paraview-" .. paraview_m
 
 opts_changes = {
     'ALPSCore': {
-        'dependencies': ([('HDF5', '1.8.22')], REPLACE)
+        'dependencies': ([('Boost', '1.72.0'), ('HDF5', '1.8.22'), ('Eigen', '3.3.7', '', True) ], REPLACE)
     },
     'Bazel': {
         # Bazel really needs to use Java 11, not 13
