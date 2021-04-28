@@ -41,6 +41,7 @@ new_version_mapping_2020a = {
         ('FFTW', 'ANY', ""): ('3.3.8', COMPILERS_2020a),
         ('FFTW','ANY','-mpi'): ('3.3.8', cOMPI_2020a),
         'Eigen': ('3.3.7', SYSTEM),
+        ('GCCcore', '10.3.0'): ('10.2.0', SYSTEM),
         'GDAL': ('3.0.4', COMPILERS_2020a, None),
         'GEOS': ('3.8.1', GCCCORE93, None),
         'GObject-Introspection': ('1.64.0', SYSTEM, None),
@@ -400,6 +401,38 @@ end
             ], REPLACE),
         'modluafooter': (mpi_modluafooter % 'intelmpi', REPLACE),
     },
+    'intel-compilers': {
+        'accept_eula': (True, REPLACE),
+        #See compiler/2021.2.0/licensing/credist.txt
+        'postinstallcmds': (['''
+    echo "--sysroot=$EPREFIX" > %(installdir)s/compiler/%(version)s/linux/bin/intel64/icc.cfg
+    echo "--sysroot=$EPREFIX" > %(installdir)s/compiler/%(version)s/linux/bin/intel64/icpc.cfg
+    /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/compiler/%(version)s/linux/bin --add_origin --add_path=%(installdir)s/compiler/%(version)s/linux/compiler/lib/intel64_lin
+    /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s
+    /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/compiler/%(version)s/linux/compiler/lib --add_origin
+    installdir=%(installdir)s
+    publicdir=${installdir/restricted.computecanada.ca/soft.computecanada.ca}
+    rm -rf $publicdir
+    for i in $(grep -h "compiler.*\.so" $installdir/compiler/%(version)s/licensing/[cf]redist.txt | cut -c 13-); do
+       if [ -f $installdir/$i ]; then
+         mkdir -p $(dirname $publicdir/$i)
+         cp -p $installdir/$i $publicdir/$i
+       fi
+    done
+    cd $installdir
+    for i in compiler/%(version)s/linux/compiler/lib/*; do
+       if [ -L $i ]; then
+         cp -a $i $publicdir/$i
+       fi
+    done
+    ln -s %(version)s $publicdir/compiler/latest
+'''], REPLACE),
+        "modluafooter": ("""
+if isloaded("imkl") then
+    always_load("imkl/%(version)s")
+end
+""", APPEND),
+    },
     'IQ-TREE': {
         'toolchainopts': ({}, REPLACE),
         'configopts': ('-DIQTREE_FLAGS=omp', REPLACE),
@@ -551,6 +584,7 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
 mpi_modaltsoftname = ['fftw', 'hdf5', 'netcdf-c++4', 'netcdf-c++', 'netcdf-fortran', 'netcdf', 'iq-tree', 'boost', 'vtk', 'libgridxc', 'etsf_io', 'valgrind']
 modaltsoftnames = {
     "iccifort": "intel",
+    "intel-compilers": "intel",
     "impi": "intelmpi",
 }
 def set_modaltsoftname(ec):
