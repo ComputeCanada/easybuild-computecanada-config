@@ -410,6 +410,7 @@ end
     /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/compiler/%(version)s/linux/bin --add_origin --add_path=%(installdir)s/compiler/%(version)s/linux/compiler/lib/intel64_lin
     /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s
     /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/compiler/%(version)s/linux/compiler/lib --add_origin
+    patchelf --set-rpath '$ORIGIN/../lib:$ORIGIN/../compiler/lib/intel64' %(installdir)s/compiler/%(version)s/linux/lib/icx-lto.so
     installdir=%(installdir)s
     publicdir=${installdir/restricted.computecanada.ca/soft.computecanada.ca}
     rm -rf $publicdir
