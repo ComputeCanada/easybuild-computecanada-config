@@ -90,7 +90,7 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
         modname_regex = re.compile('^%s/\S+$' % re.escape(name.lower()))
         res = bool(modname_regex.match(short_modname.lower()))
         if not res:
-            if name == 'iccifort':
+            if name in ['iccifort', 'intel-compilers']:
                 modname_regex = re.compile('^%s/\S+$' % re.escape('intel'))
             elif name == 'impi':
                 modname_regex = re.compile('^%s/\S+$' % re.escape('intelmpi'))
@@ -186,7 +186,7 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
         major = int(version[:version.find('.')])
         # use one-digit version for newer compilers and MPIs.
         if ((ec['name'].lower() in ['gcc', 'gcccore'] and major >=8) or
-            (ec['name'] in ['intel', 'icc', 'ifort', 'iccifort', 'impi', 'intelmpi'] and major >= 2019) or
+            (ec['name'] in ['intel', 'icc', 'ifort', 'iccifort', 'intel-compilers', 'impi', 'intelmpi'] and major >= 2019) or
             (ec['name'].lower() == 'nvhpc') or
             (ec['name'].lower() == 'openmpi' and major >= 4)):
             version = str(major)
@@ -234,7 +234,7 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
                 comp_name_ver = [ec['name'].lower() + self.det_twodigit_version(ec)]
                 # Handle the case where someone only wants iccifort to extend the path
                 # This means icc/ifort are not of the moduleclass compiler but iccifort is
-                if ec['name'] == 'iccifort':
+                if ec['name'] in ['iccifort', 'intel-compilers']:
                     comp_name_ver = ['intel' + self.det_twodigit_version(ec)]
             # Exclude extending the path for icc/ifort, the iccifort special case is handled above
             # XXX use custom code for MODULEPATH for compilers via modluafooter
