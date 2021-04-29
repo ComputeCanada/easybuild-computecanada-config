@@ -538,8 +538,8 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
                     # enumerate all mca's that should be compiled as plugins
                     # (only those that link to system-specific
                     # libraries (lustre, fabric, and scheduler)
-                    '--enable-mca-dso=common-ucx,common-verbs,event-external,' +
-                    'atomic-ucx,btl-openib,btl-uct,' +
+                    '--enable-mca-dso=common-ofi,common-ucx,common-verbs,event-external,' +
+                    'atomic-ucx,btl-ofi,btl-openib,btl-uct,' +
                     'coll-hcoll,ess-tm,fs-lustre,mtl-ofi,mtl-psm,mtl-psm2,osc-ucx,' +
                     'plm-tm,pmix-ext3x,pmix-s1,pmix-s2,pml-ucx,pnet-opa,psec-munge,' +
                     'ras-tm,spml-ucx,sshmem-ucx,hwloc-external',
