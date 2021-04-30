@@ -552,6 +552,16 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
         'modluafooter': (mpi_modluafooter % 'openmpi', REPLACE),
         'dependencies': (('libfabric', '1.10.1'), APPEND_LIST),
     },
+    "PMIx": {
+        # local customizations for PMIx
+        'configopts': ('--with-munge ' + #enable Munge in PMIx
+                    '--disable-show-load-errors-by-default ' +
+                    # enumerate all mca's that should be compiled as plugins
+                    '--enable-mca-dso=psec-munge',
+                    PREPEND),
+        'postinstallcmds': (['rm %(installdir)s/lib/*.la %(installdir)s/lib/*/*.la'],
+                            REPLACE),
+    },
     'Python': {
         'modextrapaths': ({'PYTHONPATH': ['/cvmfs/soft.computecanada.ca/easybuild/python/site-packages']}, REPLACE),
         'allow_prepend_abs_path': (True, REPLACE),
