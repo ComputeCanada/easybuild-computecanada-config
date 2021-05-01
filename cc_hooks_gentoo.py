@@ -54,6 +54,7 @@ new_version_mapping_2020a = {
         ('HDF5','ANY','-mpi'): ('1.10.6', cOMPI_2020a),
         ('imkl','2020.1.217'): ('2020.1.217', SYSTEM),
         ('libbeef', '0.1.2'): ('0.1.2', COMPILERS_2020a),
+        ('libfabric', '1.11.0'): ('1.10.1', GCCCORE93),
         ('netCDF','ANY',""): ('4.7.4', cOMPI_2020a + COMPILERS_2020a, None),
         ('netCDF','ANY','-mpi'): ('4.7.4', cOMPI_2020a, None),
         ('netCDF-C++4','ANY', ""): ('4.3.1', cOMPI_2020a + COMPILERS_2020a, None),
@@ -550,7 +551,6 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
                              '$(patchelf --print-rpath $i):/opt/software/slurm/lib:/opt/software/slurm/lib64:/opt/slurm/lib64 $i;'
                              'done'], REPLACE),
         'modluafooter': (mpi_modluafooter % 'openmpi', REPLACE),
-        'dependencies': (('libfabric', '1.10.1'), APPEND_LIST),
     },
     "PMIx": {
         # local customizations for PMIx
