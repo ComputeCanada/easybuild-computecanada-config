@@ -449,6 +449,7 @@ end
         'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s'], REPLACE),
     },
     'libfabric': {
+        'builddependencies': ([('opa-psm2', '11.2.185')], REPLACE),
         'configopts': ('--disable-efa ', PREPEND),
     },
     'LLDB': {
@@ -525,6 +526,7 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
     },
     "OpenMPI": {
         # local customizations for OpenMPI
+        'builddependencies': ([('opa-psm2', '11.2.185')], REPLACE),
         'configopts': ('--enable-shared --with-verbs ' +
                     '--with-hwloc=external '  + # hwloc support
                     '--without-usnic ' + # No usnic-via-libfabric
