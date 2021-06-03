@@ -428,7 +428,13 @@ end
     installdir=%(installdir)s
     publicdir=${installdir/restricted.computecanada.ca/soft.computecanada.ca}
     rm -rf $publicdir
-    for i in $(grep -h "compiler.*\.so" $installdir/compiler/%(version)s/licensing/[cf]redist.txt | cut -c 13-); do
+    for i in $(grep -h "compiler.*" $installdir/compiler/%(version)s/licensing/[cf]redist.txt | cut -c 13-); do
+       if [ -f $installdir/$i ]; then
+         mkdir -p $(dirname $publicdir/$i)
+         cp -p $installdir/$i $publicdir/$i
+       fi
+    done
+    for i in $(cd $installdir/tbb/%(version)s && find .); do
        if [ -f $installdir/$i ]; then
          mkdir -p $(dirname $publicdir/$i)
          cp -p $installdir/$i $publicdir/$i
@@ -436,6 +442,11 @@ end
     done
     cd $installdir
     for i in compiler/%(version)s/linux/compiler/lib/*; do
+       if [ -L $i ]; then
+         cp -a $i $publicdir/$i
+       fi
+    done
+    for i in tbb/%(version)s/lib/intel64/gcc4.8/*; do
        if [ -L $i ]; then
          cp -a $i $publicdir/$i
        fi
