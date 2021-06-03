@@ -406,6 +406,7 @@ end
     },
     'intel-compilers': {
         'accept_eula': (True, REPLACE),
+        'modextrapaths': ({'OCL_ICD_FILENAMES': ['compiler/%(version)s/linux/lib/x64/libintelocl.so']}, REPLACE),
         #See compiler/2021.2.0/licensing/credist.txt
         'postinstallcmds': (['''
     echo "--sysroot=$EPREFIX" > %(installdir)s/compiler/%(version)s/linux/bin/intel64/icc.cfg
@@ -423,6 +424,7 @@ end
     /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s
     /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/compiler/%(version)s/linux/compiler/lib --add_origin
     patchelf --set-rpath '$ORIGIN/../lib:$ORIGIN/../compiler/lib/intel64' %(installdir)s/compiler/%(version)s/linux/lib/icx-lto.so
+    patchelf --set-rpath '$ORIGIN:$ORIGIN/../../../../../tbb/%(version)s/lib/intel64/gcc4.8' %(installdir)s/compiler/%(version)s/linux/lib/x64/libintelocl.so
     installdir=%(installdir)s
     publicdir=${installdir/restricted.computecanada.ca/soft.computecanada.ca}
     rm -rf $publicdir
