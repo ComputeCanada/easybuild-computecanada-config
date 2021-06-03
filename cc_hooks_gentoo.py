@@ -434,7 +434,7 @@ end
          cp -p $installdir/$i $publicdir/$i
        fi
     done
-    for i in $(cd $installdir/tbb/%(version)s && find .); do
+    for i in $(cd $installdir && find tbb); do
        if [ -f $installdir/$i ]; then
          mkdir -p $(dirname $publicdir/$i)
          cp -p $installdir/$i $publicdir/$i
