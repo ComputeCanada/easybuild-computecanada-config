@@ -377,8 +377,8 @@ opts_changes = {
        fi
      done
      cd $installdir
-     for i in compilers_and_libraries_%(version)s/linux/compiler/lib/*; do
-       if [ -L $i ]; then
+     for i in $(find . -type l); do
+       if [ -f $publicdir/$i ]; then
          cp -a $i $publicdir/$i
        fi
      done
