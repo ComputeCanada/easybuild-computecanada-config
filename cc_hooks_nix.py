@@ -148,6 +148,9 @@ new_version_mapping_app_specific = {
 }
 
 opts_changes = {
+    'Java': {
+        'modluafooter': ('setenv("JAVA_TOOL_OPTIONS", "-Xmx2g")', REPLACE),
+    },
     'OpenBLAS': {
         'buildopts': ({'sse3': 'DYNAMIC_ARCH=1',
                        'avx': 'TARGET=SANDYBRIDGE',
@@ -278,6 +281,8 @@ def parse_hook(ec, *args, **kwargs):
     """Example parse hook to inject a patch file for a fictive software package named 'Example'."""
     modify_dependencies(ec,'dependencies', new_version_mapping, new_version_mapping_app_specific)
     modify_dependencies(ec,'builddependencies', new_version_mapping, new_version_mapping_app_specific)
+
+    modify_all_opts(ec, opts_changes, opts_to_skip=[], opts_to_change=['modluafooter'])
 
     # always disable multi_deps_load_default when multi_deps is used
     if ec.get('multi_deps', None): 
