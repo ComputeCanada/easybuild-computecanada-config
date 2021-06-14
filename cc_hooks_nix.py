@@ -282,6 +282,8 @@ def parse_hook(ec, *args, **kwargs):
     modify_dependencies(ec,'dependencies', new_version_mapping, new_version_mapping_app_specific)
     modify_dependencies(ec,'builddependencies', new_version_mapping, new_version_mapping_app_specific)
 
+    modify_all_opts(ec, opts_changes, opts_to_skip=[], opts_to_change=['modluafooter'])
+
     # always disable multi_deps_load_default when multi_deps is used
     if ec.get('multi_deps', None): 
         ec['multi_deps_load_default'] = False
