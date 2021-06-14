@@ -470,6 +470,7 @@ end
     },
     'Java': {
         'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s'], REPLACE),
+        'modluafooter': ('setenv("JAVA_TOOL_OPTIONS", "-Xmx2g")', REPLACE),
     },
     'libfabric': {
         'builddependencies': ([('opa-psm2', '11.2.185')], REPLACE),

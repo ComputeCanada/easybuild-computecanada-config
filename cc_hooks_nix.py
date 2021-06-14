@@ -148,6 +148,9 @@ new_version_mapping_app_specific = {
 }
 
 opts_changes = {
+    'Java': {
+        'modluafooter': ('setenv("JAVA_TOOL_OPTIONS", "-Xmx2g")', REPLACE),
+    },
     'OpenBLAS': {
         'buildopts': ({'sse3': 'DYNAMIC_ARCH=1',
                        'avx': 'TARGET=SANDYBRIDGE',
