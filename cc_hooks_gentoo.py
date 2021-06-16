@@ -591,7 +591,7 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
     'Python': {
         'modextrapaths': ({'PYTHONPATH': ['/cvmfs/soft.computecanada.ca/easybuild/python/site-packages']}, REPLACE),
         'allow_prepend_abs_path': (True, REPLACE),
-        'installopts': (' && /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_path %(installdir)s/lib --any_interpreter', REPLACE),
+        'installopts': (' && /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_path %(installdir)s/lib --any_interpreter', APPEND),
     },
     'ROOT': {
         # Cling needs to know about different sysroot
