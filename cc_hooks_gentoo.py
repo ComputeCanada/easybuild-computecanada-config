@@ -6,7 +6,7 @@ from easybuild.toolchains.system import SystemToolchain
 from easybuild.toolchains.gcccore import GCCcore
 from easybuild.framework.easyconfig.constants import EASYCONFIG_CONSTANTS
 from distutils.version import LooseVersion
-from cc_hooks_common import modify_all_opts, update_opts, PREPEND, APPEND, REPLACE, APPEND_LIST, DROP, DROP_FROM_LIST
+from cc_hooks_common import modify_all_opts, update_opts, PREPEND, APPEND, REPLACE, APPEND_LIST, DROP, DROP_FROM_LIST, REPLACE_IN_LIST
 from cc_hooks_common import get_matching_keys, get_matching_keys_from_ec
 from easybuild.tools.toolchain.utilities import search_toolchain
 from easybuild.tools.environment import setvar
@@ -718,7 +718,7 @@ def parse_hook(ec, *args, **kwargs):
     modify_all_opts(ec, opts_changes, opts_to_skip=[], opts_to_change=[
         'multi_deps', 'dependencies', 'builddependencies', 'license_file', 'version', 'name',
         'source_urls', 'sources', 'patches', 'checksums', 'versionsuffix', 'modaltsoftname',
-        'skip_license_file_in_module', 'withnvptx'])
+        'skip_license_file_in_module', 'withnvptx', 'exts_list'])
     set_modluafooter(ec)
 
     # always disable multi_deps_load_default when multi_deps is used
