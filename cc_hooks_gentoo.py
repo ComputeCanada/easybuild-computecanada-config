@@ -744,6 +744,9 @@ def parse_hook(ec, *args, **kwargs):
         ec['checksums'] = checksums[0:srclen-2] + checksums[-2:] + checksums[srclen-2:-2]
 
 def python_parsehook(ec):
+    # don't do anything for "default" version
+    if ec['version'] == "default":
+        return
     # keep only specific extensions
     python_extensions_to_keep = ['setuptools', 'pip', 'wheel', 'virtualenv', 'appdirs', 'distlib', 'filelock',
                                  'six', 'setuptools_scm']
