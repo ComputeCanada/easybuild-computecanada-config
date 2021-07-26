@@ -396,6 +396,7 @@ end
 """, APPEND),
     },
     'impi': {
+        'accept_eula': (True, REPLACE),
         'set_mpi_wrappers_all': (True, REPLACE),
         # Fix mpirun from IntelMPI to explicitly unset I_MPI_PMI_LIBRARY
         # it can only be used with srun.
