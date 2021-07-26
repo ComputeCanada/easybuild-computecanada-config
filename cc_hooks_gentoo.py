@@ -407,7 +407,7 @@ end
             ], REPLACE),
         'modluafooter': (mpi_modluafooter % 'intelmpi', REPLACE),
     },
-    ('impi', 2021.2.0): {
+    ('impi', '2021.2.0'): {
         'accept_eula': (True, REPLACE),
         'set_mpi_wrappers_all': (True, REPLACE),
         # Fix mpirun from IntelMPI to explicitly unset I_MPI_PMI_LIBRARY
