@@ -395,8 +395,7 @@ if isloaded("imkl") then
 end
 """, APPEND),
     },
-    'impi': {
-        'accept_eula': (True, REPLACE),
+    ('impi', '2019.7.217'): {
         'set_mpi_wrappers_all': (True, REPLACE),
         # Fix mpirun from IntelMPI to explicitly unset I_MPI_PMI_LIBRARY
         # it can only be used with srun.
@@ -405,6 +404,19 @@ end
                 "/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/intel64/bin --add_path='$ORIGIN/../lib/release'",
                 "for dir in release release_mt debug debug_mt; do /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/intel64/lib/$dir --add_path='$ORIGIN/../../libfabric/lib'; done",
                 "patchelf --set-rpath $EBROOTUCX/lib --force-rpath %(installdir)s/intel64/libfabric/lib/prov/libmlx-fi.so"
+            ], REPLACE),
+        'modluafooter': (mpi_modluafooter % 'intelmpi', REPLACE),
+    },
+    ('impi', 2021.2.0): {
+        'accept_eula': (True, REPLACE),
+        'set_mpi_wrappers_all': (True, REPLACE),
+        # Fix mpirun from IntelMPI to explicitly unset I_MPI_PMI_LIBRARY
+        # it can only be used with srun.
+        'postinstallcmds': ([
+                "sed -i 's@\\(#!/bin/sh.*\\)$@\\1\\nunset I_MPI_PMI_LIBRARY@' %(installdir)s/mpi/%(version)s/bin/mpirun",
+                "/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/mpi/%(version)s/bin --add_path='$ORIGIN/../lib/release'",
+                "for dir in release release_mt debug debug_mt; do /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/mpi/%(version)s/lib/$dir --add_path='$ORIGIN/../../libfabric/lib'; done",
+                "patchelf --set-rpath $EBROOTUCX/lib --force-rpath %(installdir)s/mpi/%(version)s/libfabric/lib/prov/libmlx-fi.so"
             ], REPLACE),
         'modluafooter': (mpi_modluafooter % 'intelmpi', REPLACE),
     },
