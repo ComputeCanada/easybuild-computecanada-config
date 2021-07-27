@@ -101,11 +101,12 @@ def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
             new_version_suffix = new_version_suffix[0] if len(new_version_suffix) == 1 else dep_version_suffix
 
             # test if one of the supported toolchains is a subtoolchain of the toolchain with which we are building. If so, a match is found, replace the dependency
+            supported_versions = [tc[1] for tc in supported_toolchains]
             for tc_name, tc_version in supported_toolchains:
                 try_tc, _ = search_toolchain(tc_name)
                 # for whatever reason, issubclass and class comparison does not work. It is the same class name, but not the same class, so comparing strings
                 str_mro = [str(x) for x in ec.toolchain.__class__.__mro__]
-                if try_tc == SystemToolchain or str(try_tc) in str_mro:
+                if try_tc == SystemToolchain or str(try_tc) in str_mro and ec.toolchain.version in supported_versions:
                     match_found = True
                     new_dep = (dep_name, new_version, new_version_suffix, (tc_name, tc_version))
                     print("Matching updated %s found. Replacing %s with %s" % (param, str(dep), str(new_dep)))
