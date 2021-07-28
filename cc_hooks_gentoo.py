@@ -757,12 +757,6 @@ def parse_hook(ec, *args, **kwargs):
     if ec['name'].lower() == 'python':
         python_parsehook(ec)
 
-    # GCCcore needs checksum adjustment to put 2 new source checksums before the patch checksums
-    if ec['name'] == 'GCCcore':
-        checksums = ec['checksums']
-        srclen = len(ec['sources'])
-        ec['checksums'] = checksums[0:srclen-2] + checksums[-2:] + checksums[srclen-2:-2]
-
 def python_parsehook(ec):
     # don't do anything for "default" version
     if ec['version'] == "default":
