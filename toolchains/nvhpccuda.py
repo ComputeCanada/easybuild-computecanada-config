@@ -31,6 +31,7 @@ EasyBuild support for a NVHPC + CUDA compiler toolchain.
 
 from easybuild.toolchains.compiler.cuda import Cuda
 from easybuild.toolchains.cudacore import CUDAcore
+from easybuild.toolchains.gcccorecuda import GCCcoreCUDA
 from easybuild.toolchains.nvhpc import NVHPCToolchain
 
 
@@ -39,4 +40,4 @@ class NVHPCCUDA(NVHPCToolchain, Cuda):
     NAME = 'nvhpccuda'
 
     COMPILER_MODULE_NAME = NVHPCToolchain.COMPILER_MODULE_NAME + Cuda.COMPILER_CUDA_MODULE_NAME
-    SUBTOOLCHAIN = [NVHPCToolchain.NAME, CUDAcore.NAME]
+    SUBTOOLCHAIN = [NVHPCToolchain.NAME, GCCcoreCUDA.NAME, CUDAcore.NAME]
