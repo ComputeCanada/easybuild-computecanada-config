@@ -79,6 +79,7 @@ def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
     name = ec["name"]
     version = ec["version"]
     toolchain_name = ec.toolchain.name
+    new_dep = None
     if not list_of_deps or not isinstance(list_of_deps[0], tuple): 
         print("Error, modify_list_of_dependencies did not receive a list of tuples")
         return
@@ -129,8 +130,9 @@ def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
             new_dep = ('netCDF', dep_version)
             print("Replacing %s with %s" % (str(dep), str(new_dep)))
             ec[param][n] = new_dep
-        if dep_name == 'libfabric':
-            new_dep = ('libfabric', dep_version)
+        if dep_name == 'libfabric' and new_dep is not None:
+            dep = new_dep
+            new_dep = ('libfabric', dep[1])
             print("Replacing %s with %s" % (str(dep), str(new_dep)))
             ec[param][n] = new_dep
 
