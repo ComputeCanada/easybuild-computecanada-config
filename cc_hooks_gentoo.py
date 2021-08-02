@@ -55,7 +55,7 @@ new_version_mapping_2020a = {
         ('imkl','2020.4.304'): ('2020.4.304', SYSTEM),
         ('imkl','2021.2.0'): ('2021.2.0', SYSTEM),
         ('libbeef', '0.1.2'): ('0.1.2', COMPILERS_2020a),
-        ('libfabric', '1.11.0'): ('1.10.1', GCCCORE93),
+        ('libfabric', '1.11.0'): ('1.10.1', GCCCORE93 + [('gcccorecuda', '2020a'), ('gcccorecuda', '2020.1.112')]),
         ('netCDF','ANY',""): ('4.7.4', cOMPI_2020a + COMPILERS_2020a, None),
         ('netCDF','ANY','-mpi'): ('4.7.4', cOMPI_2020a, None),
         ('netCDF-C++4','ANY', ""): ('4.3.1', cOMPI_2020a + COMPILERS_2020a, None),
@@ -129,6 +129,8 @@ def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
             new_dep = ('netCDF', dep_version)
             print("Replacing %s with %s" % (str(dep), str(new_dep)))
             ec[param][n] = new_dep
+        if dep_name == 'libfabric':
+            new_dep = ('libfabric', dep_version)
 
 
     return list_of_deps
