@@ -130,9 +130,9 @@ def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
             new_dep = ('netCDF', dep_version)
             print("Replacing %s with %s" % (str(dep), str(new_dep)))
             ec[param][n] = new_dep
-        if dep_name == 'libfabric' and new_dep is not None:
+        if dep_name == 'libfabric' and new_dep is not None and new_dep[0] == 'libfabric':
             dep = new_dep
-            new_dep = ('libfabric', dep[1])
+            new_dep = dep[:2]
             print("Replacing %s with %s" % (str(dep), str(new_dep)))
             ec[param][n] = new_dep
 
