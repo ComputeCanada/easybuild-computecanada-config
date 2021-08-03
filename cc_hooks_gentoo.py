@@ -346,6 +346,9 @@ opts_changes = {
     'CUDAcore': {
         'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_origin'], REPLACE),
     },
+    'FFmpeg': {
+        'configopts': (' --enable-libvidstab', APPEND),
+    },
     'GCCcore': {
         # remove .la files, as they mess up rpath when libtool is used
         'postinstallcmds': (["find %(installdir)s -name '*.la' -delete"], REPLACE),
