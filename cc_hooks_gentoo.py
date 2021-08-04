@@ -485,11 +485,11 @@ end
     },
     'IQ-TREE': {
         'toolchainopts': ({}, REPLACE),
-        'configopts': ('-DIQTREE_FLAGS=omp', REPLACE),
+        'configopts': ('-DIQTREE_FLAGS=omp -DUSE_LSD2=ON', REPLACE),
         'sanity_check_paths': ({'files': ['bin/iqtree'], 'dirs': []}, REPLACE),
     },
     'iq-tree-mpi': {
-        'configopts': ('-DIQTREE_FLAGS=mpi', REPLACE),
+        'configopts': ('-DIQTREE_FLAGS=mpi -DUSE_LSD2=ON', REPLACE),
         'sanity_check_paths': ({'files': ['bin/iqtree-mpi'], 'dirs': []}, REPLACE),
     },
     'Java': {
