@@ -41,7 +41,6 @@ new_version_mapping_2020a = {
         ('FFTW', 'ANY', ""): ('3.3.8', COMPILERS_2020a),
         ('FFTW','ANY','-mpi'): ('3.3.8', cOMPI_2020a),
         'Eigen': ('3.3.7', SYSTEM),
-        ('GCCcore', '10.3.0'): ('10.2.0', SYSTEM),
 #        'GDAL': ('3.0.4', COMPILERS_2020a, None),
 #        'GEOS': ('3.8.1', GCCCORE93, None),
         'GObject-Introspection': ('1.64.0', SYSTEM, None),
@@ -54,8 +53,9 @@ new_version_mapping_2020a = {
         ('HDF5','ANY','-mpi'): ('1.10.6', cOMPI_2020a),
         ('imkl','2020.1.217'): ('2020.1.217', SYSTEM),
         ('imkl','2020.4.304'): ('2020.4.304', SYSTEM),
+        ('imkl','2021.2.0'): ('2021.2.0', SYSTEM),
         ('libbeef', '0.1.2'): ('0.1.2', COMPILERS_2020a),
-        ('libfabric', '1.11.0'): ('1.10.1', GCCCORE93),
+        ('libfabric', '1.11.0'): ('1.10.1', GCCCORE93 + [('gcccorecuda', '2020a'), ('gcccorecuda', '2020.1.112')]),
         ('netCDF','ANY',""): ('4.7.4', cOMPI_2020a + COMPILERS_2020a, None),
         ('netCDF','ANY','-mpi'): ('4.7.4', cOMPI_2020a, None),
         ('netCDF-C++4','ANY', ""): ('4.3.1', cOMPI_2020a + COMPILERS_2020a, None),
@@ -65,6 +65,7 @@ new_version_mapping_2020a = {
         ('ParaView', '5.8.0'): ('5.8.0', [('gompi', '2020a')], None),
         ('PLUMED', '2.6.0'): ('2.6.2', cOMKL_2020a, None),
         'UDUNITS': ('2.2.26', SYSTEM),
+        ('UCX', '1.10.0'): ('1.9.0', SYSTEM),
         **dict.fromkeys([('Python', '2.7.%s' % str(x)) for x in range(0,18)], ('2.7', GCCCORE93)),
         **dict.fromkeys([('Python', '3.5.%s' % str(x)) for x in range(0,8)], ('3.7', GCCCORE93)),
         **dict.fromkeys([('Python', '3.6.%s' % str(x)) for x in range(0,10)], ('3.6', GCCCORE93)),
@@ -78,6 +79,7 @@ def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
     name = ec["name"]
     version = ec["version"]
     toolchain_name = ec.toolchain.name
+    new_dep = None
     if not list_of_deps or not isinstance(list_of_deps[0], tuple): 
         print("Error, modify_list_of_dependencies did not receive a list of tuples")
         return
@@ -98,11 +100,12 @@ def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
             new_version_suffix = new_version_suffix[0] if len(new_version_suffix) == 1 else dep_version_suffix
 
             # test if one of the supported toolchains is a subtoolchain of the toolchain with which we are building. If so, a match is found, replace the dependency
+            supported_versions = [tc[1] for tc in supported_toolchains]
             for tc_name, tc_version in supported_toolchains:
                 try_tc, _ = search_toolchain(tc_name)
                 # for whatever reason, issubclass and class comparison does not work. It is the same class name, but not the same class, so comparing strings
                 str_mro = [str(x) for x in ec.toolchain.__class__.__mro__]
-                if try_tc == SystemToolchain or str(try_tc) in str_mro:
+                if try_tc == SystemToolchain or str(try_tc) in str_mro and ec.toolchain.version in supported_versions:
                     match_found = True
                     new_dep = (dep_name, new_version, new_version_suffix, (tc_name, tc_version))
                     print("Matching updated %s found. Replacing %s with %s" % (param, str(dep), str(new_dep)))
@@ -125,6 +128,11 @@ def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
             ec[param][n] = new_dep
         if dep_name == 'netCDF.Serial':
             new_dep = ('netCDF', dep_version)
+            print("Replacing %s with %s" % (str(dep), str(new_dep)))
+            ec[param][n] = new_dep
+        if dep_name == 'libfabric' and new_dep is not None and new_dep[0] == 'libfabric':
+            dep = new_dep
+            new_dep = dep[:2]
             print("Replacing %s with %s" % (str(dep), str(new_dep)))
             ec[param][n] = new_dep
 
@@ -338,6 +346,9 @@ opts_changes = {
     'CUDAcore': {
         'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_origin'], REPLACE),
     },
+    'FFmpeg': {
+        'configopts': (' --enable-libvidstab', APPEND),
+    },
     'GCCcore': {
         # remove .la files, as they mess up rpath when libtool is used
         'postinstallcmds': (["find %(installdir)s -name '*.la' -delete"], REPLACE),
@@ -392,7 +403,7 @@ if isloaded("imkl") then
 end
 """, APPEND),
     },
-    'impi': {
+    ('impi', '2019.7.217'): {
         'set_mpi_wrappers_all': (True, REPLACE),
         # Fix mpirun from IntelMPI to explicitly unset I_MPI_PMI_LIBRARY
         # it can only be used with srun.
@@ -401,6 +412,19 @@ end
                 "/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/intel64/bin --add_path='$ORIGIN/../lib/release'",
                 "for dir in release release_mt debug debug_mt; do /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/intel64/lib/$dir --add_path='$ORIGIN/../../libfabric/lib'; done",
                 "patchelf --set-rpath $EBROOTUCX/lib --force-rpath %(installdir)s/intel64/libfabric/lib/prov/libmlx-fi.so"
+            ], REPLACE),
+        'modluafooter': (mpi_modluafooter % 'intelmpi', REPLACE),
+    },
+    ('impi', '2021.2.0'): {
+        'accept_eula': (True, REPLACE),
+        'set_mpi_wrappers_all': (True, REPLACE),
+        # Fix mpirun from IntelMPI to explicitly unset I_MPI_PMI_LIBRARY
+        # it can only be used with srun.
+        'postinstallcmds': ([
+                "sed -i 's@\\(#!/bin/sh.*\\)$@\\1\\nunset I_MPI_PMI_LIBRARY@' %(installdir)s/mpi/%(version)s/bin/mpirun",
+                "/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/mpi/%(version)s/bin --add_path='$ORIGIN/../lib/release'",
+                "for dir in release release_mt debug debug_mt; do /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/mpi/%(version)s/lib/$dir --add_path='$ORIGIN/../../libfabric/lib'; done",
+                "patchelf --set-rpath $EBROOTUCX/lib --force-rpath %(installdir)s/mpi/%(version)s/libfabric/lib/prov/libmlx-fi.so"
             ], REPLACE),
         'modluafooter': (mpi_modluafooter % 'intelmpi', REPLACE),
     },
@@ -742,12 +766,6 @@ def parse_hook(ec, *args, **kwargs):
     # special parse hook for Python
     if ec['name'].lower() == 'python':
         python_parsehook(ec)
-
-    # GCCcore needs checksum adjustment to put 2 new source checksums before the patch checksums
-    if ec['name'] == 'GCCcore':
-        checksums = ec['checksums']
-        srclen = len(ec['sources'])
-        ec['checksums'] = checksums[0:srclen-2] + checksums[-2:] + checksums[srclen-2:-2]
 
 def python_parsehook(ec):
     # don't do anything for "default" version
