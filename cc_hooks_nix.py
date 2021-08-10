@@ -151,6 +151,9 @@ opts_changes = {
     'Java': {
         'modluafooter': ('setenv("JAVA_TOOL_OPTIONS", "-Xmx2g")', REPLACE),
     },
+    'Nextflow': {
+        'postinstallcmds': (['sed -i -e "s/cli=(\$(/cli=(\$(export NFX_OPTS=\$JAVA_TOOL_OPTIONS; unset JAVA_TOOL_OPTIONS; /g" %(installdir)s/bin/nextflow'], APPEND_LIST),
+    },
     'OpenBLAS': {
         'buildopts': ({'sse3': 'DYNAMIC_ARCH=1',
                        'avx': 'TARGET=SANDYBRIDGE',
@@ -282,7 +285,7 @@ def parse_hook(ec, *args, **kwargs):
     modify_dependencies(ec,'dependencies', new_version_mapping, new_version_mapping_app_specific)
     modify_dependencies(ec,'builddependencies', new_version_mapping, new_version_mapping_app_specific)
 
-    modify_all_opts(ec, opts_changes, opts_to_skip=[], opts_to_change=['modluafooter'])
+    modify_all_opts(ec, opts_changes, opts_to_skip=[], opts_to_change=['modluafooter', 'postinstallcmds'])
 
     # always disable multi_deps_load_default when multi_deps is used
     if ec.get('multi_deps', None): 
