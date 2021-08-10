@@ -529,7 +529,8 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
     },
     'Nextflow': {
         # Nextflow really needs to use Java 11, not 13
-        'dependencies': ([('Java', '11', '', True)], REPLACE)
+        'dependencies': ([('Java', '11', '', True)], REPLACE),
+        'postinstallcmds': (['sed -i -e "s/cli=(\$(/cli=(\$(export NFX_OPTS=\$JAVA_TOOL_OPTIONS; unset JAVA_TOOL_OPTIONS; /g" %(installdir)s/bin/nextflow'], APPEND_LIST),
     },
     'NVHPC': {
         'postinstallcmds': (['''
