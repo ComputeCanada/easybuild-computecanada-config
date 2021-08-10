@@ -752,7 +752,7 @@ def parse_hook(ec, *args, **kwargs):
     modify_all_opts(ec, opts_changes, opts_to_skip=[], opts_to_change=[
         'multi_deps', 'dependencies', 'builddependencies', 'license_file', 'version', 'name',
         'source_urls', 'sources', 'patches', 'checksums', 'versionsuffix', 'modaltsoftname',
-        'skip_license_file_in_module', 'withnvptx', 'exts_list'])
+        'skip_license_file_in_module', 'withnvptx', 'exts_list', 'postinstallcmds'])
     set_modluafooter(ec)
 
     # always disable multi_deps_load_default when multi_deps is used
