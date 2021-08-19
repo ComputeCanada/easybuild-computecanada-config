@@ -346,6 +346,9 @@ opts_changes = {
     'CUDAcore': {
         'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_origin'], REPLACE),
     },
+    'cuDNN': {
+        'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_origin'], REPLACE),
+    },
     'FFmpeg': {
         'configopts': (' --enable-libvidstab', APPEND),
     },
