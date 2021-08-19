@@ -860,13 +860,13 @@ def post_prepare_hook(self, *args, **kwargs):
 def end_hook():
     user = os.getenv("USER")
     # only do this if we are "ebuser"
-    if user != "ebuser" and user != "mboisson":
+    if user != "ebuser":
         return
 
     arch = os.getenv("RSNT_ARCH")
 
     modulepath = '/cvmfs/soft.computecanada.ca/custom/modules'
-    index_dir = '/cvmfs/soft.computecanada.ca/custom/mii/work'
+    index_dir = '/cvmfs/soft.computecanada.ca/custom/mii/data'
     mii = "/cvmfs/soft.computecanada.ca/easybuild/software/2020/avx2/Core/mii/1.1.0/bin/mii"
     final_index_file = os.path.join(index_dir, arch)
 
