@@ -10,7 +10,10 @@ from cc_hooks_common import modify_all_opts, update_opts, PREPEND, APPEND, REPLA
 from cc_hooks_common import get_matching_keys, get_matching_keys_from_ec
 from easybuild.tools.toolchain.utilities import search_toolchain
 from easybuild.tools.environment import setvar
+from easybuild.tools.run import run_cmd
+import uuid
 import os
+import shutil
 
 SYSTEM = [('system', 'system')]
 GCCCORE93 = [('GCCcore', '9.3.0')]
@@ -853,3 +856,39 @@ def post_prepare_hook(self, *args, **kwargs):
         to_set = "EBROOT" + pkg + "SERIAL"
         if to_check in os.environ:
             setvar(to_set, os.environ[to_check])
+
+def end_hook():
+    user = os.getenv("USER")
+    # only do this if we are "ebuser"
+    if user != "ebuser":
+        return
+
+    arch = os.getenv("RSNT_ARCH")
+
+    modulepath = '/cvmfs/soft.computecanada.ca/custom/modules'
+    index_dir = '/cvmfs/soft.computecanada.ca/custom/mii/data'
+    mii = "/cvmfs/soft.computecanada.ca/easybuild/software/2020/avx2/Core/mii/1.1.0/bin/mii"
+    final_index_file = os.path.join(index_dir, arch)
+
+    unique_filename = arch + "_" + str(uuid.uuid4())
+    index_file = os.path.join(index_dir,unique_filename)
+    cmd = "MII_INDEX_FILE=%s %s build -m %s" % (index_file, mii, modulepath)
+    print("Generating the Mii index with cmd:%s" % cmd )
+    (out, _) = run_cmd(cmd, log_all=True, simple=False, log_output=True)
+
+    # create a new symlink
+    new_symlink_path = os.path.join(index_dir, arch + str(uuid.uuid4()))
+    os.symlink(index_file, new_symlink_path)
+
+    # if the path exists and is a link, remove the target of the link
+    current_target = None
+    if os.path.islink(final_index_file):
+        # get the path of the current index
+        current_target = os.readlink(final_index_file)
+
+    # rename the new symlink, overwriting the old symlink or file
+    shutil.move(new_symlink_path, final_index_file)
+
+    if current_target:
+        # remove the old target
+        os.remove(current_target)
