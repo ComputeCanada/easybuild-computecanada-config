@@ -571,6 +571,13 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
         'checksums': ('51ef17739ced32c1cbf239c377bbf4abfa4e4f12eaf19a635c432e071ce58197', APPEND_LIST),
         'modluafooter': (openfoam_modluafooter % ('Gcc', 'mpi', '5.8.0', '5.8'), REPLACE),
     },
+    ("OpenFOAM", "9"): {
+        'patches': (['OpenFOAM-8-cleanup-cc.patch'], APPEND_LIST),
+        'checksums': ('51ef17739ced32c1cbf239c377bbf4abfa4e4f12eaf19a635c432e071ce58197', APPEND_LIST),
+        'modluafooter': (openfoam_modluafooter % ('Gcc', 'mpi', '5.8.0', '5.8'), REPLACE),
+        'dependencies': ([(('ParaView', '5.9.1', '-mpi'), ('ParaView', '5.8.0', '', ('gompi', '2020a'))),
+                          (('gnuplot', '5.4.2'), ('gnuplot', '5.2.8'))], REPLACE_IN_LIST),
+    },
     ("OpenFOAM", "v2006"): {
         'patches': (['OpenFOAM-v2006-cleanup-cc.patch'], APPEND_LIST),
         'checksums': ('0bf60076f8c9aad9bd080f9e9327707f7f4d389c283b2eb08f1ea1f607381fda', APPEND_LIST),
