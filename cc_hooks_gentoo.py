@@ -591,6 +591,7 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
         'builddependencies': ([('opa-psm2', '11.2.185')], REPLACE),
         'configopts': ('--enable-shared --with-verbs ' +
                     '--with-hwloc=external '  + # hwloc support
+                    '--with-libevent=external ' + # libevent from Gentoo
                     '--without-usnic ' + # No usnic-via-libfabric
                     # rpath is already done by ld wrapper
                     '--disable-wrapper-runpath --disable-wrapper-rpath ' +
@@ -842,7 +843,7 @@ def pre_prepare_hook(self, *args, **kwargs):
     packages_in_gentoo = ["EBROOTLIBXML2", "EBROOTLIBJPEGMINTURBO", "EBROOTLIBPNG", "EBROOTLIBTIFF", "EBROOTZLIB",
                           "EBROOTLIBGLU", "EBROOTMESA", "EBROOTFLTK", "EBROOTTCL", "EBROOTTK", "EBROOTBZIP2",
                           "EBROOTZSTD", "EBROOTFREETYPE", "EBROOTGLIB", "EBROOTSZIP", "EBROOTLIBXMLPLUSPLUS",
-                          "EBROOTSQLITE3"]
+                          "EBROOTSQLITE3", "EBROOTLIBEVENT"]
     ebrootgentoo = os.environ["EBROOTGENTOO"]
     for package in packages_in_gentoo:
         setvar(package, ebrootgentoo)
