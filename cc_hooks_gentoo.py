@@ -66,6 +66,7 @@ new_version_mapping_2020a = {
         ('netCDF-Fortran','ANY', ""): ('4.5.2', cOMPI_2020a + COMPILERS_2020a, None),
         ('netCDF-Fortran','ANY','-mpi'): ('4.5.2', cOMPI_2020a, None),
         ('ParaView', '5.8.0'): ('5.8.0', [('gompi', '2020a')], None),
+        'Perl': ('5.30.2', SYSTEM),
         ('PLUMED', '2.6.0'): ('2.6.2', cOMKL_2020a, None),
         'UDUNITS': ('2.2.26', SYSTEM),
         ('UCX', '1.10.0'): ('1.9.0', SYSTEM),
