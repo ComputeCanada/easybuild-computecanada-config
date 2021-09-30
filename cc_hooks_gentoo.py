@@ -66,6 +66,7 @@ new_version_mapping_2020a = {
         ('netCDF-Fortran','ANY', ""): ('4.5.2', cOMPI_2020a + COMPILERS_2020a, None),
         ('netCDF-Fortran','ANY','-mpi'): ('4.5.2', cOMPI_2020a, None),
         ('ParaView', '5.8.0'): ('5.8.0', [('gompi', '2020a')], None),
+        'Perl': ('5.30.2', SYSTEM),
         ('PLUMED', '2.6.0'): ('2.6.2', cOMKL_2020a, None),
         'UDUNITS': ('2.2.26', SYSTEM),
         ('UCX', '1.10.0'): ('1.9.0', SYSTEM),
@@ -74,6 +75,7 @@ new_version_mapping_2020a = {
         **dict.fromkeys([('Python', '3.6.%s' % str(x)) for x in range(0,10)], ('3.6', GCCCORE93)),
         **dict.fromkeys([('Python', '3.7.%s' % str(x)) for x in range(0,8)], ('3.7', GCCCORE93)),
         **dict.fromkeys([('Python', '3.8.%s' % str(x)) for x in range(0,10)], ('3.8', GCCCORE93)),
+        **dict.fromkeys([('Python', '3.9.%s' % str(x)) for x in range(0,8)], ('3.9', GCCCORE93)),
         'Qt5': ('5.12.8', GCCCORE93),
         'SCOTCH': ('6.0.9', cOMPI_2020a),
 }
@@ -591,6 +593,7 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
         'builddependencies': ([('opa-psm2', '11.2.185')], REPLACE),
         'configopts': ('--enable-shared --with-verbs ' +
                     '--with-hwloc=external '  + # hwloc support
+                    '--with-libevent=external ' + # libevent from Gentoo
                     '--without-usnic ' + # No usnic-via-libfabric
                     # rpath is already done by ld wrapper
                     '--disable-wrapper-runpath --disable-wrapper-rpath ' +
@@ -842,7 +845,7 @@ def pre_prepare_hook(self, *args, **kwargs):
     packages_in_gentoo = ["EBROOTLIBXML2", "EBROOTLIBJPEGMINTURBO", "EBROOTLIBPNG", "EBROOTLIBTIFF", "EBROOTZLIB",
                           "EBROOTLIBGLU", "EBROOTMESA", "EBROOTFLTK", "EBROOTTCL", "EBROOTTK", "EBROOTBZIP2",
                           "EBROOTZSTD", "EBROOTFREETYPE", "EBROOTGLIB", "EBROOTSZIP", "EBROOTLIBXMLPLUSPLUS",
-                          "EBROOTSQLITE3"]
+                          "EBROOTSQLITE3", "EBROOTLIBEVENT"]
     ebrootgentoo = os.environ["EBROOTGENTOO"]
     for package in packages_in_gentoo:
         setvar(package, ebrootgentoo)
