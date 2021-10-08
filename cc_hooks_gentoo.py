@@ -879,10 +879,11 @@ def end_hook():
     index_dir = '/cvmfs/soft.computecanada.ca/custom/mii/data'
     mii = "/cvmfs/soft.computecanada.ca/easybuild/software/2020/Core/mii/1.1.1/bin/mii"
     final_index_file = os.path.join(index_dir, arch)
+    exclude_modnames = ",".join(("gentoo","nixpkgs"))
 
     unique_filename = arch + "_" + str(uuid.uuid4())
     index_file = os.path.join(index_dir,unique_filename)
-    cmd = "MII_INDEX_FILE=%s %s build -m %s" % (index_file, mii, modulepath)
+    cmd = "MII_INDEX_FILE=%s %s build -m %s -n %s" % (index_file, mii, modulepath, exclude_modnames)
     print("Generating the Mii index with cmd:%s" % cmd )
     (out, _) = run_cmd(cmd, log_all=True, simple=False, log_output=True)
 
