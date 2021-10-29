@@ -23,7 +23,7 @@
 # along with EasyBuild.  If not, see <http://www.gnu.org/licenses/>.
 ##
 """
-EasyBuild support for gobfc compiler toolchain (includes GCC, Open MPI, CUDA
+EasyBuild support for gofbc compiler toolchain (includes GCC, Open MPI, CUDA
 and FlexiBLAS).
 
 :author: Stijn De Weirdt (Ghent University)
@@ -36,7 +36,7 @@ from easybuild.toolchains.gompic import Gompic
 from easybuild.toolchains.gccflexiblascuda import Gccflexiblascuda
 
 
-class Gobfc(Gompic, Gccflexiblascuda):
+class Gofbc(Gompic, Gccflexiblascuda):
     """Compiler toolchain with GCC, Open MPI, FlexiBLAS and Cuda."""
     NAME = 'gofbc'
     SUBTOOLCHAIN = [Gompic.NAME, Gccflexiblascuda.NAME]
