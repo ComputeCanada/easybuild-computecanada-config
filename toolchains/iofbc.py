@@ -36,7 +36,7 @@ from easybuild.toolchains.iompic import Iompic
 from easybuild.toolchains.iccifortflexiblascuda import IccIfortflexiblascuda
 
 
-class Gobfc(Iompic, IccIfortflexiblascuda):
+class Iofbc(Iompic, IccIfortflexiblascuda):
     """Compiler toolchain with Intel compilers, Open MPI, FlexiBLAS and Cuda."""
     NAME = 'iofbc'
     SUBTOOLCHAIN = [Iompic.NAME, IccIfortflexiblascuda.NAME]
