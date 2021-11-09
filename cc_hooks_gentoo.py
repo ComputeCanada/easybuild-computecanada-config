@@ -594,7 +594,7 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
     },
     "OpenMPI": {
         # local customizations for OpenMPI
-        'builddependencies': ([('opa-psm2', '11.2.185')], REPLACE),
+        'builddependencies': ([('opa-psm2', '11.2.185', '', ("%(toolchain_name)s", "%(toolchain_version)s"))], REPLACE),
         'configopts': ('--enable-shared --with-verbs ' +
                     '--with-hwloc=external '  + # hwloc support
                     '--with-libevent=external ' + # libevent from Gentoo
