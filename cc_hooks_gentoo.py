@@ -509,7 +509,8 @@ end
         'modluafooter': ('setenv("JAVA_TOOL_OPTIONS", "-Xmx2g")', REPLACE),
     },
     'libfabric': {
-        'builddependencies': ([('opa-psm2', '11.2.185', '', ("%(toolchain_name)s", "%(toolchain_version)s"))], REPLACE),
+        #'builddependencies': ([('opa-psm2', '11.2.185', '', ("%(toolchain_name)s", "%(toolchain_version)s"))], REPLACE),
+        'builddependencies': ([('opa-psm2', '11.2.185')], REPLACE),
         'configopts': ('--disable-efa ', PREPEND),
     },
     'LLDB': {
