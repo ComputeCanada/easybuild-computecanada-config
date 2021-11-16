@@ -516,10 +516,8 @@ end
     'libxsmm': {
         'skipsteps': ([], REPLACE),
         'preconfigopts': ('#', REPLACE),
-        'installopts': ([s + {'sse3': 'SSE=3', 'avx': 'AVX=1', 'avx2': 'AVX=2', 'avx512': 'AVX=3'}
-                         [os.getenv('RSNT_ARCH')]
-                         for s in ['PREFIX=%(installdir)s ', 'PREFIX=%(installdir)s STATIC=0 ']],
-                        REPLACE),
+        'installopts': ({'sse3': ' SSE=3', 'avx': ' AVX=1', 'avx2': ' AVX=2', 'avx512': ' AVX=3'}
+                        [os.getenv('RSNT_ARCH')], APPEND),
     },
     'LLDB': {
         'dependencies': ([], REPLACE),
