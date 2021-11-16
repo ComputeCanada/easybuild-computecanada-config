@@ -513,6 +513,14 @@ end
         'builddependencies': ([('opa-psm2', '11.2.185')], REPLACE),
         'configopts': ('--disable-efa ', PREPEND),
     },
+    'libxsmm': {
+        'skipsteps': ([], REPLACE),
+        'preconfigopts': ('#', REPLACE),
+        'installopts': ([s + {'sse3': 'SSE=3', 'avx': 'AVX=1', 'avx2': 'AVX=2', 'avx512': 'AVX=3'}
+                         [os.getenv('RSNT_ARCH')]
+                         for s in ['PREFIX=%(installdir)s ', 'PREFIX=%(installdir)s STATIC=0 ']],
+                        REPLACE),
+    },
     'LLDB': {
         'dependencies': ([], REPLACE),
     },
@@ -778,7 +786,7 @@ def parse_hook(ec, *args, **kwargs):
     modify_all_opts(ec, opts_changes, opts_to_skip=[], opts_to_change=[
         'multi_deps', 'dependencies', 'builddependencies', 'license_file', 'version', 'name',
         'source_urls', 'sources', 'patches', 'checksums', 'versionsuffix', 'modaltsoftname',
-        'skip_license_file_in_module', 'withnvptx', 'exts_list', 'postinstallcmds'])
+        'skip_license_file_in_module', 'withnvptx', 'exts_list', 'postinstallcmds', 'skipsteps'])
     set_modluafooter(ec)
 
     # always disable multi_deps_load_default when multi_deps is used
