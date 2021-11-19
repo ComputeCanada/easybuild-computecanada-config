@@ -15,6 +15,11 @@ import uuid
 import os
 import shutil
 
+# options to change in parse_hook, others are changed in other hooks
+PARSE_OPTS = ['multi_deps', 'dependencies', 'builddependencies', 'license_file', 'version', 'name',
+              'source_urls', 'sources', 'patches', 'checksums', 'versionsuffix', 'modaltsoftname',
+              'skip_license_file_in_module', 'withnvptx', 'exts_list', 'skipsteps']
+
 SYSTEM = [('system', 'system')]
 GCCCORE93 = [('GCCcore', '9.3.0')]
 GCCCORE103 = [('GCCcore', '10.3.0')]
@@ -781,10 +786,7 @@ def parse_hook(ec, *args, **kwargs):
     drop_dependencies(ec, 'dependencies')
     drop_dependencies(ec, 'builddependencies')
     set_modaltsoftname(ec)
-    modify_all_opts(ec, opts_changes, opts_to_skip=[], opts_to_change=[
-        'multi_deps', 'dependencies', 'builddependencies', 'license_file', 'version', 'name',
-        'source_urls', 'sources', 'patches', 'checksums', 'versionsuffix', 'modaltsoftname',
-        'skip_license_file_in_module', 'withnvptx', 'exts_list', 'skipsteps'])
+    modify_all_opts(ec, opts_changes, opts_to_change=PARSE_OPTS)
     set_modluafooter(ec)
 
     # always disable multi_deps_load_default when multi_deps is used
@@ -824,9 +826,7 @@ def pre_configure_hook(self, *args, **kwargs):
     orig_enable_templating = self.cfg.enable_templating
     self.cfg.enable_templating = False
 
-    modify_all_opts(self.cfg, opts_changes,
-        opts_to_skip=['builddependencies', 'dependencies', 'modluafooter',
-                      'toolchainopts', 'version', 'multi_deps', 'postinstallcmds'])
+    modify_all_opts(self.cfg, opts_changes, opts_to_skip=PARSE_OPTS + ['postinstallcmds'])
 
     # additional changes for CMakeMake EasyBlocks
     ec = self.cfg
