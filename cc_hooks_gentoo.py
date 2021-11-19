@@ -787,7 +787,6 @@ def parse_hook(ec, *args, **kwargs):
     drop_dependencies(ec, 'builddependencies')
     set_modaltsoftname(ec)
     modify_all_opts(ec, opts_changes, opts_to_change=PARSE_OPTS)
-    set_modluafooter(ec)
 
     # always disable multi_deps_load_default when multi_deps is used
     if ec.get('multi_deps', None): 
@@ -857,6 +856,13 @@ def pre_postproc_hook(self, *args, **kwargs):
     orig_enable_templating = self.cfg.enable_templating
     self.cfg.enable_templating = False
     modify_all_opts(self.cfg, opts_changes, opts_to_change=['postinstallcmds'])
+    self.cfg.enable_templating = orig_enable_templating
+
+def pre_module_hook(self, *args, **kwargs):
+    "Modify module footer (here is more efficient than parse_hook since only called once)"
+    orig_enable_templating = self.cfg.enable_templating
+    self.cfg.enable_templating = False
+    set_modluafooter(self.cfg)
     self.cfg.enable_templating = orig_enable_templating
 
 def post_module_hook(self, *args, **kwargs):
