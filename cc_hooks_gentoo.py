@@ -784,7 +784,7 @@ def parse_hook(ec, *args, **kwargs):
     modify_all_opts(ec, opts_changes, opts_to_skip=[], opts_to_change=[
         'multi_deps', 'dependencies', 'builddependencies', 'license_file', 'version', 'name',
         'source_urls', 'sources', 'patches', 'checksums', 'versionsuffix', 'modaltsoftname',
-        'skip_license_file_in_module', 'withnvptx', 'exts_list', 'postinstallcmds', 'skipsteps'])
+        'skip_license_file_in_module', 'withnvptx', 'exts_list', 'skipsteps'])
     set_modluafooter(ec)
 
     # always disable multi_deps_load_default when multi_deps is used
@@ -824,7 +824,9 @@ def pre_configure_hook(self, *args, **kwargs):
     orig_enable_templating = self.cfg.enable_templating
     self.cfg.enable_templating = False
 
-    modify_all_opts(self.cfg, opts_changes)
+    modify_all_opts(self.cfg, opts_changes,
+        opts_to_skip=['builddependencies', 'dependencies', 'modluafooter',
+                      'toolchainopts', 'version', 'multi_deps', 'postinstallcmds'])
 
     # additional changes for CMakeMake EasyBlocks
     ec = self.cfg
@@ -847,6 +849,13 @@ def pre_configure_hook(self, *args, **kwargs):
     if (c == MesonNinja or issubclass(c,MesonNinja)) and c != CMakeNinja:
         update_opts(ec, False, 'fail_on_missing_ninja_meson_dep', REPLACE)
 
+    self.cfg.enable_templating = orig_enable_templating
+
+def pre_postproc_hook(self, *args, **kwargs):
+    "Modify postinstallcmds (here is more efficient than parse_hook since only called once)"
+    orig_enable_templating = self.cfg.enable_templating
+    self.cfg.enable_templating = False
+    modify_all_opts(self.cfg, opts_changes, opts_to_change=['postinstallcmds'])
     self.cfg.enable_templating = orig_enable_templating
 
 def post_module_hook(self, *args, **kwargs):
