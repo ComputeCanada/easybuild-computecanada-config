@@ -826,7 +826,8 @@ def pre_configure_hook(self, *args, **kwargs):
     orig_enable_templating = self.cfg.enable_templating
     self.cfg.enable_templating = False
 
-    modify_all_opts(self.cfg, opts_changes, opts_to_skip=PARSE_OPTS + ['postinstallcmds'])
+    modify_all_opts(self.cfg, opts_changes, opts_to_skip=PARSE_OPTS + ['postinstallcmds',
+                                                                       'modluafooter'])
 
     # additional changes for CMakeMake EasyBlocks
     ec = self.cfg
