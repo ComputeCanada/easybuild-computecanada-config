@@ -86,6 +86,7 @@ elif [ "$(id -ng)" != "ebuser" ] ; then
 	export EASYBUILD_INSTALLPATH_SOFTWARE=/cvmfs/restricted.computecanada.ca/easybuild/$EASYBUILD_SUBDIR_SOFTWARE
 	export EASYBUILD_SOURCEPATH=/cvmfs/restricted.computecanada.ca/easybuild/sources
 fi
+export EASYBUILD_ROBOT_PATHS=$EASYBUILD_ROOT/easyconfigs:$EASYBUILD_ROBOT_PATHS
 if [[ -n "$USE_GENTOO" ]]; then
 	export EASYBUILD_HOOKS=$EASYBUILD_ROOT/cc_hooks_gentoo.py
 else
@@ -101,7 +102,6 @@ export PYTHONPATH=$EASYBUILD_ROOT:$EASYBUILD_ROOT/site-packages
 export RSNT_EASYBUILD_MAGIC_COOKIE=263ca73bb634185aab1d1b41627fdbba
 
 # argument validation
-arguments=()
 for argument in "$@"; do
 	if [[ "$CURRENT_USER" == "ebuser" ]]; then
 		if [[ $argument =~ --inject-checksums* || $argument =~ --robot* || "$argument" == "-r" ]]; then
@@ -119,17 +119,6 @@ for argument in "$@"; do
 			fi
 		fi
 	fi
-	# force correct location for easyconfig not in current directory and
-	# not with absolute pathname
-	if [[ $argument =~ .*.eb$ && ! -f "$argument" ]]; then
-		# lowercase first letter
-		letter=${argument::1}
-		letter=${letter,}
-		name=${argument%%-*}
-		# some names have - in them so we need pathname expansion
-		argument=$(echo "$EASYBUILD_ROOT/easyconfigs/$letter/$name"*"/$argument")
-	fi
-	arguments+=("$argument")
 done
 
-exec $EASYBUILD_ROOT/framework/eb --configfiles=$LOCAL_EASYBUILD_CONFIGFILES "${arguments[@]}"
+exec $EASYBUILD_ROOT/framework/eb --configfiles=$LOCAL_EASYBUILD_CONFIGFILES ${1+"$@"}
