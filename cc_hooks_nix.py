@@ -6,6 +6,9 @@ from cc_hooks_common import modify_all_opts, update_opts, PREPEND, APPEND, REPLA
 
 import os
 
+# options to change in parse_hook, others are changed in other hooks
+PARSE_OPTS = ['modluafooter', 'postinstallcmds']
+
 new_version_mapping = {
         'ALL': {
             'pkg_mapping': {
@@ -285,7 +288,7 @@ def parse_hook(ec, *args, **kwargs):
     modify_dependencies(ec,'dependencies', new_version_mapping, new_version_mapping_app_specific)
     modify_dependencies(ec,'builddependencies', new_version_mapping, new_version_mapping_app_specific)
 
-    modify_all_opts(ec, opts_changes, opts_to_skip=[], opts_to_change=['modluafooter', 'postinstallcmds'])
+    modify_all_opts(ec, opts_changes, opts_to_change=PARSE_OPTS)
 
     # always disable multi_deps_load_default when multi_deps is used
     if ec.get('multi_deps', None): 
@@ -297,7 +300,8 @@ def pre_configure_hook(self, *args, **kwargs):
     orig_enable_templating = self.cfg.enable_templating
     self.cfg.enable_templating = False
 
-    modify_all_opts(self.cfg, opts_changes)
+    modify_all_opts(self.cfg, opts_changes, opts_to_skip=PARSE_OPTS)
+
     ec = self.cfg
     # additional changes for CMakeMake EasyBlocks
     CMakeMake_configopts_changes = (' -DZLIB_ROOT=$NIXUSER_PROFILE ' + 

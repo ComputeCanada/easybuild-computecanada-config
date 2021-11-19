@@ -26,11 +26,11 @@ def get_matching_keys(name, version, versionsuffix, dictionary):
 
     return matching_keys
 
-def modify_all_opts(ec, opts_changes,
-        opts_to_skip=['builddependencies', 'dependencies', 'modluafooter', 'toolchainopts', 'version', 'multi_deps'],
-        opts_to_change='ALL'):
+def modify_all_opts(ec, opts_changes, opts_to_skip=None, opts_to_change='ALL'):
     matching_keys = get_matching_keys_from_ec(ec, opts_changes)
 
+    if opts_to_skip is None:
+        opts_to_skip = []
     for key in matching_keys:
         if key in opts_changes.keys():
             for opt, value in opts_changes[key].items():
