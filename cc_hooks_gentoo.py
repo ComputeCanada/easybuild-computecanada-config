@@ -18,7 +18,7 @@ import shutil
 # options to change in parse_hook, others are changed in other hooks
 PARSE_OPTS = ['multi_deps', 'dependencies', 'builddependencies', 'license_file', 'version', 'name',
               'source_urls', 'sources', 'patches', 'checksums', 'versionsuffix', 'modaltsoftname',
-              'skip_license_file_in_module', 'withnvptx', 'exts_list', 'skipsteps']
+              'skip_license_file_in_module', 'withnvptx', 'skipsteps']
 
 SYSTEM = [('system', 'system')]
 GCCCORE93 = [('GCCcore', '9.3.0')]
@@ -796,11 +796,7 @@ def parse_hook(ec, *args, **kwargs):
     if ec.get('moduleclass','') == 'toolchain' or ec['name'] == 'GCCcore' or ec['name'] == 'CUDAcore':
         ec['hidden'] = True
 
-    # special parse hook for Python
-    if ec['name'].lower() == 'python':
-        python_parsehook(ec)
-
-def python_parsehook(ec):
+def python_fetchhook(ec):
     # don't do anything for "default" version
     if ec['version'] == "default":
         return
@@ -825,7 +821,8 @@ def pre_configure_hook(self, *args, **kwargs):
     orig_enable_templating = self.cfg.enable_templating
     self.cfg.enable_templating = False
 
-    modify_all_opts(self.cfg, opts_changes, opts_to_skip=PARSE_OPTS + ['postinstallcmds',
+    modify_all_opts(self.cfg, opts_changes, opts_to_skip=PARSE_OPTS + ['exts_list',
+                                                                       'postinstallcmds',
                                                                        'modluafooter'])
 
     # additional changes for CMakeMake EasyBlocks
@@ -849,6 +846,16 @@ def pre_configure_hook(self, *args, **kwargs):
     if (c == MesonNinja or issubclass(c,MesonNinja)) and c != CMakeNinja:
         update_opts(ec, False, 'fail_on_missing_ninja_meson_dep', REPLACE)
 
+    self.cfg.enable_templating = orig_enable_templating
+
+def pre_fetch_hook(self, *args, **kwargs):
+    "Modify extension list (here is more efficient than parse_hook since only called once)"
+    orig_enable_templating = self.cfg.enable_templating
+    self.cfg.enable_templating = False
+    modify_all_opts(self.cfg, opts_changes, opts_to_change=['exts_list'])
+    # special extensions hook for Python
+    if self.cfg['name'].lower() == 'python':
+        python_fetchhook(self.cfg)
     self.cfg.enable_templating = orig_enable_templating
 
 def pre_postproc_hook(self, *args, **kwargs):
