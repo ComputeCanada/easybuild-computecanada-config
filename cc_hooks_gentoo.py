@@ -119,7 +119,8 @@ def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
                 if try_tc == SystemToolchain or str(try_tc) in str_mro and ec.toolchain.version in supported_versions:
                     match_found = True
                     new_dep = (dep_name, new_version, new_version_suffix, (tc_name, tc_version))
-                    print("Matching updated %s found. Replacing %s with %s" % (param, str(dep), str(new_dep)))
+                    if str(new_dep) != str(dep):
+                        print("%s: Matching updated %s found. Replacing %s with %s" % (ec.filename(), param, str(dep), str(new_dep)))
                     list_of_deps[n] = new_dep
                     break
 
@@ -127,25 +128,20 @@ def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
 
         if dep_name == 'SciPy-bundle':
             new_dep = ('SciPy-Stack', '2020a')
-            print("Replacing %s with %s" % (str(dep), str(new_dep)))
-            ec[param][n] = new_dep
-        if dep_name == 'Boost.Serial':
+        elif dep_name == 'Boost.Serial':
             new_dep = ('Boost', dep_version)
-            print("Replacing %s with %s" % (str(dep), str(new_dep)))
-            ec[param][n] = new_dep
-        if dep_name == 'HDF5.Serial':
+        elif dep_name == 'HDF5.Serial':
             new_dep = ('HDF5', dep_version)
-            print("Replacing %s with %s" % (str(dep), str(new_dep)))
-            ec[param][n] = new_dep
-        if dep_name == 'netCDF.Serial':
+        elif dep_name == 'netCDF.Serial':
             new_dep = ('netCDF', dep_version)
-            print("Replacing %s with %s" % (str(dep), str(new_dep)))
-            ec[param][n] = new_dep
-        if dep_name == 'libfabric' and new_dep is not None and new_dep[0] == 'libfabric':
+        elif dep_name == 'libfabric' and new_dep is not None and new_dep[0] == 'libfabric':
             dep = new_dep
             new_dep = dep[:2]
-            print("Replacing %s with %s" % (str(dep), str(new_dep)))
+        else:
+            new_dep = None
+        if new_dep is not None and str(new_dep) != str(dep):
             ec[param][n] = new_dep
+            print("%s: Replacing %s with %s" % (ec.filename(), str(dep), str(new_dep)))
 
 
     return list_of_deps
@@ -765,7 +761,7 @@ def drop_dependencies(ec, param):
                 name, version = d[0], d[1]
                 if name in to_drop:
                     if to_drop[name] == 'ALL' or LooseVersion(version) < LooseVersion(to_drop[name]):
-                        print("Dropped %s, %s from %s" % (name, version, param))
+                        print("%s: Dropped %s, %s from %s" % (ec.filename(), name, version, param))
                         dep.remove(d)
 
         else:
@@ -774,7 +770,7 @@ def drop_dependencies(ec, param):
                 continue
             if dep_list[0] in to_drop:
                 if to_drop[dep_list[0]] == 'ALL' or LooseVersion(dep_list[1]) < LooseVersion(to_drop[dep_list[0]]):
-                    print("Dropped %s, %s from %s" % (dep_list[0],dep_list[1],param))
+                    print("%s: Dropped %s, %s from %s" % (ec.filename(), dep_list[0],dep_list[1],param))
                     ec[param].remove(dep)
 
 
