@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # remember NIXUSER_PROFILE before cleaning environment
 USE_GENTOO="$EBROOTGENTOO"
 USE_GENTOO_VERSION="$EBVERSIONGENTOO"
