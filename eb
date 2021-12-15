@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # remember NIXUSER_PROFILE before cleaning environment
 USE_GENTOO="$EBROOTGENTOO"
 USE_GENTOO_VERSION="$EBVERSIONGENTOO"
@@ -86,7 +86,7 @@ elif [ "$(id -ng)" != "ebuser" ] ; then
 	export EASYBUILD_INSTALLPATH_SOFTWARE=/cvmfs/restricted.computecanada.ca/easybuild/$EASYBUILD_SUBDIR_SOFTWARE
 	export EASYBUILD_SOURCEPATH=/cvmfs/restricted.computecanada.ca/easybuild/sources
 fi
-export EASYBUILD_ROBOT_PATHS=$EASYBUILD_ROOT/easyconfigs:$EASYBUILD_ROBOT_PATHS
+export EASYBUILD_ROBOT_PATHS=$EASYBUILD_ROBOT_PATHS:$EASYBUILD_ROOT/easyconfigs
 if [[ -n "$USE_GENTOO" ]]; then
 	export EASYBUILD_HOOKS=$EASYBUILD_ROOT/cc_hooks_gentoo.py
 else
@@ -116,6 +116,16 @@ for argument in "$@"; do
 				echo "Please do not use a path to specify the easyconfig."
 				echo "Error on argument: $argument"
 				exit 1
+			else
+				# We want to prevent eb from using $EASYBUILD_ROOT/easyconfigs for
+				# dependencies so this is not in the robot path. To find the
+				# main easyconfig there we switch to its directory.
+				letter=${argument::1}
+				letter=${letter,} # lowercase first letter
+				name=${argument%%-*}
+				# some names contain - (e.g. HOOMD-blue) so we need pathname expansion
+				ec=$(echo "$EASYBUILD_ROOT/easyconfigs/$letter/$name"*"/$argument")
+				cd $(dirname $ec)
 			fi
 		fi
 	fi

@@ -15,6 +15,11 @@ import uuid
 import os
 import shutil
 
+# options to change in parse_hook, others are changed in other hooks
+PARSE_OPTS = ['multi_deps', 'dependencies', 'builddependencies', 'license_file', 'version', 'name',
+              'source_urls', 'sources', 'patches', 'checksums', 'versionsuffix', 'modaltsoftname',
+              'skip_license_file_in_module', 'withnvptx', 'skipsteps']
+
 SYSTEM = [('system', 'system')]
 GCCCORE93 = [('GCCcore', '9.3.0')]
 GCCCORE103 = [('GCCcore', '10.3.0')]
@@ -114,7 +119,8 @@ def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
                 if try_tc == SystemToolchain or str(try_tc) in str_mro and ec.toolchain.version in supported_versions:
                     match_found = True
                     new_dep = (dep_name, new_version, new_version_suffix, (tc_name, tc_version))
-                    print("Matching updated %s found. Replacing %s with %s" % (param, str(dep), str(new_dep)))
+                    if str(new_dep) != str(dep):
+                        print("%s: Matching updated %s found. Replacing %s with %s" % (ec.filename(), param, str(dep), str(new_dep)))
                     list_of_deps[n] = new_dep
                     break
 
@@ -122,25 +128,20 @@ def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
 
         if dep_name == 'SciPy-bundle':
             new_dep = ('SciPy-Stack', '2020a')
-            print("Replacing %s with %s" % (str(dep), str(new_dep)))
-            ec[param][n] = new_dep
-        if dep_name == 'Boost.Serial':
+        elif dep_name == 'Boost.Serial':
             new_dep = ('Boost', dep_version)
-            print("Replacing %s with %s" % (str(dep), str(new_dep)))
-            ec[param][n] = new_dep
-        if dep_name == 'HDF5.Serial':
+        elif dep_name == 'HDF5.Serial':
             new_dep = ('HDF5', dep_version)
-            print("Replacing %s with %s" % (str(dep), str(new_dep)))
-            ec[param][n] = new_dep
-        if dep_name == 'netCDF.Serial':
+        elif dep_name == 'netCDF.Serial':
             new_dep = ('netCDF', dep_version)
-            print("Replacing %s with %s" % (str(dep), str(new_dep)))
-            ec[param][n] = new_dep
-        if dep_name == 'libfabric' and new_dep is not None and new_dep[0] == 'libfabric':
+        elif dep_name == 'libfabric' and new_dep is not None and new_dep[0] == 'libfabric':
             dep = new_dep
             new_dep = dep[:2]
-            print("Replacing %s with %s" % (str(dep), str(new_dep)))
+        else:
+            new_dep = None
+        if new_dep is not None and str(new_dep) != str(dep):
             ec[param][n] = new_dep
+            print("%s: Replacing %s with %s" % (ec.filename(), str(dep), str(new_dep)))
 
 
     return list_of_deps
@@ -509,8 +510,15 @@ end
         'modluafooter': ('setenv("JAVA_TOOL_OPTIONS", "-Xmx2g")', REPLACE),
     },
     'libfabric': {
+        #'builddependencies': ([('opa-psm2', '11.2.185', '', ("%(toolchain_name)s", "%(toolchain_version)s"))], REPLACE),
         'builddependencies': ([('opa-psm2', '11.2.185')], REPLACE),
         'configopts': ('--disable-efa ', PREPEND),
+    },
+    'libxsmm': {
+        'skipsteps': ([], REPLACE),
+        'preconfigopts': ('#', REPLACE),
+        'installopts': ({'sse3': ' SSE=3', 'avx': ' AVX=1', 'avx2': ' AVX=2', 'avx512': ' AVX=3'}
+                        [os.getenv('RSNT_ARCH')], APPEND),
     },
     'LLDB': {
         'dependencies': ([], REPLACE),
@@ -534,7 +542,11 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
         'module load python/2.7 && pushd %(installdir)s/extern/engines/python && python setup.py install --prefix=%(installdir)s/extern/engines/python && popd ',
         'module load python/3.6 && pushd %(installdir)s/extern/engines/python && python setup.py install --prefix=%(installdir)s/extern/engines/python && popd ',
         'module load python/3.7 && pushd %(installdir)s/extern/engines/python && python setup.py install --prefix=%(installdir)s/extern/engines/python && popd ',
-        '/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_origin --add_path $EBROOTPREFIX/lib',
+        "find %(installdir)s/sys/os/glnxa64 -name 'libstdc++.so*' -exec mv {} {}.bak \;",
+        "find %(installdir)s/sys/os/glnxa64 -name 'libgcc_s.so*' -exec mv {} {}.bak \;",
+        "find %(installdir)s/sys/os/glnxa64 -name 'libgfortran.so*' -exec mv {} {}.bak \;",
+        "find %(installdir)s/sys/os/glnxa64 -name 'libquadmath.so*' -exec mv {} {}.bak \;",
+        '/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_origin',
         '/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/extern/engines/python --add_path %(installdir)s/bin/glnxa64 --add_origin --any_interpreter '
 ], REPLACE),
         'modextrapaths': ({'EBPYTHONPREFIXES': ['extern/engines/python']}, REPLACE),
@@ -749,7 +761,7 @@ def drop_dependencies(ec, param):
                 name, version = d[0], d[1]
                 if name in to_drop:
                     if to_drop[name] == 'ALL' or LooseVersion(version) < LooseVersion(to_drop[name]):
-                        print("Dropped %s, %s from %s" % (name, version, param))
+                        print("%s: Dropped %s, %s from %s" % (ec.filename(), name, version, param))
                         dep.remove(d)
 
         else:
@@ -758,7 +770,7 @@ def drop_dependencies(ec, param):
                 continue
             if dep_list[0] in to_drop:
                 if to_drop[dep_list[0]] == 'ALL' or LooseVersion(dep_list[1]) < LooseVersion(to_drop[dep_list[0]]):
-                    print("Dropped %s, %s from %s" % (dep_list[0],dep_list[1],param))
+                    print("%s: Dropped %s, %s from %s" % (ec.filename(), dep_list[0],dep_list[1],param))
                     ec[param].remove(dep)
 
 
@@ -770,11 +782,7 @@ def parse_hook(ec, *args, **kwargs):
     drop_dependencies(ec, 'dependencies')
     drop_dependencies(ec, 'builddependencies')
     set_modaltsoftname(ec)
-    modify_all_opts(ec, opts_changes, opts_to_skip=[], opts_to_change=[
-        'multi_deps', 'dependencies', 'builddependencies', 'license_file', 'version', 'name',
-        'source_urls', 'sources', 'patches', 'checksums', 'versionsuffix', 'modaltsoftname',
-        'skip_license_file_in_module', 'withnvptx', 'exts_list', 'postinstallcmds'])
-    set_modluafooter(ec)
+    modify_all_opts(ec, opts_changes, opts_to_change=PARSE_OPTS)
 
     # always disable multi_deps_load_default when multi_deps is used
     if ec.get('multi_deps', None): 
@@ -784,11 +792,7 @@ def parse_hook(ec, *args, **kwargs):
     if ec.get('moduleclass','') == 'toolchain' or ec['name'] == 'GCCcore' or ec['name'] == 'CUDAcore':
         ec['hidden'] = True
 
-    # special parse hook for Python
-    if ec['name'].lower() == 'python':
-        python_parsehook(ec)
-
-def python_parsehook(ec):
+def python_fetchhook(ec):
     # don't do anything for "default" version
     if ec['version'] == "default":
         return
@@ -813,7 +817,9 @@ def pre_configure_hook(self, *args, **kwargs):
     orig_enable_templating = self.cfg.enable_templating
     self.cfg.enable_templating = False
 
-    modify_all_opts(self.cfg, opts_changes)
+    modify_all_opts(self.cfg, opts_changes, opts_to_skip=PARSE_OPTS + ['exts_list',
+                                                                       'postinstallcmds',
+                                                                       'modluafooter'])
 
     # additional changes for CMakeMake EasyBlocks
     ec = self.cfg
@@ -836,6 +842,30 @@ def pre_configure_hook(self, *args, **kwargs):
     if (c == MesonNinja or issubclass(c,MesonNinja)) and c != CMakeNinja:
         update_opts(ec, False, 'fail_on_missing_ninja_meson_dep', REPLACE)
 
+    self.cfg.enable_templating = orig_enable_templating
+
+def pre_fetch_hook(self, *args, **kwargs):
+    "Modify extension list (here is more efficient than parse_hook since only called once)"
+    orig_enable_templating = self.cfg.enable_templating
+    self.cfg.enable_templating = False
+    modify_all_opts(self.cfg, opts_changes, opts_to_change=['exts_list'])
+    # special extensions hook for Python
+    if self.cfg['name'].lower() == 'python':
+        python_fetchhook(self.cfg)
+    self.cfg.enable_templating = orig_enable_templating
+
+def pre_postproc_hook(self, *args, **kwargs):
+    "Modify postinstallcmds (here is more efficient than parse_hook since only called once)"
+    orig_enable_templating = self.cfg.enable_templating
+    self.cfg.enable_templating = False
+    modify_all_opts(self.cfg, opts_changes, opts_to_change=['postinstallcmds'])
+    self.cfg.enable_templating = orig_enable_templating
+
+def pre_module_hook(self, *args, **kwargs):
+    "Modify module footer (here is more efficient than parse_hook since only called once)"
+    orig_enable_templating = self.cfg.enable_templating
+    self.cfg.enable_templating = False
+    set_modluafooter(self.cfg)
     self.cfg.enable_templating = orig_enable_templating
 
 def post_module_hook(self, *args, **kwargs):

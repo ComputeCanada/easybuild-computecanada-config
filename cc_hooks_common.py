@@ -26,11 +26,11 @@ def get_matching_keys(name, version, versionsuffix, dictionary):
 
     return matching_keys
 
-def modify_all_opts(ec, opts_changes,
-        opts_to_skip=['builddependencies', 'dependencies', 'modluafooter', 'toolchainopts', 'version', 'multi_deps'],
-        opts_to_change='ALL'):
+def modify_all_opts(ec, opts_changes, opts_to_skip=None, opts_to_change='ALL'):
     matching_keys = get_matching_keys_from_ec(ec, opts_changes)
 
+    if opts_to_skip is None:
+        opts_to_skip = []
     for key in matching_keys:
         if key in opts_changes.keys():
             for opt, value in opts_changes[key].items():
@@ -48,7 +48,7 @@ def modify_all_opts(ec, opts_changes,
             break
 
 def update_opts(ec,changes,key, update_type):
-    print("Changing %s from: %s" % (key,ec[key]))
+    orig = ec[key]
     if update_type == REPLACE:
         ec[key] = changes
     elif update_type in [APPEND_LIST, PREPEND_LIST, DROP_FROM_LIST, REPLACE_IN_LIST]:
@@ -83,5 +83,6 @@ def update_opts(ec,changes,key, update_type):
         if isinstance(ec[key], str):
             ec[key] = opts[0]
 
-    print("New %s: %s" % (key,ec[key]))
+    if str(ec[key]) != str(orig):
+        print("%s: Changing %s from: %s to: %s" % (ec.filename(),key,orig,ec[key]))
 
