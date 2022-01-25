@@ -30,10 +30,9 @@ EasyBuild support for iofbf compiler toolchain (includes Intel, Open MPI, FlexiB
 
 from easybuild.toolchains.fft.fftw import Fftw
 from easybuild.toolchains.iofb import Iofb
-from easybuild.toolchains.linalg.scalapack import ScaLAPACK
 
 
-class Iofbf(Iofb, ScaLAPACK, Fftw):
+class Iofbf(Iofb, Fftw):
     """Compiler toolchain with Intel compilers, OpenMPI, FlexiBLAS, ScaLAPACK and FFTW."""
     NAME = 'iofbf'
     SUBTOOLCHAIN = Iofb.NAME

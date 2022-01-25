@@ -34,9 +34,10 @@ Open MPI, and FlexiBLAS).
 
 from easybuild.toolchains.iompi import Iompi
 from easybuild.toolchains.iccifortflexiblas import IccIfortflexiblas
+from easybuild.toolchains.linalg.scalapack import ScaLAPACK
 
 
-class Iofb(Iompi, IccIfortflexiblas):
-    """Compiler toolchain with Intel compilers, Open MPI, and FlexiBLAS."""
+class Iofb(Iompi, IccIfortflexiblas, ScaLAPACK):
+    """Compiler toolchain with Intel compilers, Open MPI, FlexiBLAS, and ScaLAPACK."""
     NAME = 'iofb'
     SUBTOOLCHAIN = [Iompi.NAME, IccIfortflexiblas.NAME]
