@@ -808,6 +808,10 @@ def python_fetchhook(ec):
     else: # 3.6, 3.7
         python_extensions_to_keep += ['more-itertools']
 
+    # python 3.10
+    if ver >= LooseVersion('3.10') and ver <= LooseVersion('3.11'):
+        python_extensions_to_keep += ['tomli', "flit-core", "packaging", "pyparsing", "platformdirs"]
+
     new_ext_list = [ext for ext in ec['exts_list'] if ext[0] in python_extensions_to_keep]
     ec['exts_list'] = new_ext_list
 
