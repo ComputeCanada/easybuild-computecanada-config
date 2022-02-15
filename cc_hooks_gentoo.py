@@ -719,7 +719,7 @@ def disable_use_mpi_for_non_mpi_toolchains(ec):
 def set_modluafooter(ec):
     matching_keys = get_matching_keys_from_ec(ec, opts_changes)
     for key in matching_keys:
-        for opt in ('modluafooter', 'allow_prepend_abs_path', 'modextrapaths'):
+        for opt in ('modluafooter', 'allow_prepend_abs_path', 'modextrapaths', 'ebpythonprefixes'):
             if opt in opts_changes[key]:
                 update_opts(ec, opts_changes[key][opt][0], opt, opts_changes[key][opt][1])
 
@@ -865,6 +865,7 @@ def pre_configure_hook(self, *args, **kwargs):
     modify_all_opts(self.cfg, opts_changes, opts_to_skip=PARSE_OPTS + ['exts_list',
                                                                        'postinstallcmds',
                                                                        'modluafooter',
+                                                                       'ebpythonprefixes',
                                                                        'allow_prepend_abs_path',
                                                                        'modextrapaths'])
 
