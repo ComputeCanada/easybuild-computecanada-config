@@ -785,8 +785,47 @@ def parse_hook(ec, *args, **kwargs):
     modify_all_opts(ec, opts_changes, opts_to_change=PARSE_OPTS)
 
     # always disable multi_deps_load_default when multi_deps is used
-    if ec.get('multi_deps', None): 
+    multi_deps = ec.get('multi_deps', None)
+    if multi_deps:
         ec['multi_deps_load_default'] = False
+
+        if 'Python' in multi_deps:
+            # ensure PythonPackage that build with multi_deps have a corresponding modluafooter
+            # don't overwrite the existing one if there is one in the recipe
+            if ec.get('easyblock', None) == 'PythonPackage':
+                # get lowest and highest supported versions
+                versions = sorted([LooseVersion(x) for x in multi_deps['Python']])
+                lowest = str(versions[0])
+                highest = str(versions[-1])
+
+                # we need to get the next subversion higher than highest for Lmod syntax
+                highest_major, highest_minor = str(highest).split('.')[:2]
+                highest_plus = '.'.join([highest_major, str(int(highest_minor)+1)])
+
+                footer_str = """if convertToCanonical(LmodVersion()) >= convertToCanonical("8.2.9") then
+        depends_on(between("python",'{lowest}<','<{highest_plus}'))
+end""".format(lowest=lowest, highest_plus=highest_plus)
+                if 'depends_on(between(' in ec.get('modluafooter', None) and footer_str not in ec.get('modluafooter', None):
+                    print("Error, incorrect modluafooter for specified versions of python: %s" % ec.get('modluafooter', None))
+                    print("Should be absent or should contain:%s" % footer_str)
+                    exit(1)
+                else:
+                    print("%s: Adding to modluafooter: %s" % (ec.filename(), footer_str))
+                    ec['modluafooter'] += footer_str
+
+            # add sanity_checks if there are not already there
+            sanity_check_paths = ec.get('sanity_check_paths', {})
+            if not 'dirs' in sanity_check_paths:
+                sanity_check_paths['dirs'] = []
+            if not 'files' in sanity_check_paths:
+                sanity_check_paths['files'] = []
+
+            site_packages_path = 'lib/python%(pyshortver)s/site-packages'
+            if not site_packages_path in sanity_check_paths['dirs']:
+                sanity_check_paths['dirs'] += [site_packages_path]
+                print("%s: Adding %s to sanity_check_paths['dir']" % (ec.filename(), site_packages_path))
+                print(str(ec.get('sanity_check_paths', None)))
+
 
     # hide toolchains
     if ec.get('moduleclass','') == 'toolchain' or ec['name'] == 'GCCcore' or ec['name'] == 'CUDAcore':
@@ -807,6 +846,10 @@ def python_fetchhook(ec):
                                       'singledispatch', 'typing']
     else: # 3.6, 3.7
         python_extensions_to_keep += ['more-itertools']
+
+    # python 3.10
+    if ver >= LooseVersion('3.10') and ver <= LooseVersion('3.11'):
+        python_extensions_to_keep += ['tomli', "flit-core", "packaging", "pyparsing", "platformdirs"]
 
     new_ext_list = [ext for ext in ec['exts_list'] if ext[0] in python_extensions_to_keep]
     ec['exts_list'] = new_ext_list
