@@ -647,6 +647,7 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
     },
     'Python': {
         'modextrapaths': ({'PYTHONPATH': ['/cvmfs/soft.computecanada.ca/easybuild/python/site-packages']}, REPLACE),
+        'ebpythonprefixes': (False, REPLACE),  # disable upstream's version of sitecustomize.py for ebpythonprefixes
         'allow_prepend_abs_path': (True, REPLACE),
         'installopts': (' && /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_path %(installdir)s/lib --any_interpreter', APPEND),
         'builddependencies': (('Rust', '1.52.1'), DROP_FROM_LIST),
