@@ -794,7 +794,7 @@ def parse_hook(ec, *args, **kwargs):
         if 'Python' in multi_deps:
             # ensure PythonPackage that build with multi_deps have a corresponding modluafooter
             # don't overwrite the existing one if there is one in the recipe
-            if ec.get('easyblock', None) == 'PythonPackage':
+            if ec.get('easyblock', None) in ['PythonPackage', 'PythonBundle']:
                 # get lowest and highest supported versions
                 versions = sorted([LooseVersion(x) for x in multi_deps['Python']])
                 lowest = str(versions[0])
