@@ -719,8 +719,9 @@ def disable_use_mpi_for_non_mpi_toolchains(ec):
 def set_modluafooter(ec):
     matching_keys = get_matching_keys_from_ec(ec, opts_changes)
     for key in matching_keys:
-        if 'modluafooter' in opts_changes[key]:
-            update_opts(ec, opts_changes[key]['modluafooter'][0], 'modluafooter', opts_changes[key]['modluafooter'][1])
+        for opt in ('modluafooter', 'allow_prepend_abs_path', 'modextrapaths'):
+            if opt in opts_changes[key]:
+                update_opts(ec, opts_changes[key][opt][0], opt, opts_changes[key][opt][1])
 
     moduleclass = ec.get('moduleclass','')
     year = os.environ['EBVERSIONGENTOO']
@@ -863,7 +864,9 @@ def pre_configure_hook(self, *args, **kwargs):
 
     modify_all_opts(self.cfg, opts_changes, opts_to_skip=PARSE_OPTS + ['exts_list',
                                                                        'postinstallcmds',
-                                                                       'modluafooter'])
+                                                                       'modluafooter',
+                                                                       'allow_prepend_abs_path',
+                                                                       'modextrapaths'])
 
     # additional changes for CMakeMake EasyBlocks
     ec = self.cfg
@@ -910,6 +913,9 @@ def pre_module_hook(self, *args, **kwargs):
     orig_enable_templating = self.cfg.enable_templating
     self.cfg.enable_templating = False
     set_modluafooter(self.cfg)
+    # special extensions hook for Python with --module-only
+    if self.cfg['name'].lower() == 'python':
+        python_fetchhook(self.cfg)
     self.cfg.enable_templating = orig_enable_templating
 
 def post_module_hook(self, *args, **kwargs):
