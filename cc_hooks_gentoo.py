@@ -359,6 +359,9 @@ opts_changes = {
     'cuDNN': {
         'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_origin'], APPEND_LIST),
     },
+    'DB': {
+        'configopts': ('--enable-cxx --enable-stl --enable-dbm', APPEND),
+    },
     'FFmpeg': {
         'configopts': (' --enable-libvidstab', APPEND),
     },
