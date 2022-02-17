@@ -46,6 +46,7 @@ new_version_mapping_2020a = {
         ('Boost','ANY','-mpi'): ('1.72.0', cOMPI_2020a),
         ('CUDA', '11.0.2'): ('11.0', COMPILERS_2020a),
         'CGAL': ('4.14.3', COMPILERS_2020a, None),
+        ('CMake', '3.21.1'): ('3.21.4', SYSTEM),
         'ETSF_IO': ('1.0.4', [('iompi', '2020a'), ('iccifort', '2020.1.217')]),
         ('FFTW', 'ANY', ""): ('3.3.8', COMPILERS_2020a),
         ('FFTW','ANY','-mpi'): ('3.3.8', cOMPI_2020a),
@@ -606,6 +607,16 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
     },
     ("OpenFOAM", "v2012"): {
         'modluafooter': (openfoam_modluafooter % ('Gcc', 'eb-mpi', '5.8.0', '5.8'), REPLACE),
+    },
+    ("OpenFOAM", "v2112"): {
+#        'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
+#        source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
+#end""".format(version="v2112"), REPLACE),
+        'modluafooter': (openfoam_modluafooter % ('Gcc', 'eb-mpi', '5.9.1', '5.9'), REPLACE),
+        'dependencies': ([
+                          (('ParaView', '5.9.1', '-mpi'), ('ParaView', '5.9.1', None, ('gompi', '2020a'))),
+                          (('gnuplot', '5.4.2'), ('gnuplot', '5.2.8')),
+                        ], REPLACE_IN_LIST),
     },
     "OpenMPI": {
         # local customizations for OpenMPI
