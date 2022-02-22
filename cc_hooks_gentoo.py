@@ -676,6 +676,9 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
                         ('virtualenv', '20.0.18', {'checksums': ['ac53ade75ca189bc97b6c1d9ec0f1a50efe33cbf178ae09452dcd9fd309013c1']}))
                        ], REPLACE_IN_LIST),
     },
+    'Qt5': {
+        'modaltsoftname': ('qt', REPLACE),
+    },
     'ROOT': {
         # Cling needs to know about different sysroot
         'configopts': ("-DDEFAULT_SYSROOT=$EPREFIX", PREPEND),
@@ -772,6 +775,7 @@ def drop_dependencies(ec, param):
             'PyQt5': 'ALL',
             'SQLite': 'ALL',
             'pybind11': 'ALL',
+            'git': 'ALL',
     }
     # iterate over a copy
     for dep in ec[param][:]:
