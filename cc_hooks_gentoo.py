@@ -27,6 +27,7 @@ GCC93 = [('GCC', '9.3.0')]
 ICC2020a = [('iccifort', '2020.1.217')]
 COMPILERS_2020a = [ICC2020a[0], GCC93[0]]
 cOMPI_2020a = [('iompi', '2020a'),('gompi', '2020a')]
+cOMPI_2021a = [('iompi', '2021a'),('gompi', '2021a')]
 cOMKL_2020a = [('iomkl', '2020a'),('gomkl', '2020a')]
 
 # Dictionary containing version mapping
@@ -61,6 +62,7 @@ new_version_mapping_2020a = {
         ('Java', '11'): ('13', SYSTEM),
         ('HDF5','ANY',""): ('1.10.6', cOMPI_2020a + COMPILERS_2020a, None),
         ('HDF5','ANY','-mpi'): ('1.10.6', cOMPI_2020a),
+        ('HDF5','ANY','-mpi'): ('1.12.1', cOMPI_2021a),
         ('imkl','2020.1.217'): ('2020.1.217', SYSTEM),
         ('imkl','2020.4.304'): ('2020.4.304', SYSTEM),
         ('imkl','2021.2.0'): ('2021.2.0', SYSTEM),
