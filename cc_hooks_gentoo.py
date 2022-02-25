@@ -408,9 +408,20 @@ opts_changes = {
          cp -p $installdir/$i $publicdir/$i
        fi
      done
+     for i in $(cd $installdir && find tbb); do
+       if [ -f $installdir/$i ]; then
+         mkdir -p $(dirname $publicdir/$i)
+         cp -p $installdir/$i $publicdir/$i
+       fi
+     done
      cd $installdir
      for i in $(find . -type l); do
        if [ -f $publicdir/$i ]; then
+         cp -a $i $publicdir/$i
+       fi
+     done
+     for i in compilers_and_libraries_%(version)s/linux/tbb/%(version)s/lib/intel64/gcc4.8/*; do
+       if [ -L $i ]; then
          cp -a $i $publicdir/$i
        fi
      done
