@@ -129,8 +129,9 @@ for argument in "$@"; do
 				ec=$(find $EASYBUILD_ROOT/easyconfigs/$letter/$name* -name $argument 2>/dev/null)
 				if [[ -f $ec ]]; then
 					NEW_ARGS+=("$ec")
-				else    # if no corresponding easyconfig was found in easyconfigs folder, we get it found normally
-					NEW_ARGS+=("$argument")
+				else    # if no corresponding easyconfig was found in easyconfigs folder, error out
+					echo "No file $argument was found under $EASYBUILD_ROOT/easyconfigs/$letter/$name*"
+					exit 1
 				fi
 			fi
 		else
