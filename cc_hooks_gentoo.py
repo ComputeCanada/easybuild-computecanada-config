@@ -851,12 +851,12 @@ end""".format(lowest=lowest, highest_plus=highest_plus)
 
             # add sanity_checks if there are not already there
             sanity_check_paths = ec.get('sanity_check_paths', {})
-            if not 'dirs' in sanity_check_paths:
-                sanity_check_paths['dirs'] = []
-            if not 'files' in sanity_check_paths:
-                sanity_check_paths['files'] = []
-
             if ec.name not in ['Boost']:
+                if not 'dirs' in sanity_check_paths:
+                    sanity_check_paths['dirs'] = []
+                if not 'files' in sanity_check_paths:
+                    sanity_check_paths['files'] = []
+
                 site_packages_path = 'lib/python%(pyshortver)s/site-packages'
                 if not site_packages_path in sanity_check_paths['dirs']:
                     sanity_check_paths['dirs'] += [site_packages_path]
