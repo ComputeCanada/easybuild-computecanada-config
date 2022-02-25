@@ -408,6 +408,15 @@ opts_changes = {
          cp -p $installdir/$i $publicdir/$i
        fi
      done
+     for i in $(cd $installdir && find compilers_and_libraries_%(version)s/linux/tbb); do
+       if [ -f $installdir/$i ]; then
+         mkdir -p $(dirname $publicdir/$i)
+         cp -p $installdir/$i $publicdir/$i
+       elif [ -L $installdir/$i ]; then
+         mkdir -p $(dirname $publicdir/$i)
+         cp -a $installdir/$i $publicdir/$i
+       fi
+     done
      cd $installdir
      for i in $(find . -type l); do
        if [ -f $publicdir/$i ]; then
