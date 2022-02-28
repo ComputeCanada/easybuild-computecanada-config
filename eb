@@ -102,6 +102,7 @@ export PYTHONPATH=$EASYBUILD_ROOT:$EASYBUILD_ROOT/site-packages
 export RSNT_EASYBUILD_MAGIC_COOKIE=263ca73bb634185aab1d1b41627fdbba
 
 # argument validation
+NEW_ARGS=()
 for argument in "$@"; do
 	if [[ "$CURRENT_USER" == "ebuser" ]]; then
 		if [[ $argument =~ --inject-checksums* || $argument =~ --robot* || "$argument" == "-r" ]]; then
@@ -110,6 +111,7 @@ for argument in "$@"; do
 		fi
 		if [[ $argument =~ .*.eb$ ]]; then
 			if [[ $argument =~ ^/cvmfs/soft.computecanada.ca/easybuild/software/.* ]]; then
+				NEW_ARGS+=("$argument")
 				# accept this path, it is used by the auto recompilation
 				continue 
 			elif [[ $argument =~ .*/.* ]]; then
@@ -124,11 +126,21 @@ for argument in "$@"; do
 				letter=${letter,} # lowercase first letter
 				name=${argument%%-*}
 				# some names contain - (e.g. HOOMD-blue) so we need pathname expansion
-				ec=$(echo "$EASYBUILD_ROOT/easyconfigs/$letter/$name"*"/$argument")
-				cd $(dirname $ec)
+				ec=$(find $EASYBUILD_ROOT/easyconfigs/$letter/$name* -name $argument 2>/dev/null)
+				if [[ -f $ec ]]; then
+					NEW_ARGS+=("$ec")
+				else    # if no corresponding easyconfig was found in easyconfigs folder, we get it found normally
+					NEW_ARGS+=("$argument")
+				fi
 			fi
+		else
+			NEW_ARGS+=("$argument")
 		fi
 	fi
 done
 
-exec $EASYBUILD_ROOT/framework/eb --configfiles=$LOCAL_EASYBUILD_CONFIGFILES ${1+"$@"}
+if [[ "$CURRENT_USER" == "ebuser" ]]; then
+	exec $EASYBUILD_ROOT/framework/eb --configfiles=$LOCAL_EASYBUILD_CONFIGFILES "${NEW_ARGS[@]}"
+else
+	exec $EASYBUILD_ROOT/framework/eb --configfiles=$LOCAL_EASYBUILD_CONFIGFILES ${1+"$@"}
+fi
