@@ -8,11 +8,10 @@ import argparse
 
 AVAILABLE_ARCHITECTURES = ["avx2", "avx512", "avx", "sse3"]
 AVAILABLE_CPU_VENDORS = ["intel", "amd"]
+DEFAULT_INDEX_DIR = "/cvmfs/soft.computecanada.ca/custom/mii/data"
 
-def generate_mii_index(arch="avx2", cpu_vendor="amd"):
+def generate_mii_index(arch="avx2", cpu_vendor="amd", index_dir=DEFAULT_INDEX_DIR):
     modulepath = '/cvmfs/soft.computecanada.ca/custom/modules'
-    index_dir = '/cvmfs/soft.computecanada.ca/custom/mii/data'
-    index_dir = '/home/mboisson/mii'
     mii = "/cvmfs/soft.computecanada.ca/easybuild/software/2020/Core/mii/1.1.1/bin/mii"
     prefix = arch + "_" + cpu_vendor
     final_index_file = os.path.join(index_dir, prefix)
@@ -78,6 +77,8 @@ def create_argparser():
         arch_group.add_argument("--all-archs", action='store_true', dest="all_archs")
     ])
 
+    parser.add_argument("--index_dir", default=DEFAULT_INDEX_DIR, help="Specify the directory in which to write indexes.")
+
 
     return parser
 
@@ -86,7 +87,7 @@ def main():
     args = create_argparser().parse_args()
     for arch in args.arch:
         for cpu_vendor in args.cpu_vendor:
-            generate_mii_index(arch, cpu_vendor)
+            generate_mii_index(arch, cpu_vendor, args.index_dir)
 
 if __name__ == "__main__":
     main()
