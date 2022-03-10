@@ -372,7 +372,7 @@ opts_changes = {
     },
     'FreeSurfer': {
         'postinstallcmds': ([
-            'upx -d %(installdir)s/bin/*',
+            'upx -d %(installdir)s/bin/*; true',
             '/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s '], REPLACE),
     },
     'GCCcore': {
