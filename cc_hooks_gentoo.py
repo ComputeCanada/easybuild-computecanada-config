@@ -370,6 +370,11 @@ opts_changes = {
     'FFmpeg': {
         'configopts': (' --enable-libvidstab', APPEND),
     },
+    'FreeSurfer': {
+        'postinstallcmds': ([
+            'upx -d %(installdir)s/bin/*',
+            '/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s '], REPLACE),
+    },
     'GCCcore': {
         # remove .la files, as they mess up rpath when libtool is used
         'postinstallcmds': (["find %(installdir)s -name '*.la' -delete"], REPLACE),
