@@ -971,10 +971,14 @@ def pre_prepare_hook(self, *args, **kwargs):
     packages_in_gentoo = ["EBROOTLIBXML2", "EBROOTLIBJPEGMINTURBO", "EBROOTLIBPNG", "EBROOTLIBTIFF", "EBROOTZLIB",
                           "EBROOTLIBGLU", "EBROOTMESA", "EBROOTFLTK", "EBROOTTCL", "EBROOTTK", "EBROOTBZIP2",
                           "EBROOTZSTD", "EBROOTFREETYPE", "EBROOTGLIB", "EBROOTSZIP", "EBROOTLIBXMLPLUSPLUS",
-                          "EBROOTSQLITE3", "EBROOTLIBEVENT"]
+                          "EBROOTSQLITE3"]
     ebrootgentoo = os.environ["EBROOTGENTOO"]
     for package in packages_in_gentoo:
         setvar(package, ebrootgentoo)
+
+    # this should only be set if external EB PMIx is used in Open MPI
+    if self.cfg['name'] == 'OpenMPI' and "PMIx" in {dep["name"] for dep in self.cfg['dependencies']}:
+        setvar("EBROOTLIBEVENT", ebrootgentoo)
 
     # this can not be set in general because it causes issues with Python. It however avoids having to patch
     # OpenFOAM locally to find readline in gentoo
