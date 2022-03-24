@@ -69,7 +69,7 @@ new_version_mapping_2020a = {
         ('imkl','2020.4.304'): ('2020.4.304', SYSTEM),
         ('imkl','2021.2.0'): ('2021.2.0', SYSTEM),
         ('libbeef', '0.1.2'): ('0.1.2', COMPILERS_2020a),
-        ('libfabric', '1.11.0'): ('1.10.1', GCCCORE93 + GCCCORE102 + [('gcccorecuda', '2020a'), ('gcccorecuda', '2020.1.112')]),
+        ('libfabric', '1.11.0'): ('1.10.1', GCCCORE93 + GCCCORE102 + [('gcccorecuda', '2020a'), ('gcccorecuda', '2020.1.112')] + COMPILERS_2020a),
         ('netCDF','ANY',""): ('4.7.4', cOMPI_2020a + COMPILERS_2020a, None),
         ('netCDF','ANY','-mpi'): ('4.7.4', cOMPI_2020a, None),
         ('netCDF-C++4','ANY', ""): ('4.3.1', cOMPI_2020a + COMPILERS_2020a, None),
