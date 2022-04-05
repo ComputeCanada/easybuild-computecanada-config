@@ -109,6 +109,12 @@ for argument in "$@"; do
 			echo "Please do not use $argument as $CURRENT_USER"
 			exit 1
 		fi
+		if [[ $argument =~ ^--installpath-software=/cvmfs/data.rsnt.computecanada.ca/.* ]]; then
+			if [[ "$argument" != "--installpath-software=/cvmfs/data.rsnt.computecanada.ca/content/easybuild/data/2020" ]]; then
+				echo "When installing datasets, the install path should be /cvmfs/data.rsnt.computecanada.ca/content/easybuild/data/2020 instead of $argument"
+				exit 1
+			fi
+		fi
 		if [[ $argument =~ .*.eb$ ]]; then
 			if [[ $argument =~ ^/cvmfs/soft.computecanada.ca/easybuild/software/.* ]]; then
 				NEW_ARGS+=("$argument")
