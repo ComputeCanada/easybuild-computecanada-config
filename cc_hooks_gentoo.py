@@ -1000,7 +1000,7 @@ def post_prepare_hook(self, *args, **kwargs):
 def end_hook():
     user = os.getenv("USER")
     # only do this if we are "ebuser"
-    if user != "ebuser":
+    if True: #user != "ebuser":
         return
 
     arch = os.getenv("RSNT_ARCH")
