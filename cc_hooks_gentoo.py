@@ -850,8 +850,7 @@ end""".format(lowest=lowest, highest_plus=highest_plus)
                 modluafooter = ec.get('modluafooter', "")
                 # don't add anything, it is already there
                 if 'depends_on("python")' in modluafooter:
-                    print("Error, this is a multi_deps module. modluafooter should not contain depends_on('python')): %s" % modluafooter)
-                    exit(1)
+                    print("WARNING, this is a multi_deps module. modluafooter should not contain depends_on('python')): %s" % modluafooter)
                 elif footer_str in modluafooter:
                     pass
                 elif 'depends_on(between(' in ec.get('modluafooter', None):
