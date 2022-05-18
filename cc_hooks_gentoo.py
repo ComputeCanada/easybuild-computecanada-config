@@ -847,13 +847,20 @@ def parse_hook(ec, *args, **kwargs):
                 footer_str = """if convertToCanonical(LmodVersion()) >= convertToCanonical("8.2.9") then
         depends_on(between("python",'{lowest}<','<{highest_plus}'))
 end""".format(lowest=lowest, highest_plus=highest_plus)
-                if 'depends_on(between(' in ec.get('modluafooter', None) and footer_str not in ec.get('modluafooter', None):
+                modluafooter = ec.get('modluafooter', "")
+                # don't add anything, it is already there
+                if 'depends_on("python")' in modluafooter:
+                    print("Error, this is a multi_deps module. modluafooter should not contain depends_on('python')): %s" % modluafooter)
+                    exit(1)
+                elif footer_str in modluafooter:
+                    pass
+                elif 'depends_on(between(' in ec.get('modluafooter', None):
                     print("Error, incorrect modluafooter for specified versions of python: %s" % ec.get('modluafooter', None))
                     print("Should be absent or should contain:%s" % footer_str)
                     exit(1)
                 else:
                     print("%s: Adding to modluafooter: %s" % (ec.filename(), footer_str))
-                    ec['modluafooter'] += footer_str
+                    ec['modluafooter'] += "\n" + footer_str + "\n"
 
             # add sanity_checks if there are not already there
             sanity_check_paths = ec.get('sanity_check_paths', {})
