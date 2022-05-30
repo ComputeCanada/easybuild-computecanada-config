@@ -535,6 +535,12 @@ end
         'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s'], REPLACE),
         'modluafooter': ('setenv("JAVA_TOOL_OPTIONS", "-Xmx2g")', REPLACE),
     },
+    ('libfabric', '1.15.1'): {
+        'builddependencies': ([('opa-psm2', '11.2.206'), ('GDRCopy', '2.3'), ('CUDAcore', '10.1.243')], REPLACE),
+        'configopts': ('--disable-efa --enable-cuda-dlopen ', PREPEND),
+        'patches': (['libfabric-1.15.1_eliminate-cudart-use.patch'], APPEND_LIST),
+        'checksums': ('e11b43a4229346f6a6708987701dd1c7d1cbdd16457cc71f522c6428fe034fef', APPEND_LIST),
+    },
     'libfabric': {
         #'builddependencies': ([('opa-psm2', '11.2.185', '', ("%(toolchain_name)s", "%(toolchain_version)s"))], REPLACE),
         'builddependencies': ([('opa-psm2', '11.2.185')], REPLACE),
