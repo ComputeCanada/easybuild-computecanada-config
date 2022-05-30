@@ -642,7 +642,7 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
     },
     "OpenMPI": {
         # local customizations for OpenMPI
-        'builddependencies': ([('opa-psm2', '11.2.185')], REPLACE),
+        'builddependencies': ([('opa-psm2', '11.2.206')], REPLACE),
         'configopts': ('--enable-shared --with-verbs ' +
                     '--with-hwloc=external '  + # hwloc support
                     '--with-libevent=external ' + # libevent from Gentoo
@@ -660,9 +660,9 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
                     # libraries (lustre, fabric, and scheduler)
                     '--enable-mca-dso=common-ofi,common-ucx,common-verbs,event-external,' +
                     'atomic-ucx,btl-ofi,btl-openib,btl-uct,' +
-                    'coll-hcoll,ess-tm,fs-lustre,mtl-ofi,mtl-psm,mtl-psm2,osc-ucx,' +
+                    'coll-hcoll,coll-ucc,ess-tm,fs-lustre,mtl-ofi,mtl-psm,mtl-psm2,osc-ucx,' +
                     'plm-tm,pmix-ext3x,pmix-s1,pmix-s2,pml-ucx,pnet-opa,psec-munge,' +
-                    'ras-tm,spml-ucx,sshmem-ucx,hwloc-external',
+                    'ras-tm,scoll-ucc,spml-ucx,sshmem-ucx,hwloc-external',
                     PREPEND),
         'postinstallcmds': (['rm %(installdir)s/lib/*.la %(installdir)s/lib/*/*.la',
                              'for i in %(installdir)s/lib/openmpi/mca_pmix_s[12].so; '
