@@ -668,7 +668,7 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
                     'atomic-ucx,btl-ofi,btl-openib,btl-uct,' +
                     'coll-hcoll,coll-ucc,ess-tm,fs-lustre,mtl-ofi,mtl-psm,mtl-psm2,osc-ucx,' +
                     'plm-tm,pmix-ext3x,pmix-s1,pmix-s2,pml-ucx,pnet-opa,psec-munge,' +
-                    'ras-tm,scoll-ucc,spml-ucx,sshmem-ucx,hwloc-external',
+                    'ras-tm,scoll-ucc,spml-ucx,sshmem-ucx,hwloc-external ',
                     PREPEND),
         'postinstallcmds': (['rm %(installdir)s/lib/*.la %(installdir)s/lib/*/*.la',
                              'for i in %(installdir)s/lib/openmpi/mca_pmix_s[12].so; '
