@@ -24,6 +24,7 @@ SYSTEM = [('system', 'system')]
 GCCCORE93 = [('GCCcore', '9.3.0')]
 GCCCORE102 = [('GCCcore', '10.2.0')]
 GCCCORE103 = [('GCCcore', '10.3.0')]
+GCCCORE113 = [('GCCcore', '11.3.0')]
 GCC93 = [('GCC', '9.3.0')]
 ICC2020a = [('iccifort', '2020.1.217')]
 COMPILERS_2020a = [ICC2020a[0], GCC93[0]]
@@ -87,7 +88,7 @@ new_version_mapping_2020a = {
         **dict.fromkeys([('Python', '3.7.%s' % str(x)) for x in range(0,8)], ('3.7', GCCCORE93)),
         **dict.fromkeys([('Python', '3.8.%s' % str(x)) for x in range(0,10)], ('3.8', GCCCORE93)),
         **dict.fromkeys([('Python', '3.9.%s' % str(x)) for x in range(0,8)], ('3.9', GCCCORE93 + GCCCORE103)),
-        **dict.fromkeys([('Python', '3.10.%s' % str(x)) for x in range(0,8)], ('3.10', GCCCORE93 + GCCCORE103)),
+        **dict.fromkeys([('Python', '3.10.%s' % str(x)) for x in range(0,8)], ('3.10', GCCCORE93 + GCCCORE103 + GCCCORE113)),
         'Qt5': ('5.12.8', GCCCORE93 + GCCCORE103 + SYSTEM),
         'SCOTCH': ('6.0.9', cOMPI_2020a),
 }
