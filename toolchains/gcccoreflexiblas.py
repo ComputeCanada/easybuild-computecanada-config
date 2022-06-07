@@ -40,5 +40,7 @@ class Gcccoreflexiblas(GCCcore, FlexiBLAS):
     Compiler toolchain with GCCcore and FlexiBLAS
     """
     NAME = 'gcccoreflexiblas'
+    BLAS_MODULE_NAME = ['FlexiBLAScore']
+    LAPACK_MODULE_NAME = ['FlexiBLAScore']
     SUBTOOLCHAIN = GCCcore.NAME
     OPTIONAL = True
