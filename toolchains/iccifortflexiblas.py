@@ -34,9 +34,10 @@ EasyBuild support for iccifortflexiblas compiler toolchain (includes Intel compi
 
 from easybuild.toolchains.iccifort import IccIfort
 from easybuild.toolchains.gcccoreflexiblas import Gcccoreflexiblas
+from easybuild.toolchains.linalg.flexiblas import FlexiBLAS
 
 
-class IccIfortflexiblas(IccIfort, Gcccoreflexiblas):
+class IccIfortflexiblas(IccIfort, FlexiBLAS):
     """
     Compiler toolchain with Intel compilers and FlexiBLAS
     """

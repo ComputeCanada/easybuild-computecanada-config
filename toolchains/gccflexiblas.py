@@ -34,9 +34,10 @@ EasyBuild support for gcccoreflexiblas compiler toolchain (includes GCC and Flex
 
 from easybuild.toolchains.gcc import GccToolchain
 from easybuild.toolchains.gcccoreflexiblas import Gcccoreflexiblas
+from easybuild.toolchains.linalg.flexiblas import FlexiBLAS
 
 
-class Gccflexiblas(GccToolchain, Gcccoreflexiblas):
+class Gccflexiblas(GccToolchain, FlexiBLAS):
     """
     Compiler toolchain with GCC and FlexiBLAS
     """
