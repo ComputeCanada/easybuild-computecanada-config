@@ -467,7 +467,6 @@ end
     },
     'intel-compilers': {
         'accept_eula': (True, REPLACE),
-        'modextrapaths': ({'OCL_ICD_FILENAMES': ['compiler/%(version)s/linux/lib/x64/libintelocl.so']}, REPLACE),
         #See compiler/2021.2.0/licensing/credist.txt
         'postinstallcmds': (['''
     echo "--sysroot=$EPREFIX" > %(installdir)s/compiler/%(version)s/linux/bin/intel64/icc.cfg
