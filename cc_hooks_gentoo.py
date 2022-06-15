@@ -24,6 +24,7 @@ SYSTEM = [('system', 'system')]
 GCCCORE93 = [('GCCcore', '9.3.0')]
 GCCCORE102 = [('GCCcore', '10.2.0')]
 GCCCORE103 = [('GCCcore', '10.3.0')]
+GCCCORE113 = [('GCCcore', '11.3.0')]
 GCC93 = [('GCC', '9.3.0')]
 ICC2020a = [('iccifort', '2020.1.217')]
 COMPILERS_2020a = [ICC2020a[0], GCC93[0]]
@@ -87,7 +88,7 @@ new_version_mapping_2020a = {
         **dict.fromkeys([('Python', '3.7.%s' % str(x)) for x in range(0,8)], ('3.7', GCCCORE93)),
         **dict.fromkeys([('Python', '3.8.%s' % str(x)) for x in range(0,10)], ('3.8', GCCCORE93)),
         **dict.fromkeys([('Python', '3.9.%s' % str(x)) for x in range(0,8)], ('3.9', GCCCORE93 + GCCCORE103)),
-        **dict.fromkeys([('Python', '3.10.%s' % str(x)) for x in range(0,8)], ('3.10', GCCCORE93 + GCCCORE103)),
+        **dict.fromkeys([('Python', '3.10.%s' % str(x)) for x in range(0,8)], ('3.10', GCCCORE93 + GCCCORE103 + GCCCORE113)),
         'Qt5': ('5.12.8', GCCCORE93 + GCCCORE103 + SYSTEM),
         'SCOTCH': ('6.0.9', cOMPI_2020a),
 }
@@ -466,7 +467,6 @@ end
     },
     'intel-compilers': {
         'accept_eula': (True, REPLACE),
-        'modextrapaths': ({'OCL_ICD_FILENAMES': ['compiler/%(version)s/linux/lib/x64/libintelocl.so']}, REPLACE),
         #See compiler/2021.2.0/licensing/credist.txt
         'postinstallcmds': (['''
     echo "--sysroot=$EPREFIX" > %(installdir)s/compiler/%(version)s/linux/bin/intel64/icc.cfg
@@ -478,7 +478,7 @@ end
     echo "-Wl,-dynamic-linker $EPREFIX/lib64/ld-linux-x86-64.so.2" >> %(installdir)s/compiler/%(version)s/linux/bin/icx.cfg
     echo "-Wl,-dynamic-linker $EPREFIX/lib64/ld-linux-x86-64.so.2" >> %(installdir)s/compiler/%(version)s/linux/bin/icpx.cfg
     echo "#!$EPREFIX/bin/sh" > %(installdir)s/compiler/%(version)s/linux/bin/intel64/dpcpp
-    echo "exec %(installdir)s/compiler/2021.2.0/linux/bin/dpcpp --sysroot=$EPREFIX -Wl,-dynamic-linker $EPREFIX/lib64/ld-linux-x86-64.so.2 -L$EBROOTGCCCORE/lib64 \${1+\\"\$@\\"}" >> %(installdir)s/compiler/%(version)s/linux/bin/intel64/dpcpp
+    echo "exec %(installdir)s/compiler/%(version)s/linux/bin/dpcpp --sysroot=$EPREFIX -Wl,-dynamic-linker $EPREFIX/lib64/ld-linux-x86-64.so.2 -L$EBROOTGCCCORE/lib64 \${1+\\"\$@\\"}" >> %(installdir)s/compiler/%(version)s/linux/bin/intel64/dpcpp
     chmod +x %(installdir)s/compiler/%(version)s/linux/bin/intel64/dpcpp
     /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/compiler/%(version)s/linux/bin --add_origin --add_path=%(installdir)s/compiler/%(version)s/linux/compiler/lib/intel64_lin
     /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s
@@ -534,6 +534,12 @@ end
     'Java': {
         'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s'], REPLACE),
         'modluafooter': ('setenv("JAVA_TOOL_OPTIONS", "-Xmx2g")', REPLACE),
+    },
+    ('libfabric', '1.15.1'): {
+        'builddependencies': ([('opa-psm2', '11.2.206'), ('GDRCopy', '2.3'), ('CUDAcore', '10.1.243')], REPLACE),
+        'configopts': ('--disable-efa --enable-cuda-dlopen ', PREPEND),
+        'patches': (['libfabric-1.15.1_eliminate-cudart-use.patch'], APPEND_LIST),
+        'checksums': ('a43b1169b18c6bd589150ef5711501fe46f65ec8a56206f6e954b14a819bc4ed', APPEND_LIST),
     },
     'libfabric': {
         #'builddependencies': ([('opa-psm2', '11.2.185', '', ("%(toolchain_name)s", "%(toolchain_version)s"))], REPLACE),
@@ -642,7 +648,7 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
     },
     "OpenMPI": {
         # local customizations for OpenMPI
-        'builddependencies': ([('opa-psm2', '11.2.185')], REPLACE),
+        'builddependencies': ([('opa-psm2', '11.2.206')], REPLACE),
         'configopts': ('--enable-shared --with-verbs ' +
                     '--with-hwloc=external '  + # hwloc support
                     '--with-libevent=external ' + # libevent from Gentoo
@@ -660,9 +666,9 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
                     # libraries (lustre, fabric, and scheduler)
                     '--enable-mca-dso=common-ofi,common-ucx,common-verbs,event-external,' +
                     'atomic-ucx,btl-ofi,btl-openib,btl-uct,' +
-                    'coll-hcoll,ess-tm,fs-lustre,mtl-ofi,mtl-psm,mtl-psm2,osc-ucx,' +
+                    'coll-hcoll,coll-ucc,ess-tm,fs-lustre,mtl-ofi,mtl-psm,mtl-psm2,osc-ucx,' +
                     'plm-tm,pmix-ext3x,pmix-s1,pmix-s2,pml-ucx,pnet-opa,psec-munge,' +
-                    'ras-tm,spml-ucx,sshmem-ucx,hwloc-external',
+                    'ras-tm,scoll-ucc,spml-ucx,sshmem-ucx,hwloc-external ',
                     PREPEND),
         'postinstallcmds': (['rm %(installdir)s/lib/*.la %(installdir)s/lib/*/*.la',
                              'for i in %(installdir)s/lib/openmpi/mca_pmix_s[12].so; '
