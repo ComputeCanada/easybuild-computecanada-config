@@ -372,6 +372,9 @@ opts_changes = {
     'FFmpeg': {
         'configopts': (' --enable-libvidstab', APPEND),
     },
+    'FFTW.MPI': {
+        'modaltsoftname': ('fftw-mpi', REPLACE),
+    },
     'FreeSurfer': {
         'postinstallcmds': ([
             'upx -d %(installdir)s/bin/*; true',
