@@ -263,6 +263,13 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
                     tc_cuda_fullver = self.det_twodigit_version(tc_cuda)
                     subdir = os.path.join(subdir, tc_cuda_name+tc_cuda_fullver)
                 paths.append(os.path.join(prefix, subdir, ec['name'].lower()+fullver))
+                # CUDA on top of MPI instead of the old MPI on top of CUDA
+                tc_mpi = det_toolchain_mpi(ec)
+                if prefix == CUDA and tc_mpi is not None:
+                    tc_mpi_name = tc_mpi['name'].lower()
+                    tc_mpi_fullver = self.det_twodigit_version(tc_mpi)
+                    subdir = os.path.join(subdir, tc_mpi_name+tc_mpi_fullver)
+                    paths.append(os.path.join(prefix, subdir, ec['name'].lower()+fullver))
 
         if os.getenv('RSNT_ARCH') is None:
             raise EasyBuildError("Need to set architecture for MODULEPATH extension in $RSNT_ARCH")
