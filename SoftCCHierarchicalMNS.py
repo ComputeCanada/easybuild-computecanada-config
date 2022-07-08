@@ -146,13 +146,16 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
                 tc_cuda_name = CUDA.lower()
                 tc_cuda_fullver = self.det_twodigit_version(tc_cuda)
                 subdir = tc_cuda_name+tc_cuda_fullver
-                if tc_comp_name != GCCCORE.lower():
-                    subdir = os.path.join(tc_comp_name+tc_comp_ver, subdir)
-                if tc_mpi is None:
-                    subdir = os.path.join(CUDA, subdir)
-                else:
+                if tc_mpi is not None:
                     tc_mpi_name = tc_mpi['name'].lower()
                     tc_mpi_fullver = self.det_twodigit_version(tc_mpi)
+                    if '/MPI/' in tc_cuda['full_mod_name']:
+                        subdir = os.path.join(tc_mpi_name+tc_mpi_fullver, subdir)
+                if tc_comp_name != GCCCORE.lower():
+                    subdir = os.path.join(tc_comp_name+tc_comp_ver, subdir)
+                if tc_mpi is None or '/MPI/' in tc_cuda['full_mod_name']:
+                    subdir = os.path.join(CUDA, subdir)
+                else:
                     subdir = os.path.join(MPI, subdir, tc_mpi_name+tc_mpi_fullver)
             elif tc_mpi is None:
                 # compiler-only toolchain => Compiler/<compiler_name><compiler_version> namespace
