@@ -800,7 +800,7 @@ def drop_dependencies(ec, param):
             'Meson': 'ALL',
             'Ninja': 'ALL',
             'PyQt5': 'ALL',
-            'SQLite': 'ALL',
+            'SQLite': '3.36',
             'pybind11': 'ALL',
             'git': 'ALL',
     }
