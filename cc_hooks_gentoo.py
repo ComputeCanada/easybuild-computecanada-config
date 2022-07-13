@@ -352,6 +352,9 @@ opts_changes = {
     ('CUDA', '11.4.2'): {
         'version': ('11.4', REPLACE),
     },
+    ('CUDA', '11.7.0'): {
+        'version': ('11.7', REPLACE),
+    },
     ('CUDAcore','10.1.243'): {
         'builddependencies': ([('GCCcore', '8.4.0')], REPLACE),
         'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_origin'], APPEND_LIST),
