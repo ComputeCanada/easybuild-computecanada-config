@@ -362,6 +362,11 @@ opts_changes = {
     },
     'CUDAcore': {
         'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_origin'], APPEND_LIST),
+        'modluafooter': ('''
+if cuda_driver_library_available("%(version_major_minor)s") == "compat" then
+        depends_on(".cuda_custom/%(version_major_minor)s")
+end
+''', REPLACE)
     },
     'cuDNN': {
         'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_origin'], APPEND_LIST),
