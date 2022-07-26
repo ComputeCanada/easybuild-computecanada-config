@@ -664,7 +664,7 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
 #end""".format(version="10"), REPLACE),
         'dependencies': ([
                           (('ParaView', '5.9.1', '-mpi'), ('ParaView', '5.10.0', None, ('gompi', '2020a'))),
-                          (('SCOTCH', '6.0.9', None, ('gompi', '2020a')), ('SCOTCH', '6.1.2', '-nt', ('gompi', '2020a'))),
+                          (('SCOTCH', '6.0.9', None, ('gompi', '2020a')), ('SCOTCH', '6.1.2', '-no-thread', ('gompi', '2020a'))),
                         ], REPLACE_IN_LIST),
         'patches': (['OpenFOAM-10-cleanup-cc.patch'], APPEND_LIST),
         'checksums': ('42255ce668ab87742c721816e17ae51451eba6cdf83493c0dd0d758322448972', APPEND_LIST),
@@ -675,7 +675,7 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
 end""".format(version="v2206"), REPLACE),
         'dependencies': ([
                           (('ParaView', '5.9.1', '-mpi'), ('ParaView', '5.10.0', None, ('gompi', '2020a'))),
-                          (('SCOTCH', '6.0.9', None, ('gompi', '2020a')), ('SCOTCH', '6.1.2', '-nt', ('gompi', '2020a'))),
+                          (('SCOTCH', '6.0.9', None, ('gompi', '2020a')), ('SCOTCH', '6.1.2', '-no-thread', ('gompi', '2020a'))),
                         ], REPLACE_IN_LIST),
     },
     "OpenMPI": {
@@ -738,6 +738,9 @@ end""".format(version="v2206"), REPLACE),
     'ROOT': {
         # Cling needs to know about different sysroot
         'configopts': ("-DDEFAULT_SYSROOT=$EPREFIX", PREPEND),
+    },
+    ('SCOTCH', '6.1.2', '-no-thread'): {
+        'modaltsoftname': ('scotch-no-thread', REPLACE),
     },
     'Togl': {
             'patches': ('Togl-2.0_configure.patch', DROP_FROM_LIST),
