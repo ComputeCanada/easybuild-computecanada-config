@@ -49,7 +49,7 @@ new_version_mapping_2020a = {
         ('Boost','ANY','-mpi'): ('1.72.0', cOMPI_2020a),
         ('CUDA', '11.0.2'): ('11.0', COMPILERS_2020a),
         'CGAL': ('4.14.3', COMPILERS_2020a, None),
-        ('CMake', '3.21.1'): ('3.21.4', SYSTEM),
+        'CMake': ('3.23.1', SYSTEM),
         'ETSF_IO': ('1.0.4', [('iompi', '2020a'), ('iccifort', '2020.1.217')]),
         ('FFTW', 'ANY', ""): ('3.3.8', COMPILERS_2020a),
         ('FFTW','ANY','-mpi'): ('3.3.8', cOMPI_2020a),
@@ -961,6 +961,10 @@ def pre_configure_hook(self, *args, **kwargs):
     elif isinstance(ec.easyblock, type):
         c = ec.easyblock
     if c == CMakeMake or issubclass(c,CMakeMake):
+        # ensure CMake is in the build dependencies or dependencies
+        if 'CMake' not in str(self.cfg['dependencies']) + str(self.cfg['builddependencies']):
+            print("Error, for CMakeMake recipes, you should have a dependency on CMake")
+            exit(1)
         # skip for those
         if (ec['name'],ec['version']) in [('ROOT','5.34.36'), ('mariadb', '10.4.11')]:
             pass
