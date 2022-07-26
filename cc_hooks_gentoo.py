@@ -90,7 +90,7 @@ new_version_mapping_2020a = {
         **dict.fromkeys([('Python', '3.9.%s' % str(x)) for x in range(0,8)], ('3.9', GCCCORE93 + GCCCORE103)),
         **dict.fromkeys([('Python', '3.10.%s' % str(x)) for x in range(0,8)], ('3.10', GCCCORE93 + GCCCORE103 + GCCCORE113)),
         'Qt5': ('5.12.8', GCCCORE93 + GCCCORE103 + SYSTEM),
-        'SCOTCH': ('6.0.9', cOMPI_2020a),
+        'SCOTCH': ('6.0.9', cOMPI_2020a, None),
 }
 
 def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
@@ -655,6 +655,27 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
         'dependencies': ([
                           (('ParaView', '5.9.1', '-mpi'), ('ParaView', '5.9.1', None, ('gompi', '2020a'))),
                           (('gnuplot', '5.4.2'), ('gnuplot', '5.2.8')),
+                        ], REPLACE_IN_LIST),
+    },
+    ("OpenFOAM", "10"): {
+        'modluafooter': (openfoam_modluafooter % ('Gcc', 'eb-mpi', '5.10.0', '5.10'), REPLACE),
+#        'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
+#        source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
+#end""".format(version="10"), REPLACE),
+        'dependencies': ([
+                          (('ParaView', '5.9.1', '-mpi'), ('ParaView', '5.10.0', None, ('gompi', '2020a'))),
+                          (('SCOTCH', '6.0.9', None, ('gompi', '2020a')), ('SCOTCH', '6.1.2', '-nt', ('gompi', '2020a'))),
+                        ], REPLACE_IN_LIST),
+        'patches': (['OpenFOAM-10-cleanup-cc.patch'], APPEND_LIST),
+        'checksums': ('42255ce668ab87742c721816e17ae51451eba6cdf83493c0dd0d758322448972', APPEND_LIST),
+    },
+    ("OpenFOAM", "v2206"): {
+        'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
+        source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
+end""".format(version="v2206"), REPLACE),
+        'dependencies': ([
+                          (('ParaView', '5.9.1', '-mpi'), ('ParaView', '5.10.0', None, ('gompi', '2020a'))),
+                          (('SCOTCH', '6.0.9', None, ('gompi', '2020a')), ('SCOTCH', '6.1.2', '-nt', ('gompi', '2020a'))),
                         ], REPLACE_IN_LIST),
     },
     "OpenMPI": {
