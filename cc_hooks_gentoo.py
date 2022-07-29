@@ -658,16 +658,16 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
                         ], REPLACE_IN_LIST),
     },
     ("OpenFOAM", "10"): {
-        'modluafooter': (openfoam_modluafooter % ('Gcc', 'eb-mpi', '5.10.0', '5.10'), REPLACE),
-#        'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
-#        source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
-#end""".format(version="10"), REPLACE),
+#        'modluafooter': (openfoam_modluafooter % ('Gcc', 'eb-mpi', '5.10.0', '5.10'), REPLACE),
+        'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
+        source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
+end""".format(version="10"), REPLACE),
         'dependencies': ([
                           (('ParaView', '5.9.1', '-mpi'), ('ParaView', '5.10.0', None, ('gompi', '2020a'))),
                           (('SCOTCH', '6.0.9', None, ('gompi', '2020a')), ('SCOTCH', '6.1.2', '-no-thread', ('gompi', '2020a'))),
                         ], REPLACE_IN_LIST),
         'patches': (['OpenFOAM-10-cleanup-cc.patch'], APPEND_LIST),
-        'checksums': ('42255ce668ab87742c721816e17ae51451eba6cdf83493c0dd0d758322448972', APPEND_LIST),
+        'checksums': ('1ba356d23974749c080ff3731551ce5be2f2b75f5e38bfe500d0a2006d4646c1', APPEND_LIST),
     },
     ("OpenFOAM", "v2206"): {
         'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
