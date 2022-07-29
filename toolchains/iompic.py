@@ -1,5 +1,5 @@
 ##
-# Copyright 2012-2021 Ghent University
+# Copyright 2013-2022 Ghent University
 #
 # This file is part of EasyBuild,
 # originally created by the HPC team of Ghent University (http://ugent.be/hpc/en),
@@ -23,21 +23,17 @@
 # along with EasyBuild.  If not, see <http://www.gnu.org/licenses/>.
 ##
 """
-EasyBuild support for iofbc compiler toolchain (includes Intel Compilers,
-Open MPI, CUDA and FlexiBLAS).
+EasyBuild support for iompic compiler toolchain (includes iccifort, OpenMPI and CUDA).
 
-:author: Stijn De Weirdt (Ghent University)
-:author: Kenneth Hoste (Ghent University)
 :author: Bart Oldeman (Compute Canada)
-:author: Maxime Boissonneault (Compute Canada)
 """
 
-from easybuild.toolchains.iompic import Iompic
-from easybuild.toolchains.iccifortflexiblascuda import IccIfortflexiblascuda
-from easybuild.toolchains.ifbc import Ifbc
+from easybuild.toolchains.iompi import Iompi
+from easybuild.toolchains.iccifortcuda import IccIfortCUDA
+from easybuild.toolchains.intelcompilerscuda import IntelCompilersCUDA
 
 
-class Iofbc(Iompic, IccIfortflexiblascuda, Ifbc):
-    """Compiler toolchain with Intel compilers, Open MPI, FlexiBLAS and Cuda."""
-    NAME = 'iofbc'
-    SUBTOOLCHAIN = [Iompic.NAME, IccIfortflexiblascuda.NAME, Ifbc.NAME]
+class Iompic(Iompi, IccIfortCUDA, IntelCompilersCUDA):
+    """Compiler toolchain with Intel compilers (icc/ifort), OpenMPI and CUDA."""
+    NAME = 'iompic'
+    SUBTOOLCHAIN = [IccIfortCUDA.NAME, IntelCompilersCUDA.NAME]

@@ -1,5 +1,9 @@
+# This file is part of JSC's public easybuild repository (https://github.com/easybuilders/jsc)
 ##
-# Copyright 2012-2021 Ghent University
+# Copyright 2013-2021 Ghent University
+#
+# This file is triple-licensed under GPLv2 (see below), MIT, and
+# BSD three-clause licenses.
 #
 # This file is part of EasyBuild,
 # originally created by the HPC team of Ghent University (http://ugent.be/hpc/en),
@@ -8,7 +12,7 @@
 # Flemish Research Foundation (FWO) (http://www.fwo.be/en)
 # and the Department of Economy, Science and Innovation (EWI) (http://www.ewi-vlaanderen.be/en).
 #
-# http://github.com/hpcugent/easybuild
+# https://github.com/easybuilders/easybuild
 #
 # EasyBuild is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,21 +27,20 @@
 # along with EasyBuild.  If not, see <http://www.gnu.org/licenses/>.
 ##
 """
-EasyBuild support for iofbc compiler toolchain (includes Intel Compilers,
-Open MPI, CUDA and FlexiBLAS).
+EasyBuild support for ifb compiler toolchain (includes Intel compilers and FlexiBLAS).
 
-:author: Stijn De Weirdt (Ghent University)
-:author: Kenneth Hoste (Ghent University)
-:author: Bart Oldeman (Compute Canada)
-:author: Maxime Boissonneault (Compute Canada)
+:author: Bart Oldeman (McGill University, Calcul Quebec, Compute Canada)
 """
 
-from easybuild.toolchains.iompic import Iompic
-from easybuild.toolchains.iccifortflexiblascuda import IccIfortflexiblascuda
-from easybuild.toolchains.ifbc import Ifbc
+from easybuild.toolchains.intel_compilers import IntelCompilersToolchain
+from easybuild.toolchains.gcccoreflexiblas import Gcccoreflexiblas
+from easybuild.toolchains.linalg.flexiblas import FlexiBLAS
 
 
-class Iofbc(Iompic, IccIfortflexiblascuda, Ifbc):
-    """Compiler toolchain with Intel compilers, Open MPI, FlexiBLAS and Cuda."""
-    NAME = 'iofbc'
-    SUBTOOLCHAIN = [Iompic.NAME, IccIfortflexiblascuda.NAME, Ifbc.NAME]
+class Ifb(IntelCompilersToolchain, FlexiBLAS):
+    """
+    Compiler toolchain with Intel compilers and FlexiBLAS
+    """
+    NAME = 'ifb'
+    SUBTOOLCHAIN = [IntelCompilersToolchain.NAME, Gcccoreflexiblas.NAME]
+    OPTIONAL = True

@@ -1,5 +1,5 @@
 ##
-# Copyright 2012-2021 Ghent University
+# Copyright 2013-2019 Ghent University
 #
 # This file is part of EasyBuild,
 # originally created by the HPC team of Ghent University (http://ugent.be/hpc/en),
@@ -8,7 +8,7 @@
 # Flemish Research Foundation (FWO) (http://www.fwo.be/en)
 # and the Department of Economy, Science and Innovation (EWI) (http://www.ewi-vlaanderen.be/en).
 #
-# http://github.com/hpcugent/easybuild
+# https://github.com/easybuilders/easybuild
 #
 # EasyBuild is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,21 +23,21 @@
 # along with EasyBuild.  If not, see <http://www.gnu.org/licenses/>.
 ##
 """
-EasyBuild support for iofbc compiler toolchain (includes Intel Compilers,
-Open MPI, CUDA and FlexiBLAS).
+EasyBuild support for a intel-compilers + CUDA compiler toolchain.
 
-:author: Stijn De Weirdt (Ghent University)
-:author: Kenneth Hoste (Ghent University)
-:author: Bart Oldeman (Compute Canada)
-:author: Maxime Boissonneault (Compute Canada)
+:author: Ake Sandgren (HPC2N)
+:author: Bart Oldeman (McGill University, Calcul Quebec, Compute Canada)
 """
 
-from easybuild.toolchains.iompic import Iompic
-from easybuild.toolchains.iccifortflexiblascuda import IccIfortflexiblascuda
-from easybuild.toolchains.ifbc import Ifbc
+from easybuild.toolchains.compiler.cuda import Cuda
+from easybuild.toolchains.cudacore import CUDAcore
+from easybuild.toolchains.gcccorecuda import GCCcoreCUDA
+from easybuild.toolchains.intel_compilers import IntelCompilersToolchain
 
 
-class Iofbc(Iompic, IccIfortflexiblascuda, Ifbc):
-    """Compiler toolchain with Intel compilers, Open MPI, FlexiBLAS and Cuda."""
-    NAME = 'iofbc'
-    SUBTOOLCHAIN = [Iompic.NAME, IccIfortflexiblascuda.NAME, Ifbc.NAME]
+class IntelCompilersCUDA(IntelCompilersToolchain, Cuda):
+    """Compiler toolchain with Intel compilers and CUDA."""
+    NAME = 'intelcompilerscuda'
+
+    COMPILER_MODULE_NAME = IntelCompilersToolchain.COMPILER_MODULE_NAME + Cuda.COMPILER_CUDA_MODULE_NAME
+    SUBTOOLCHAIN = [IntelCompilersToolchain.NAME, GCCcoreCUDA.NAME, CUDAcore.NAME]

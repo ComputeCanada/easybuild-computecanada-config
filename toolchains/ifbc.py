@@ -23,21 +23,23 @@
 # along with EasyBuild.  If not, see <http://www.gnu.org/licenses/>.
 ##
 """
-EasyBuild support for iofbc compiler toolchain (includes Intel Compilers,
-Open MPI, CUDA and FlexiBLAS).
+EasyBuild support for ifbc compiler toolchain (includes
+Intel compilers, FlexiBLAS, and CUDA).
 
 :author: Stijn De Weirdt (Ghent University)
 :author: Kenneth Hoste (Ghent University)
-:author: Bart Oldeman (Compute Canada)
-:author: Maxime Boissonneault (Compute Canada)
+:author: Bart Oldeman (McGill University, Calcul Quebec, Compute Canada)
+:author: Maxime Boissonneault (Universite Laval, Calcul Quebec, Calcul Canada)
 """
 
-from easybuild.toolchains.iompic import Iompic
-from easybuild.toolchains.iccifortflexiblascuda import IccIfortflexiblascuda
-from easybuild.toolchains.ifbc import Ifbc
+from easybuild.toolchains.intelcompilerscuda import IntelCompilersCUDA
+from easybuild.toolchains.ifb import Ifb
 
 
-class Iofbc(Iompic, IccIfortflexiblascuda, Ifbc):
-    """Compiler toolchain with Intel compilers, Open MPI, FlexiBLAS and Cuda."""
-    NAME = 'iofbc'
-    SUBTOOLCHAIN = [Iompic.NAME, IccIfortflexiblascuda.NAME, Ifbc.NAME]
+class Ifbc(IntelCompilersCUDA, Ifb):
+    """
+    Compiler toolchain with Intel compilers, FlexiBLAS and CUDA
+    """
+    NAME = 'ifbc'
+    SUBTOOLCHAIN = [IntelCompilersCUDA.NAME, Ifb.NAME]
+    OPTIONAL = True
