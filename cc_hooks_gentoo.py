@@ -433,7 +433,7 @@ end
     patchelf --set-rpath '$ORIGIN/../lib:$ORIGIN/../compiler/lib/intel64' %(installdir)s/compilers_and_libraries_%(version)s/linux/lib/LLVMgold.so
     installdir=%(installdir)s
     publicdir=${installdir/restricted.computecanada.ca/soft.computecanada.ca}
-    if [[ $publicdir == /cvmfs/soft.computecanada.ca && -w /cvmfs/soft.computecanada.ca ]]; then
+    if [[ $publicdir == /cvmfs/soft.computecanada.ca* && -w /cvmfs/soft.computecanada.ca ]]; then
         rm -rf $publicdir
         for i in $(grep -h "compiler.*\.so" $installdir/compilers_and_libraries_%(version)s/licensing/compiler/en/[cf]redist.txt | cut -c 13-); do
            if [ -f $installdir/$i ]; then
@@ -503,7 +503,7 @@ end
     patchelf --set-rpath '$ORIGIN:$ORIGIN/../../../../../tbb/%(version)s/lib/intel64/gcc4.8' %(installdir)s/compiler/%(version)s/linux/lib/x64/libintelocl.so
     installdir=%(installdir)s
     publicdir=${installdir/restricted.computecanada.ca/soft.computecanada.ca}
-    if [[ $publicdir == /cvmfs/soft.computecanada.ca && -w /cvmfs/soft.computecanada.ca ]]; then
+    if [[ $publicdir == /cvmfs/soft.computecanada.ca* && -w /cvmfs/soft.computecanada.ca ]]; then
         rm -rf $publicdir
         for i in $(grep -h "compiler.*" $installdir/compiler/%(version)s/licensing/[cf]redist.txt | cut -c 13-); do
            if [ -f $installdir/$i ]; then
@@ -615,7 +615,7 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
         echo "set DEFSTDOBJDIR=$EBROOTGENTOO/lib;" >> $installdir/compilers/bin/localrc
         echo "set NORPATH=YES;" >> $installdir/compilers/bin/localrc
         publicdir=${installdir/restricted.computecanada.ca/soft.computecanada.ca}
-        if [[ $publicdir == /cvmfs/soft.computecanada.ca && -w /cvmfs/soft.computecanada.ca ]]; then
+        if [[ $publicdir == /cvmfs/soft.computecanada.ca* && -w /cvmfs/soft.computecanada.ca ]]; then
             rm -rf $publicdir
             mkdir -p $publicdir
             cp -a $installdir/REDIST/* $publicdir
