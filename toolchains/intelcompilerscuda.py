@@ -23,21 +23,21 @@
 # along with EasyBuild.  If not, see <http://www.gnu.org/licenses/>.
 ##
 """
-EasyBuild support for a GCC+CUDA compiler toolchain.
+EasyBuild support for a intel-compilers + CUDA compiler toolchain.
 
-:author: Kenneth Hoste (Ghent University)
+:author: Ake Sandgren (HPC2N)
 :author: Bart Oldeman (McGill University, Calcul Quebec, Compute Canada)
 """
 
 from easybuild.toolchains.compiler.cuda import Cuda
-from easybuild.toolchains.gcc import GccToolchain
-from easybuild.toolchains.gcccorecuda import GCCcoreCUDA
 from easybuild.toolchains.cudacore import CUDAcore
+from easybuild.toolchains.gcccorecuda import GCCcoreCUDA
+from easybuild.toolchains.intel_compilers import IntelCompilersToolchain
 
 
-class GccCUDA(GccToolchain, Cuda):
-    """Compiler toolchain with GCC and CUDA."""
-    NAME = 'gcccuda'
+class IntelCompilersCUDA(IntelCompilersToolchain, Cuda):
+    """Compiler toolchain with Intel compilers and CUDA."""
+    NAME = 'intelcompilerscuda'
 
-    COMPILER_MODULE_NAME = ['GCC', 'CUDA']
-    SUBTOOLCHAIN = [GccToolchain.NAME, GCCcoreCUDA.NAME, CUDAcore.NAME]
+    COMPILER_MODULE_NAME = IntelCompilersToolchain.COMPILER_MODULE_NAME + Cuda.COMPILER_CUDA_MODULE_NAME
+    SUBTOOLCHAIN = [IntelCompilersToolchain.NAME, GCCcoreCUDA.NAME, CUDAcore.NAME]

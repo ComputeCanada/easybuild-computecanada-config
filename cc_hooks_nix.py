@@ -2,9 +2,12 @@ from easybuild.framework.easyconfig.easyconfig import get_easyblock_class
 from easybuild.easyblocks.generic.cmakemake import CMakeMake
 from easybuild.framework.easyconfig.constants import EASYCONFIG_CONSTANTS
 from distutils.version import LooseVersion
-from cc_hooks_common import modify_all_opts, update_opts, PREPEND, APPEND, REPLACE
+from cc_hooks_common import modify_all_opts, update_opts, PREPEND, APPEND, REPLACE, APPEND_LIST
 
 import os
+
+# options to change in parse_hook, others are changed in other hooks
+PARSE_OPTS = ['modluafooter', 'postinstallcmds']
 
 new_version_mapping = {
         'ALL': {
@@ -148,6 +151,12 @@ new_version_mapping_app_specific = {
 }
 
 opts_changes = {
+    'Java': {
+        'modluafooter': ('setenv("JAVA_TOOL_OPTIONS", "-Xmx2g")', REPLACE),
+    },
+    'Nextflow': {
+        'postinstallcmds': (['sed -i -e "s/cli=(\$(/cli=(\$(export NFX_OPTS=\$JAVA_TOOL_OPTIONS; unset JAVA_TOOL_OPTIONS; /g" %(installdir)s/bin/nextflow'], APPEND_LIST),
+    },
     'OpenBLAS': {
         'buildopts': ({'sse3': 'DYNAMIC_ARCH=1',
                        'avx': 'TARGET=SANDYBRIDGE',
@@ -164,7 +173,11 @@ opts_changes = {
                        'avx2': 'DYNAMIC_ARCH=1 DYNAMIC_LIST="HASWELL ZEN SKYLAKEX"',
                        'avx512': 'TARGET=SKYLAKEX'}[os.getenv('RSNT_ARCH')] + ' NUM_THREADS=64',
                        PREPEND),
-    }
+    },
+    'ROOT': {
+        # Cling needs to know about different sysroot
+        'configopts': ("-DDEFAULT_SYSROOT=/cvmfs/soft.computecanada.ca/nix/var/nix/profiles/glibc-2.24", PREPEND),
+    },
 }
 
 def map_dependency_version(dep, new_dep, tc_mapping, mytc):
@@ -275,6 +288,8 @@ def parse_hook(ec, *args, **kwargs):
     modify_dependencies(ec,'dependencies', new_version_mapping, new_version_mapping_app_specific)
     modify_dependencies(ec,'builddependencies', new_version_mapping, new_version_mapping_app_specific)
 
+    modify_all_opts(ec, opts_changes, opts_to_change=PARSE_OPTS)
+
     # always disable multi_deps_load_default when multi_deps is used
     if ec.get('multi_deps', None): 
         ec['multi_deps_load_default'] = False
@@ -285,7 +300,8 @@ def pre_configure_hook(self, *args, **kwargs):
     orig_enable_templating = self.cfg.enable_templating
     self.cfg.enable_templating = False
 
-    modify_all_opts(self.cfg, opts_changes)
+    modify_all_opts(self.cfg, opts_changes, opts_to_skip=PARSE_OPTS)
+
     ec = self.cfg
     # additional changes for CMakeMake EasyBlocks
     CMakeMake_configopts_changes = (' -DZLIB_ROOT=$NIXUSER_PROFILE ' + 

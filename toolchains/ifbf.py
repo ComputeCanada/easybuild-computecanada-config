@@ -1,5 +1,5 @@
 ##
-# Copyright 2013-2019 Ghent University
+# Copyright 2021-2022 Ghent University
 #
 # This file is part of EasyBuild,
 # originally created by the HPC team of Ghent University (http://ugent.be/hpc/en),
@@ -23,21 +23,19 @@
 # along with EasyBuild.  If not, see <http://www.gnu.org/licenses/>.
 ##
 """
-EasyBuild support for a GCC+CUDA compiler toolchain.
+EasyBuild support for ifbf compiler toolchain (includes Intel compilers, FlexiBLAS and FFTW)
 
 :author: Kenneth Hoste (Ghent University)
 :author: Bart Oldeman (McGill University, Calcul Quebec, Compute Canada)
 """
 
-from easybuild.toolchains.compiler.cuda import Cuda
-from easybuild.toolchains.gcc import GccToolchain
-from easybuild.toolchains.gcccorecuda import GCCcoreCUDA
-from easybuild.toolchains.cudacore import CUDAcore
+from easybuild.toolchains.ifb import Ifb
+from easybuild.toolchains.fft.fftw import Fftw
+from easybuild.toolchains.linalg.flexiblas import FlexiBLAS
 
 
-class GccCUDA(GccToolchain, Cuda):
-    """Compiler toolchain with GCC and CUDA."""
-    NAME = 'gcccuda'
-
-    COMPILER_MODULE_NAME = ['GCC', 'CUDA']
-    SUBTOOLCHAIN = [GccToolchain.NAME, GCCcoreCUDA.NAME, CUDAcore.NAME]
+class Ifbf(Ifb, FlexiBLAS, Fftw):
+    """Compiler toolchain with Intel compilers, FlexiBLAS and FFTW."""
+    NAME = 'ifbf'
+    SUBTOOLCHAIN = Ifb.NAME
+    OPTIONAL = True

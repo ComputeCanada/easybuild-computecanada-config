@@ -1,5 +1,9 @@
+# This file is part of JSC's public easybuild repository (https://github.com/easybuilders/jsc)
 ##
-# Copyright 2013-2019 Ghent University
+# Copyright 2013-2021 Ghent University
+#
+# This file is triple-licensed under GPLv2 (see below), MIT, and
+# BSD three-clause licenses.
 #
 # This file is part of EasyBuild,
 # originally created by the HPC team of Ghent University (http://ugent.be/hpc/en),
@@ -23,21 +27,20 @@
 # along with EasyBuild.  If not, see <http://www.gnu.org/licenses/>.
 ##
 """
-EasyBuild support for a GCC+CUDA compiler toolchain.
+EasyBuild support for gcccoreflexiblas compiler toolchain (includes GCC and FlexiBLAS).
 
-:author: Kenneth Hoste (Ghent University)
 :author: Bart Oldeman (McGill University, Calcul Quebec, Compute Canada)
 """
 
-from easybuild.toolchains.compiler.cuda import Cuda
-from easybuild.toolchains.gcc import GccToolchain
-from easybuild.toolchains.gcccorecuda import GCCcoreCUDA
-from easybuild.toolchains.cudacore import CUDAcore
+from easybuild.toolchains.gcccore import GCCcore
+from easybuild.toolchains.linalg.flexiblas import FlexiBLAS
 
-
-class GccCUDA(GccToolchain, Cuda):
-    """Compiler toolchain with GCC and CUDA."""
-    NAME = 'gcccuda'
-
-    COMPILER_MODULE_NAME = ['GCC', 'CUDA']
-    SUBTOOLCHAIN = [GccToolchain.NAME, GCCcoreCUDA.NAME, CUDAcore.NAME]
+class Gcccoreflexiblas(GCCcore, FlexiBLAS):
+    """
+    Compiler toolchain with GCCcore and FlexiBLAS
+    """
+    NAME = 'gcccoreflexiblas'
+    BLAS_MODULE_NAME = ['FlexiBLAScore']
+    LAPACK_MODULE_NAME = ['FlexiBLAScore']
+    SUBTOOLCHAIN = GCCcore.NAME
+    OPTIONAL = True

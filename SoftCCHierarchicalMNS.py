@@ -74,6 +74,8 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
     def __init__(self, *args, **kwargs):
         # required for use of pgicuda toolchain
         COMP_NAME_VERSION_TEMPLATES['CUDA,PGI'] = ('PGI-CUDA', '%(PGI)s-%(CUDA)s')
+        # required for use of nvhpccuda toolchain
+        COMP_NAME_VERSION_TEMPLATES['CUDA,NVHPC'] = ('NVHPC-CUDA', '%(NVHPC)s-%(CUDA)s')
         # required for use of gcccorecuda toolchain
         COMP_NAME_VERSION_TEMPLATES['CUDAcore,GCCcore'] = ('GCCcore-CUDAcore', '%(GCCcore)s-%(CUDAcore)s')
         super(SoftCCHierarchicalMNS, self).__init__(*args, **kwargs)
@@ -88,7 +90,7 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
         modname_regex = re.compile('^%s/\S+$' % re.escape(name.lower()))
         res = bool(modname_regex.match(short_modname.lower()))
         if not res:
-            if name == 'iccifort':
+            if name in ['iccifort', 'intel-compilers']:
                 modname_regex = re.compile('^%s/\S+$' % re.escape('intel'))
             elif name == 'impi':
                 modname_regex = re.compile('^%s/\S+$' % re.escape('intelmpi'))
@@ -144,13 +146,16 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
                 tc_cuda_name = CUDA.lower()
                 tc_cuda_fullver = self.det_twodigit_version(tc_cuda)
                 subdir = tc_cuda_name+tc_cuda_fullver
-                if tc_comp_name != GCCCORE.lower():
-                    subdir = os.path.join(tc_comp_name+tc_comp_ver, subdir)
-                if tc_mpi is None:
-                    subdir = os.path.join(CUDA, subdir)
-                else:
+                if tc_mpi is not None:
                     tc_mpi_name = tc_mpi['name'].lower()
                     tc_mpi_fullver = self.det_twodigit_version(tc_mpi)
+                    if '/MPI/' in tc_cuda['full_mod_name']:
+                        subdir = os.path.join(tc_mpi_name+tc_mpi_fullver, subdir)
+                if tc_comp_name != GCCCORE.lower():
+                    subdir = os.path.join(tc_comp_name+tc_comp_ver, subdir)
+                if tc_mpi is None or '/MPI/' in tc_cuda['full_mod_name']:
+                    subdir = os.path.join(CUDA, subdir)
+                else:
                     subdir = os.path.join(MPI, subdir, tc_mpi_name+tc_mpi_fullver)
             elif tc_mpi is None:
                 # compiler-only toolchain => Compiler/<compiler_name><compiler_version> namespace
@@ -184,7 +189,8 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
         major = int(version[:version.find('.')])
         # use one-digit version for newer compilers and MPIs.
         if ((ec['name'].lower() in ['gcc', 'gcccore'] and major >=8) or
-            (ec['name'] in ['intel', 'icc', 'ifort', 'iccifort', 'impi', 'intelmpi'] and major >= 2019) or
+            (ec['name'] in ['intel', 'icc', 'ifort', 'iccifort', 'intel-compilers', 'impi', 'intelmpi'] and major >= 2019) or
+            (ec['name'].lower() == 'nvhpc') or
             (ec['name'].lower() == 'openmpi' and major >= 4)):
             version = str(major)
         return version
@@ -204,8 +210,8 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
         if modclass == MODULECLASS_COMPILER or ec['name'] in ['iccifort']:
             # obtain list of compilers based on that extend $MODULEPATH in some way other than <name>/<version>
             extend_comps = []
-            # exclude GCC and PGI for which <name>/<version> is used as $MODULEPATH extension
-            excluded_comps = ['GCC', 'PGI']
+            # exclude GCC, PGI, and NVHPC for which <name>/<version> is used as $MODULEPATH extension
+            excluded_comps = ['GCC', 'PGI', 'NVHPC']
             for comps in COMP_NAME_VERSION_TEMPLATES.keys():
                 extend_comps.extend([comp for comp in comps.split(',') if comp not in excluded_comps])
 
@@ -231,7 +237,7 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
                 comp_name_ver = [ec['name'].lower() + self.det_twodigit_version(ec)]
                 # Handle the case where someone only wants iccifort to extend the path
                 # This means icc/ifort are not of the moduleclass compiler but iccifort is
-                if ec['name'] == 'iccifort':
+                if ec['name'] in ['iccifort', 'intel-compilers']:
                     comp_name_ver = ['intel' + self.det_twodigit_version(ec)]
             # Exclude extending the path for icc/ifort, the iccifort special case is handled above
             # XXX use custom code for MODULEPATH for compilers via modluafooter
@@ -260,6 +266,13 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
                     tc_cuda_fullver = self.det_twodigit_version(tc_cuda)
                     subdir = os.path.join(subdir, tc_cuda_name+tc_cuda_fullver)
                 paths.append(os.path.join(prefix, subdir, ec['name'].lower()+fullver))
+                # CUDA on top of MPI instead of the old MPI on top of CUDA
+                tc_mpi = det_toolchain_mpi(ec)
+                if prefix == CUDA and tc_mpi is not None:
+                    tc_mpi_name = tc_mpi['name'].lower()
+                    tc_mpi_fullver = self.det_twodigit_version(tc_mpi)
+                    subdir = os.path.join(subdir, tc_mpi_name+tc_mpi_fullver)
+                    paths.append(os.path.join(prefix, subdir, ec['name'].lower()+fullver))
 
         if os.getenv('RSNT_ARCH') is None:
             raise EasyBuildError("Need to set architecture for MODULEPATH extension in $RSNT_ARCH")

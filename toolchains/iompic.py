@@ -1,5 +1,5 @@
 ##
-# Copyright 2013-2019 Ghent University
+# Copyright 2013-2022 Ghent University
 #
 # This file is part of EasyBuild,
 # originally created by the HPC team of Ghent University (http://ugent.be/hpc/en),
@@ -8,7 +8,7 @@
 # Flemish Research Foundation (FWO) (http://www.fwo.be/en)
 # and the Department of Economy, Science and Innovation (EWI) (http://www.ewi-vlaanderen.be/en).
 #
-# https://github.com/easybuilders/easybuild
+# http://github.com/hpcugent/easybuild
 #
 # EasyBuild is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,21 +23,17 @@
 # along with EasyBuild.  If not, see <http://www.gnu.org/licenses/>.
 ##
 """
-EasyBuild support for a GCC+CUDA compiler toolchain.
+EasyBuild support for iompic compiler toolchain (includes iccifort, OpenMPI and CUDA).
 
-:author: Kenneth Hoste (Ghent University)
-:author: Bart Oldeman (McGill University, Calcul Quebec, Compute Canada)
+:author: Bart Oldeman (Compute Canada)
 """
 
-from easybuild.toolchains.compiler.cuda import Cuda
-from easybuild.toolchains.gcc import GccToolchain
-from easybuild.toolchains.gcccorecuda import GCCcoreCUDA
-from easybuild.toolchains.cudacore import CUDAcore
+from easybuild.toolchains.iompi import Iompi
+from easybuild.toolchains.iccifortcuda import IccIfortCUDA
+from easybuild.toolchains.intelcompilerscuda import IntelCompilersCUDA
 
 
-class GccCUDA(GccToolchain, Cuda):
-    """Compiler toolchain with GCC and CUDA."""
-    NAME = 'gcccuda'
-
-    COMPILER_MODULE_NAME = ['GCC', 'CUDA']
-    SUBTOOLCHAIN = [GccToolchain.NAME, GCCcoreCUDA.NAME, CUDAcore.NAME]
+class Iompic(Iompi, IccIfortCUDA, IntelCompilersCUDA):
+    """Compiler toolchain with Intel compilers (icc/ifort), OpenMPI and CUDA."""
+    NAME = 'iompic'
+    SUBTOOLCHAIN = [IccIfortCUDA.NAME, IntelCompilersCUDA.NAME]

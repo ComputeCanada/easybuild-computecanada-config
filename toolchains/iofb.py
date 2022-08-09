@@ -1,5 +1,5 @@
 ##
-# Copyright 2013-2019 Ghent University
+# Copyright 2012-2021 Ghent University
 #
 # This file is part of EasyBuild,
 # originally created by the HPC team of Ghent University (http://ugent.be/hpc/en),
@@ -23,21 +23,20 @@
 # along with EasyBuild.  If not, see <http://www.gnu.org/licenses/>.
 ##
 """
-EasyBuild support for a GCC+CUDA compiler toolchain.
+EasyBuild support for iofb compiler toolchain (includes Intel Compilers,
+Open MPI, and FlexiBLAS).
 
+:author: Stijn De Weirdt (Ghent University)
 :author: Kenneth Hoste (Ghent University)
-:author: Bart Oldeman (McGill University, Calcul Quebec, Compute Canada)
+:author: Bart Oldeman (Compute Canada)
+:author: Maxime Boissonneault (Compute Canada)
 """
 
-from easybuild.toolchains.compiler.cuda import Cuda
-from easybuild.toolchains.gcc import GccToolchain
-from easybuild.toolchains.gcccorecuda import GCCcoreCUDA
-from easybuild.toolchains.cudacore import CUDAcore
+from easybuild.toolchains.iompi import Iompi
+from easybuild.toolchains.iccifortflexiblas import IccIfortflexiblas
 
 
-class GccCUDA(GccToolchain, Cuda):
-    """Compiler toolchain with GCC and CUDA."""
-    NAME = 'gcccuda'
-
-    COMPILER_MODULE_NAME = ['GCC', 'CUDA']
-    SUBTOOLCHAIN = [GccToolchain.NAME, GCCcoreCUDA.NAME, CUDAcore.NAME]
+class Iofb(Iompi, IccIfortflexiblas):
+    """Compiler toolchain with Intel compilers, Open MPI, and FlexiBLAS."""
+    NAME = 'iofb'
+    SUBTOOLCHAIN = [Iompi.NAME, IccIfortflexiblas.NAME]

@@ -23,21 +23,21 @@
 # along with EasyBuild.  If not, see <http://www.gnu.org/licenses/>.
 ##
 """
-EasyBuild support for a GCC+CUDA compiler toolchain.
+EasyBuild support for a NVHPC + CUDA compiler toolchain.
 
-:author: Kenneth Hoste (Ghent University)
+:author: Maxime Boissonneault (Universite Laval, Calcul Quebec, Compute Canada)
 :author: Bart Oldeman (McGill University, Calcul Quebec, Compute Canada)
 """
 
 from easybuild.toolchains.compiler.cuda import Cuda
-from easybuild.toolchains.gcc import GccToolchain
-from easybuild.toolchains.gcccorecuda import GCCcoreCUDA
 from easybuild.toolchains.cudacore import CUDAcore
+from easybuild.toolchains.gcccorecuda import GCCcoreCUDA
+from easybuild.toolchains.nvhpc import NVHPCToolchain
 
 
-class GccCUDA(GccToolchain, Cuda):
-    """Compiler toolchain with GCC and CUDA."""
-    NAME = 'gcccuda'
+class NVHPCCUDA(NVHPCToolchain, Cuda):
+    """Compiler toolchain with NVHPC and CUDA."""
+    NAME = 'nvhpccuda'
 
-    COMPILER_MODULE_NAME = ['GCC', 'CUDA']
-    SUBTOOLCHAIN = [GccToolchain.NAME, GCCcoreCUDA.NAME, CUDAcore.NAME]
+    COMPILER_MODULE_NAME = NVHPCToolchain.COMPILER_MODULE_NAME + Cuda.COMPILER_CUDA_MODULE_NAME
+    SUBTOOLCHAIN = [NVHPCToolchain.NAME, GCCcoreCUDA.NAME, CUDAcore.NAME]

@@ -1,5 +1,5 @@
 ##
-# Copyright 2013-2019 Ghent University
+# Copyright 2012-2021 Ghent University
 #
 # This file is part of EasyBuild,
 # originally created by the HPC team of Ghent University (http://ugent.be/hpc/en),
@@ -23,21 +23,16 @@
 # along with EasyBuild.  If not, see <http://www.gnu.org/licenses/>.
 ##
 """
-EasyBuild support for a GCC+CUDA compiler toolchain.
+EasyBuild support for gofb compiler toolchain (includes GCC, Open MPI, FlexiBLAS)
 
-:author: Kenneth Hoste (Ghent University)
 :author: Bart Oldeman (McGill University, Calcul Quebec, Compute Canada)
 """
 
-from easybuild.toolchains.compiler.cuda import Cuda
-from easybuild.toolchains.gcc import GccToolchain
-from easybuild.toolchains.gcccorecuda import GCCcoreCUDA
-from easybuild.toolchains.cudacore import CUDAcore
+from easybuild.toolchains.gompi import Gompi
+from easybuild.toolchains.gccflexiblas import Gccflexiblas
 
 
-class GccCUDA(GccToolchain, Cuda):
-    """Compiler toolchain with GCC and CUDA."""
-    NAME = 'gcccuda'
-
-    COMPILER_MODULE_NAME = ['GCC', 'CUDA']
-    SUBTOOLCHAIN = [GccToolchain.NAME, GCCcoreCUDA.NAME, CUDAcore.NAME]
+class Gofb(Gompi, Gccflexiblas):
+    """Compiler toolchain with GCC, OpenMPI, FlexiBLAS."""
+    NAME = 'gofb'
+    SUBTOOLCHAIN = [Gompi.NAME, Gccflexiblas.NAME]
