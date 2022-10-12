@@ -335,7 +335,7 @@ opts_changes = {
         'builddependencies': ([], REPLACE),
     },
     'Clang': {
-        'preconfigopts': ("""pushd %(builddir)s/llvm-%(version)s.src/tools/clang || pushd %(builddir)s/llvm_project-%(version)s/clang; """ +
+        'preconfigopts': ("""pushd %(builddir)s/llvm-%(version)s.src/tools/clang || pushd %(builddir)s/llvm-project-%(version)s/clang; """ +
                  # Use ${EPREFIX} as default sysroot
                  """sed -i -e "s@DEFAULT_SYSROOT \\"\\"@DEFAULT_SYSROOT \\"${EPREFIX}\\"@" CMakeLists.txt ; """ +
                  """pushd lib/Driver/ToolChains ; """ +
