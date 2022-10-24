@@ -433,29 +433,31 @@ end
     patchelf --set-rpath '$ORIGIN/../lib:$ORIGIN/../compiler/lib/intel64' %(installdir)s/compilers_and_libraries_%(version)s/linux/lib/LLVMgold.so
     installdir=%(installdir)s
     publicdir=${installdir/restricted.computecanada.ca/soft.computecanada.ca}
-    rm -rf $publicdir
-    for i in $(grep -h "compiler.*\.so" $installdir/compilers_and_libraries_%(version)s/licensing/compiler/en/[cf]redist.txt | cut -c 13-); do
-       if [ -f $installdir/$i ]; then
-         mkdir -p $(dirname $publicdir/$i)
-         cp -p $installdir/$i $publicdir/$i
-       fi
-     done
-     for i in $(cd $installdir && find compilers_and_libraries_%(version)s/linux/tbb); do
-       if [ -f $installdir/$i ]; then
-         mkdir -p $(dirname $publicdir/$i)
-         cp -p $installdir/$i $publicdir/$i
-       elif [ -L $installdir/$i ]; then
-         mkdir -p $(dirname $publicdir/$i)
-         cp -a $installdir/$i $publicdir/$i
-       fi
-     done
-     cd $installdir
-     for i in $(find . -type l); do
-       if [ -f $publicdir/$i ]; then
-         cp -a $i $publicdir/$i
-       fi
-     done
-     ln -s compilers_and_libraries_%(version)s/linux/compiler/lib $publicdir/lib
+    if [[ $publicdir == /cvmfs/soft.computecanada.ca* && -w /cvmfs/soft.computecanada.ca ]]; then
+        rm -rf $publicdir
+        for i in $(grep -h "compiler.*\.so" $installdir/compilers_and_libraries_%(version)s/licensing/compiler/en/[cf]redist.txt | cut -c 13-); do
+           if [ -f $installdir/$i ]; then
+             mkdir -p $(dirname $publicdir/$i)
+             cp -p $installdir/$i $publicdir/$i
+           fi
+         done
+         for i in $(cd $installdir && find compilers_and_libraries_%(version)s/linux/tbb); do
+           if [ -f $installdir/$i ]; then
+             mkdir -p $(dirname $publicdir/$i)
+             cp -p $installdir/$i $publicdir/$i
+           elif [ -L $installdir/$i ]; then
+             mkdir -p $(dirname $publicdir/$i)
+             cp -a $installdir/$i $publicdir/$i
+           fi
+         done
+         cd $installdir
+         for i in $(find . -type l); do
+           if [ -f $publicdir/$i ]; then
+             cp -a $i $publicdir/$i
+           fi
+         done
+         ln -s compilers_and_libraries_%(version)s/linux/compiler/lib $publicdir/lib
+    fi
 '''], REPLACE),
         "modluafooter": ("""
 prepend_path("INTEL_LICENSE_FILE", pathJoin("/cvmfs/restricted.computecanada.ca/config/licenses/intel/2020", os.getenv("CC_CLUSTER") .. ".lic"))
@@ -501,31 +503,33 @@ end
     patchelf --set-rpath '$ORIGIN:$ORIGIN/../../../../../tbb/%(version)s/lib/intel64/gcc4.8' %(installdir)s/compiler/%(version)s/linux/lib/x64/libintelocl.so
     installdir=%(installdir)s
     publicdir=${installdir/restricted.computecanada.ca/soft.computecanada.ca}
-    rm -rf $publicdir
-    for i in $(grep -h "compiler.*" $installdir/compiler/%(version)s/licensing/[cf]redist.txt | cut -c 13-); do
-       if [ -f $installdir/$i ]; then
-         mkdir -p $(dirname $publicdir/$i)
-         cp -p $installdir/$i $publicdir/$i
-       fi
-    done
-    for i in $(cd $installdir && find tbb); do
-       if [ -f $installdir/$i ]; then
-         mkdir -p $(dirname $publicdir/$i)
-         cp -p $installdir/$i $publicdir/$i
-       fi
-    done
-    cd $installdir
-    for i in $(find . -type l); do
-       if [ -f $publicdir/$i ]; then
-         cp -a $i $publicdir/$i
-       fi
-    done
-    for i in tbb/%(version)s/lib/intel64/gcc4.8/*; do
-       if [ -L $i ]; then
-         cp -a $i $publicdir/$i
-       fi
-    done
-    ln -s %(version)s $publicdir/compiler/latest
+    if [[ $publicdir == /cvmfs/soft.computecanada.ca* && -w /cvmfs/soft.computecanada.ca ]]; then
+        rm -rf $publicdir
+        for i in $(grep -h "compiler.*" $installdir/compiler/%(version)s/licensing/[cf]redist.txt | cut -c 13-); do
+           if [ -f $installdir/$i ]; then
+             mkdir -p $(dirname $publicdir/$i)
+             cp -p $installdir/$i $publicdir/$i
+           fi
+        done
+        for i in $(cd $installdir && find tbb); do
+           if [ -f $installdir/$i ]; then
+             mkdir -p $(dirname $publicdir/$i)
+             cp -p $installdir/$i $publicdir/$i
+           fi
+        done
+        cd $installdir
+        for i in $(find . -type l); do
+           if [ -f $publicdir/$i ]; then
+             cp -a $i $publicdir/$i
+           fi
+        done
+        for i in tbb/%(version)s/lib/intel64/gcc4.8/*; do
+           if [ -L $i ]; then
+             cp -a $i $publicdir/$i
+           fi
+        done
+        ln -s %(version)s $publicdir/compiler/latest
+    fi
 '''], REPLACE),
         "modluafooter": ("""
 if isloaded("imkl") then
@@ -611,15 +615,17 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
         echo "set DEFSTDOBJDIR=$EBROOTGENTOO/lib;" >> $installdir/compilers/bin/localrc
         echo "set NORPATH=YES;" >> $installdir/compilers/bin/localrc
         publicdir=${installdir/restricted.computecanada.ca/soft.computecanada.ca}
-        rm -rf $publicdir
-        mkdir -p $publicdir
-        cp -a $installdir/REDIST/* $publicdir
-        for i in $(find $publicdir); do
-            if [[ $(readlink $i) == ../../../* ]]; then
-                rm $i
-                cp -p ${i/soft.computecanada.ca/restricted.computecanada.ca} $i
-            fi
-        done
+        if [[ $publicdir == /cvmfs/soft.computecanada.ca* && -w /cvmfs/soft.computecanada.ca ]]; then
+            rm -rf $publicdir
+            mkdir -p $publicdir
+            cp -a $installdir/REDIST/* $publicdir
+            for i in $(find $publicdir); do
+                if [[ $(readlink $i) == ../../../* ]]; then
+                    rm $i
+                    cp -p ${i/soft.computecanada.ca/restricted.computecanada.ca} $i
+                fi
+            done
+        fi
         '''], REPLACE),
     },
     'OpenBLAS': {

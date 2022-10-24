@@ -10,6 +10,9 @@ unset LIBRARY_PATH
 unset LD_LIBRARY_PATH
 export PATH=/usr/bin
 EASYBUILD_ROOT=/cvmfs/soft.computecanada.ca/easybuild
+if [[ -z "$RSNT_LOCAL_RESTRICTED_PATH" ]]; then
+	export RSNT_LOCAL_RESTRICTED_PATH=/cvmfs/restricted.computecanada.ca
+fi
 if [ -z "$USE_NIX" ]; then
 	module load gentoo/$USE_GENTOO_VERSION
 	YEAR=$USE_GENTOO_VERSION
@@ -83,8 +86,8 @@ if [ "$CURRENT_USER" != "ebuser" ] ; then
 	fi
 elif [ "$(id -ng)" != "ebuser" ] ; then
 	# using ebuser with different group ID
-	export EASYBUILD_INSTALLPATH_SOFTWARE=/cvmfs/restricted.computecanada.ca/easybuild/$EASYBUILD_SUBDIR_SOFTWARE
-	export EASYBUILD_SOURCEPATH=/cvmfs/restricted.computecanada.ca/easybuild/sources
+	export EASYBUILD_INSTALLPATH_SOFTWARE=$RSNT_LOCAL_RESTRICTED_PATH/easybuild/$EASYBUILD_SUBDIR_SOFTWARE
+	export EASYBUILD_SOURCEPATH=$RSNT_LOCAL_RESTRICTED_PATH/easybuild/sources
 fi
 export EASYBUILD_ROBOT_PATHS=$EASYBUILD_ROBOT_PATHS:$EASYBUILD_ROOT/easyconfigs
 if [[ -n "$USE_GENTOO" ]]; then
