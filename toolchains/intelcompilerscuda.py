@@ -41,3 +41,4 @@ class IntelCompilersCUDA(IntelCompilersToolchain, Cuda):
 
     COMPILER_MODULE_NAME = IntelCompilersToolchain.COMPILER_MODULE_NAME + Cuda.COMPILER_CUDA_MODULE_NAME
     SUBTOOLCHAIN = [IntelCompilersToolchain.NAME, GCCcoreCUDA.NAME, CUDAcore.NAME]
+    OPTIONAL = True
