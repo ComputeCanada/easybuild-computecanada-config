@@ -400,7 +400,7 @@ end
     'FreeSurfer': {
         'postinstallcmds': ([
             'upx -d %(installdir)s/bin/*; true',
-            '/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s '], REPLACE),
+            '/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s '], APPEND_LIST),
     },
     'GCCcore': {
         # remove .la files, as they mess up rpath when libtool is used
