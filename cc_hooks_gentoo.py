@@ -539,6 +539,9 @@ end
     'itac': {
         'postinstallcmds': (['chmod -R u+w %(installdir)s && /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s'], REPLACE),
     },
+    'InterProScan': {
+        'sanity_check_commands': (['%(installdir)s/bin/prosite/pfsearchV3 -h'], APPEND_LIST),
+    },
     'IQ-TREE': {
         'toolchainopts': ({}, REPLACE),
         'configopts': ('-DIQTREE_FLAGS=omp -DUSE_LSD2=ON -DTERRAPHAST_ARCH_NATIVE=OFF', REPLACE),
