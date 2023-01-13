@@ -334,9 +334,6 @@ opts_changes = {
     'BOLT-LMM': {
         'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s '], REPLACE),
     },
-    'Catch2': {
-        'builddependencies': ([], REPLACE),
-    },
     'Clang': {
         'preconfigopts': ("""pushd %(builddir)s/llvm-%(version)s.src/tools/clang || pushd %(builddir)s/llvm-project-%(version)s.src/clang; """ +
                  # Use ${EPREFIX} as default sysroot
