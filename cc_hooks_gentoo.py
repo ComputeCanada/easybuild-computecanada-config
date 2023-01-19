@@ -921,7 +921,11 @@ end""".format(lowest=lowest, highest_plus=highest_plus)
                     sanity_check_paths['dirs'] += [site_packages_path]
                     print("%s: Adding %s to sanity_check_paths['dir']" % (ec.filename(), site_packages_path))
                     print(str(ec.get('sanity_check_paths', None)))
-                ec['enhance_sanity_check'] = True
+
+                # for non-generic EasyBlock, the EasyBlock might modify the sanity_check_paths, so we consider
+                # our changes as an enhancement
+                if not ec.get('easyblock', None):
+                    ec['enhance_sanity_check'] = True
 
 
     # hide toolchains
