@@ -81,14 +81,16 @@ if [ "$CURRENT_USER" != "ebuser" ] ; then
 	if [ "$RSNT_ARCH" != avx2 ]; then
 	    export EASYBUILD_ROBOT_PATHS=$EASYBUILD_PREFIX/ebfiles_repo_$RSNT_ARCH/$YEAR:$EASYBUILD_ROBOT_PATHS
 	fi
+else
 	if [[ -z "$GIT_AUTHOR_NAME" || $GIT_AUTHOR_NAME == "EasyBuild User" ]]; then
 		echo "Failed to read \$HOME/.git_env_vars.sh. Please make sure they are readable and configured as described on https://wiki.computecanada.ca/staff/RSNT_Software_-_Setting_up#Configuring_your_build_node_account"
 		exit 1
 	fi
-elif [ "$(id -ng)" != "ebuser" ] ; then
-	# using ebuser with different group ID
-	export EASYBUILD_INSTALLPATH_SOFTWARE=/cvmfs/restricted.computecanada.ca/easybuild/$EASYBUILD_SUBDIR_SOFTWARE
-	export EASYBUILD_SOURCEPATH=/cvmfs/restricted.computecanada.ca/easybuild/sources
+	if [ "$(id -ng)" != "ebuser" ] ; then
+		# using ebuser with different group ID
+		export EASYBUILD_INSTALLPATH_SOFTWARE=/cvmfs/restricted.computecanada.ca/easybuild/$EASYBUILD_SUBDIR_SOFTWARE
+		export EASYBUILD_SOURCEPATH=/cvmfs/restricted.computecanada.ca/easybuild/sources
+	fi
 fi
 export EASYBUILD_ROBOT_PATHS=$EASYBUILD_ROBOT_PATHS:$EASYBUILD_ROOT/easyconfigs
 if [[ -n "$USE_GENTOO" ]]; then
