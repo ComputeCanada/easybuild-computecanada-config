@@ -72,6 +72,7 @@ if [ -z $USE_GENTOO ]; then
 fi
 
 CURRENT_USER="$(whoami)"
+ORIG_USER="$(logname)"
 if [ "$CURRENT_USER" != "ebuser" ] ; then
 	export EASYBUILD_PREFIX=$HOME/.local/easybuild
 	export EASYBUILD_SUBDIR_USER_MODULES=''
@@ -82,7 +83,7 @@ if [ "$CURRENT_USER" != "ebuser" ] ; then
 	    export EASYBUILD_ROBOT_PATHS=$EASYBUILD_PREFIX/ebfiles_repo_$RSNT_ARCH/$YEAR:$EASYBUILD_ROBOT_PATHS
 	fi
 else
-	if [[ -z "$GIT_AUTHOR_NAME" || $GIT_AUTHOR_NAME == "EasyBuild User" ]]; then
+	if [[ "$ORIG_USER" != "ebuser" && ( -z "$GIT_AUTHOR_NAME" || $GIT_AUTHOR_NAME == "EasyBuild User" ) ]]; then
 		echo "Failed to read \$HOME/.git_env_vars.sh. Please make sure they are readable and configured as described on https://wiki.computecanada.ca/staff/RSNT_Software_-_Setting_up#Configuring_your_build_node_account"
 		exit 1
 	fi
