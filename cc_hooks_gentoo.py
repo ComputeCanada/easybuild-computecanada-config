@@ -759,7 +759,7 @@ end""".format(version="v2206"), REPLACE),
             'checksums': ('da97f36b60cd107444cd92453809135b14dc1e8775146b3ba0731da8002e6f9f', DROP_FROM_LIST),
     },
     'tbb': {
-        'postinstallcmds': (['chmod -R u-w %(installdir)s/cmake'], REPLACE),
+        'postinstallcmds': (['chmod -R u-w %(installdir)s/cmake || chmod -R u-w %(installdir)s/lib64/cmake'], REPLACE),
     },
     'UCX': {
         # local customizations for UCX
