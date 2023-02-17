@@ -759,7 +759,7 @@ end""".format(version="v2206"), REPLACE),
             'checksums': ('da97f36b60cd107444cd92453809135b14dc1e8775146b3ba0731da8002e6f9f', DROP_FROM_LIST),
     },
     'tbb': {
-        'postinstallcmds': (['chmod -R u-w %(installdir)s/cmake'], APPEND_LIST),
+        'postinstallcmds': (['chmod -R u-w %(installdir)s/cmake'], REPLACE),
     },
     'UCX': {
         # local customizations for UCX
@@ -957,9 +957,6 @@ def python_fetchhook(ec):
     # python 3.10
     if ver >= LooseVersion('3.10') and ver <= LooseVersion('3.11'):
         python_extensions_to_keep += ['tomli', "flit-core", "packaging", "pyparsing", "platformdirs"]
-
-    if ver >= LooseVersion('3.11') and ver <= LooseVersion('3.12'):
-        python_extensions_to_keep += ['tomli', "flit-core", "flit_core", "packaging", "pyparsing", "platformdirs", "hatchling", "pathspec", "pluggy", "hatch_vcs", "typing_extensions", "editables"]
 
     new_ext_list = [ext for ext in ec['exts_list'] if ext[0] in python_extensions_to_keep]
     ec['exts_list'] = new_ext_list
