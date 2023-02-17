@@ -733,7 +733,6 @@ end""".format(version="v2206"), REPLACE),
     },
     'Python': {
         'modextrapaths': ({'PYTHONPATH': ['/cvmfs/soft.computecanada.ca/easybuild/python/site-packages']}, REPLACE),
-        'ebpythonprefixes': (False, REPLACE),  # disable upstream's version of sitecustomize.py for ebpythonprefixes
         'allow_prepend_abs_path': (True, REPLACE),
         'installopts': (' && /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_path %(installdir)s/lib --any_interpreter', APPEND),
         'builddependencies': (('Rust', '1.52.1'), DROP_FROM_LIST),
@@ -744,6 +743,8 @@ end""".format(version="v2206"), REPLACE),
                         ('virtualenv', '20.0.18', {'checksums': ['ac53ade75ca189bc97b6c1d9ec0f1a50efe33cbf178ae09452dcd9fd309013c1']}))
                        ], REPLACE_IN_LIST),
     },
+    # disable upstream's version of sitecustomize.py for ebpythonprefixes, only for versions which include minor versions
+    **dict.fromkeys([('Python', '3.%s.%s' % (major, minor)) for major in range(6,13) for minor in range(0,18)], {'ebpythonprefixes': (False, REPLACE)}),
     'Qt5': {
         'modaltsoftname': ('qt', REPLACE),
     },
