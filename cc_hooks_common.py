@@ -48,7 +48,9 @@ def modify_all_opts(ec, opts_changes, opts_to_skip=None, opts_to_change='ALL'):
             break
 
 def update_opts(ec,changes,key, update_type):
-    orig = ec.get(key)
+    if key not in ec:
+        return
+    orig = ec[key]
     if update_type == REPLACE:
         ec[key] = changes
     elif update_type in [APPEND_LIST, PREPEND_LIST, DROP_FROM_LIST, REPLACE_IN_LIST]:
