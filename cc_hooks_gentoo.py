@@ -690,6 +690,15 @@ end""".format(version="v2206"), REPLACE),
                           (('SCOTCH', '6.0.9', None, ('gompi', '2020a')), ('SCOTCH', '6.1.2', '-no-thread', ('gompi', '2020a'))),
                         ], REPLACE_IN_LIST),
     },
+    ("OpenFOAM", "v2212"): {
+        'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
+        source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
+end""".format(version="v2212"), REPLACE),
+        'dependencies': ([
+                          (('ParaView', '5.11.0', '-mpi'), ('ParaView', '5.11.0', None, ('gofb', '2020a'))),
+                          (('SCOTCH', '7.0.3'), ('SCOTCH', '7.0.3', '-no-thread', ('gofb', '2020a'))),
+                        ], REPLACE_IN_LIST),
+    },
     "OpenMPI": {
         # local customizations for OpenMPI
         'builddependencies': ([('opa-psm2', '11.2.206')], REPLACE),
@@ -752,6 +761,9 @@ end""".format(version="v2206"), REPLACE),
         'configopts': ("-DDEFAULT_SYSROOT=$EPREFIX", PREPEND),
     },
     ('SCOTCH', '6.1.2', '-no-thread'): {
+        'modaltsoftname': ('scotch-no-thread', REPLACE),
+    },
+    ('SCOTCH', '7.0.3', '-no-thread'): {
         'modaltsoftname': ('scotch-no-thread', REPLACE),
     },
     'Togl': {
