@@ -1055,7 +1055,7 @@ def pre_prepare_hook(self, *args, **kwargs):
     packages_in_gentoo = ["EBROOTLIBXML2", "EBROOTLIBJPEGMINTURBO", "EBROOTLIBPNG", "EBROOTLIBTIFF", "EBROOTZLIB",
                           "EBROOTLIBGLU", "EBROOTMESA", "EBROOTFLTK", "EBROOTTCL", "EBROOTTK", "EBROOTBZIP2",
                           "EBROOTZSTD", "EBROOTFREETYPE", "EBROOTGLIB", "EBROOTSZIP", "EBROOTLIBXMLPLUSPLUS",
-                          "EBROOTSQLITE3", "EBROOTPKGMINCONFIG"]
+                          "EBROOTSQLITE3", "EBROOTPKGMINCONFIG", "EBROOTMESON"]
     ebrootgentoo = os.environ["EBROOTGENTOO"]
     for package in packages_in_gentoo:
         setvar(package, ebrootgentoo)
@@ -1071,6 +1071,7 @@ def pre_prepare_hook(self, *args, **kwargs):
 
     setvar("EBVERSIONTCL", "8.6")
     setvar("EBVERSIONTK", "8.6")
+    setvar("EBVERSIONMESON", "0.55.0")
 
 def post_prepare_hook(self, *args, **kwargs):
     # we need to define variables such as EBROOTHDF5SERIAL even though we don't use this naming scheme
