@@ -690,8 +690,8 @@ end""".format(version="11"), REPLACE),
                           (('ParaView', '5.9.1', '-mpi'), ('ParaView', '5.10.0', None, ('gompi', '2020a'))),
                           (('SCOTCH', '6.0.9', None, ('gompi', '2020a')), ('SCOTCH', '6.1.2', '-no-thread', ('gompi', '2020a'))),
                         ], REPLACE_IN_LIST),
-        'patches': (['OpenFOAM-10-cleanup-cc.patch'], APPEND_LIST),
-        'checksums': ('1ba356d23974749c080ff3731551ce5be2f2b75f5e38bfe500d0a2006d4646c1', APPEND_LIST),
+        'patches': (['OpenFOAM-11-cleanup-cc.patch'], APPEND_LIST),
+        'checksums': ('56a98703a1022d5e75f7b1f7cd4592bc79ba93c1dd53d3e52316726797430c33', APPEND_LIST),
     },
     ("OpenFOAM", "v2206"): {
         'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
@@ -1066,7 +1066,7 @@ def pre_prepare_hook(self, *args, **kwargs):
     packages_in_gentoo = ["EBROOTLIBXML2", "EBROOTLIBJPEGMINTURBO", "EBROOTLIBPNG", "EBROOTLIBTIFF", "EBROOTZLIB",
                           "EBROOTLIBGLU", "EBROOTMESA", "EBROOTFLTK", "EBROOTTCL", "EBROOTTK", "EBROOTBZIP2",
                           "EBROOTZSTD", "EBROOTFREETYPE", "EBROOTGLIB", "EBROOTSZIP", "EBROOTLIBXMLPLUSPLUS",
-                          "EBROOTSQLITE3", "EBROOTPKGMINCONFIG", "EBROOTMESON"]
+                          "EBROOTSQLITE3", "EBROOTPKGMINCONFIG", "EBROOTMESON", "EBROOTGPERFTOOLS"]
     ebrootgentoo = os.environ["EBROOTGENTOO"]
     for package in packages_in_gentoo:
         setvar(package, ebrootgentoo)
@@ -1083,6 +1083,7 @@ def pre_prepare_hook(self, *args, **kwargs):
     setvar("EBVERSIONTCL", "8.6")
     setvar("EBVERSIONTK", "8.6")
     setvar("EBVERSIONMESON", "0.55.0")
+    setvar("EBVERSIONGPERFTOOLS", "2.6.2")
 
 def post_prepare_hook(self, *args, **kwargs):
     # we need to define variables such as EBROOTHDF5SERIAL even though we don't use this naming scheme
