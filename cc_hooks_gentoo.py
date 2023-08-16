@@ -893,8 +893,17 @@ def drop_dependencies(ec, param):
                     ec[param].remove(dep)
 
 
+def is_filtered_ec(ec):
+    filter_spec = ec.parse_filter_deps()
+    software_spec = {'name': ec.name, 'version': ec.version}
+    return ec.dep_is_filtered(software_spec, filter_spec)
+
 def parse_hook(ec, *args, **kwargs):
     """Example parse hook to inject a patch file for a fictive software package named 'Example'."""
+    if is_filtered_ec(ec):
+        print("ERROR, software %s/%s is filtered. Please contact a RSNT software admin before installing" % (ec.name, ec.version))
+        exit(1)
+
     disable_use_mpi_for_non_mpi_toolchains(ec)
     modify_dependencies(ec, 'dependencies', new_version_mapping_2020a)
     modify_dependencies(ec, 'builddependencies', new_version_mapping_2020a)
