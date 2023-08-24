@@ -1,4 +1,7 @@
-import collections
+try:
+    from collections.abc import Hashable
+except ImportError:
+    from collections import Hashable
 PREPEND = 1
 APPEND = 2
 REPLACE = 3
@@ -18,7 +21,7 @@ def get_matching_keys_from_ec(ec, dictionary):
 def get_matching_keys(name, version, versionsuffix, dictionary):
     matching_keys = []
     #version can sometimes be a dictionary, which is not hashable
-    if isinstance(version, collections.Hashable):
+    if isinstance(version, Hashable):
         try_keys = [(name, version, versionsuffix), (name, version), (name, 'ANY', versionsuffix), name ]
     else:
         try_keys = [(name, 'ANY', versionsuffix), name]
