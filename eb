@@ -14,16 +14,16 @@ if [ -z "$USE_NIX" ]; then
 	module load gentoo/$USE_GENTOO_VERSION
 	YEAR=$USE_GENTOO_VERSION
 	export EASYBUILD_ALLOW_LOADED_MODULES=gentoo
-	export LOCAL_EASYBUILD_CONFIGFILES=$EASYBUILD_ROOT/config.cfg,$EASYBUILD_ROOT/config-gentoo.cfg
 else
 	module load nixpkgs/16.09
 	YEAR=2017
 	unset USE_GENTOO
 	unset USE_GENTOO_VERSION
-	export LOCAL_EASYBUILD_CONFIGFILES=$EASYBUILD_ROOT/config.cfg,$EASYBUILD_ROOT/config-nix.cfg
 	# use Gentoo Python 3.7.7 even here, only for EasyBuild itself
 	export EB_PYTHON=/cvmfs/soft.computecanada.ca/gentoo/2020/usr/bin/python
 fi
+EASYBUILD_CONFIG_ROOT=/cvmfs/soft.computecanada.ca/easybuild-computecanada-config/$YEAR
+export LOCAL_EASYBUILD_CONFIGFILES=$EASYBUILD_ROOT/config.cfg,$EASYBUILD_CONFIG_ROOT/config.cfg
 export EASYBUILD_SUBDIR_MODULES=modules/$YEAR
 export EASYBUILD_SUBDIR_SOFTWARE=software/$YEAR
 export EASYBUILD_SUBDIR_USER_MODULES=.local/easybuild/$EASYBUILD_SUBDIR_MODULES
@@ -94,11 +94,7 @@ else
 	fi
 fi
 export EASYBUILD_ROBOT_PATHS=$EASYBUILD_ROBOT_PATHS:$EASYBUILD_ROOT/easyconfigs
-if [[ -n "$USE_GENTOO" ]]; then
-	export EASYBUILD_HOOKS=$EASYBUILD_ROOT/cc_hooks_gentoo.py
-else
-	export EASYBUILD_HOOKS=$EASYBUILD_ROOT/cc_hooks_nix.py
-fi
+export EASYBUILD_HOOKS=$EASYBUILD_CONFIG_ROOT/cc_hooks.py
 export EASYBUILD_BUILDPATH=$EASYBUILD_BUILDPATH/$RSNT_ARCH
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
