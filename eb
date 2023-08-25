@@ -22,7 +22,7 @@ else
 	# use Gentoo Python 3.7.7 even here, only for EasyBuild itself
 	export EB_PYTHON=/cvmfs/soft.computecanada.ca/gentoo/2020/usr/bin/python
 fi
-EASYBUILD_CONFIG_ROOT=/cvmfs/soft.computecanada.ca/easybuild-computecanada-config/$YEAR
+EASYBUILD_CONFIG_ROOT=$EASYBUILD_ROOT/easybuild-computecanada-config/$YEAR
 export LOCAL_EASYBUILD_CONFIGFILES=$EASYBUILD_ROOT/config.cfg,$EASYBUILD_CONFIG_ROOT/config.cfg
 export EASYBUILD_SUBDIR_MODULES=modules/$YEAR
 export EASYBUILD_SUBDIR_SOFTWARE=software/$YEAR
