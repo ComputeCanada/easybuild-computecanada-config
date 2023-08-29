@@ -2,9 +2,11 @@ from easybuild.framework.easyconfig.easyconfig import get_easyblock_class
 from easybuild.easyblocks.generic.cmakemake import CMakeMake
 from easybuild.framework.easyconfig.constants import EASYCONFIG_CONSTANTS
 from distutils.version import LooseVersion
+import sys, os
+parentdir = os.path.dirname(os.path.dirname(__file__))
+if parentdir not in sys.path:
+    sys.path.append(parentdir)
 from cc_hooks_common import modify_all_opts, update_opts, PREPEND, APPEND, REPLACE, APPEND_LIST
-
-import os
 
 # options to change in parse_hook, others are changed in other hooks
 PARSE_OPTS = ['modluafooter', 'postinstallcmds']
