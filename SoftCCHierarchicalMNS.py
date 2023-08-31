@@ -69,6 +69,17 @@ def det_toolchain_cuda(ec):
     return tc_cuda
 
 
+def get_arch_dir(using2023):
+    arch = os.getenv('RSNT_ARCH')
+    if arch is None:
+        raise EasyBuildError("Need to set architecture to determine module path in $RSNT_ARCH")
+    if using2023:
+        arch_dir = 'x86-64-v' + {'avx2': '3', 'avx512': '4'}[arch]
+    else:
+        arch_dir = arch
+    return arch_dir
+
+
 class SoftCCHierarchicalMNS(HierarchicalMNS):
     """Class implementing an example hierarchical module naming scheme."""
     def __init__(self, *args, **kwargs):
@@ -120,6 +131,7 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
         This determines the separation between module names exposed to users, and what's part of the $MODULEPATH.
         Examples: Core, avx2/Compiler/gcc4.8, avx/MPI/gcc4.8/openmpi1.6
         """
+        using2023 = 'EBROOTGENTOO' in os.environ and int(os.environ['EBVERSIONGENTOO']) >= 2023
         tc_comp_info = None
         tc_comp_name = ""
         if ec.toolchain.name != CUDACORE:
@@ -138,7 +150,10 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
         else:
             tc_comp_name, tc_comp_ver = tc_comp_info
             tc_comp_name = tc_comp_name.lower().split('-')[0]
-            tc_comp_ver = self.det_twodigit_version({'name': tc_comp_name, 'version': tc_comp_ver})
+            if tc_comp_name == GCCCORE.lower():
+                tc_comp_ver = ''
+            else:
+                tc_comp_ver = self.det_twodigit_version({'name': tc_comp_name, 'version': tc_comp_ver})
             tc_mpi = det_toolchain_mpi(ec)
             tc_cuda = det_toolchain_cuda(ec)
             if tc_cuda is not None:
@@ -151,7 +166,7 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
                     tc_mpi_fullver = self.det_twodigit_version(tc_mpi)
                     if '/MPI/' in tc_cuda['full_mod_name']:
                         subdir = os.path.join(tc_mpi_name+tc_mpi_fullver, subdir)
-                if tc_comp_name != GCCCORE.lower():
+                if tc_comp_name != GCCCORE.lower() or using2023:
                     subdir = os.path.join(tc_comp_name+tc_comp_ver, subdir)
                 if tc_mpi is None or '/MPI/' in tc_cuda['full_mod_name']:
                     subdir = os.path.join(CUDA, subdir)
@@ -159,7 +174,7 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
                     subdir = os.path.join(MPI, subdir, tc_mpi_name+tc_mpi_fullver)
             elif tc_mpi is None:
                 # compiler-only toolchain => Compiler/<compiler_name><compiler_version> namespace
-                if tc_comp_ver == 'system' or tc_comp_name == GCCCORE.lower():
+                if tc_comp_ver == 'system' or (tc_comp_name == GCCCORE.lower() and not using2023):
                     subdir = CORE
                 else:
                     subdir = os.path.join(COMPILER, tc_comp_name+tc_comp_ver)
@@ -169,12 +184,13 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
                 tc_mpi_fullver = self.det_twodigit_version(tc_mpi)
                 subdir = os.path.join(MPI, tc_comp_name+tc_comp_ver, tc_mpi_name+tc_mpi_fullver)
 
-        if os.getenv('RSNT_ARCH') is None:
-            raise EasyBuildError("Need to set architecture to determine module path in $RSNT_ARCH")
-        if subdir != CORE and not subdir.startswith(os.path.join(CUDA, CUDA.lower())):
-            subdir = os.path.join(os.getenv('RSNT_ARCH'), subdir)
+        arch_dir = get_arch_dir(using2023)
+        if using2023:
+            subdir = os.path.join(arch_dir, subdir)
+        elif subdir != CORE and not subdir.startswith(os.path.join(CUDA, CUDA.lower())):
+            subdir = os.path.join(arch_dir, subdir)
         elif tc_comp_name == GCCCORE.lower() and 'EBROOTGENTOO' in os.environ:
-            subdir = os.path.join(os.getenv('RSNT_ARCH'), subdir)
+            subdir = os.path.join(arch_dir, subdir)
         return subdir
 
     def det_twodigit_version(self, ec):
@@ -274,9 +290,9 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
                     subdir = os.path.join(subdir, tc_mpi_name+tc_mpi_fullver)
                     paths.append(os.path.join(prefix, subdir, ec['name'].lower()+fullver))
 
-        if os.getenv('RSNT_ARCH') is None:
-            raise EasyBuildError("Need to set architecture for MODULEPATH extension in $RSNT_ARCH")
-        if ec['name'] != CUDACORE:
+        using2023 = 'EBROOTGENTOO' in os.environ and int(os.environ['EBVERSIONGENTOO']) >= 2023
+        arch_dir = get_arch_dir(using2023)
+        if ec['name'] != CUDACORE or using2023:
             for i, path in enumerate(paths):
-                paths[i] = os.path.join(os.getenv('RSNT_ARCH'), path)
+                paths[i] = os.path.join(arch_dir, path)
         return paths
