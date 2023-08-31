@@ -179,9 +179,13 @@ def modify_dependencies(ec, param, version_mapping):
 
 
 compiler_modluafooter = """
-prepend_path("MODULEPATH", pathJoin("/cvmfs/soft.computecanada.ca/easybuild/modules/{year}", os.getenv("RSNT_ARCH"), "{sub_path}"))
-if isDir(pathJoin(os.getenv("HOME"), ".local/easybuild/modules/{year}", os.getenv("RSNT_ARCH"), "{sub_path}")) then
-    prepend_path("MODULEPATH", pathJoin(os.getenv("HOME"), ".local/easybuild/modules/{year}", os.getenv("RSNT_ARCH"), "{sub_path}"))
+local arch = "x86-64-v3"
+if os.getenv("RSNT_ARCH") == "avx512" then
+	arch = "x86-64-v4"
+end
+prepend_path("MODULEPATH", pathJoin("/cvmfs/soft.computecanada.ca/easybuild/modules/{year}", arch, "{sub_path}"))
+if isDir(pathJoin(os.getenv("HOME"), ".local/easybuild/modules/{year}", arch, "{sub_path}")) then
+    prepend_path("MODULEPATH", pathJoin(os.getenv("HOME"), ".local/easybuild/modules/{year}", arch, "{sub_path}"))
 end
 
 add_property("type_","tools")
