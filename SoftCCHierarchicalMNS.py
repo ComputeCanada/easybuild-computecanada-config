@@ -69,6 +69,17 @@ def det_toolchain_cuda(ec):
     return tc_cuda
 
 
+def get_arch_dir(using2023):
+    arch = os.getenv('RSNT_ARCH')
+    if arch is None:
+        raise EasyBuildError("Need to set architecture to determine module path in $RSNT_ARCH")
+    if using2023:
+        arch_dir = 'x86-64-v' + {'avx2': '3', 'avx512': '4'}[arch]
+    else:
+        arch_dir = arch
+    return arch_dir
+
+
 class SoftCCHierarchicalMNS(HierarchicalMNS):
     """Class implementing an example hierarchical module naming scheme."""
     def __init__(self, *args, **kwargs):
@@ -173,15 +184,13 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
                 tc_mpi_fullver = self.det_twodigit_version(tc_mpi)
                 subdir = os.path.join(MPI, tc_comp_name+tc_comp_ver, tc_mpi_name+tc_mpi_fullver)
 
-        arch = os.getenv('RSNT_ARCH')
-        if arch is None:
-            raise EasyBuildError("Need to set architecture to determine module path in $RSNT_ARCH")
+        arch_dir = get_arch_dir(using2023)
         if using2023:
-            subdir = os.path.join('x86-64-v' + {'avx2': '3', 'avx512': '4'}[arch], subdir)
+            subdir = os.path.join(arch_dir, subdir)
         elif subdir != CORE and not subdir.startswith(os.path.join(CUDA, CUDA.lower())):
-            subdir = os.path.join(arch, subdir)
+            subdir = os.path.join(arch_dir, subdir)
         elif tc_comp_name == GCCCORE.lower() and 'EBROOTGENTOO' in os.environ:
-            subdir = os.path.join(arch, subdir)
+            subdir = os.path.join(arch_dir, subdir)
         return subdir
 
     def det_twodigit_version(self, ec):
@@ -281,13 +290,9 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
                     subdir = os.path.join(subdir, tc_mpi_name+tc_mpi_fullver)
                     paths.append(os.path.join(prefix, subdir, ec['name'].lower()+fullver))
 
-        arch = os.getenv('RSNT_ARCH')
-        if arch is None:
-            raise EasyBuildError("Need to set architecture for MODULEPATH extension in $RSNT_ARCH")
         using2023 = 'EBROOTGENTOO' in os.environ and int(os.environ['EBVERSIONGENTOO']) >= 2023
-        if using2023:
-            arch = 'x86-64-v' + {'avx2': '3', 'avx512': '4'}[arch]
+        arch_dir = get_arch_dir(using2023)
         if ec['name'] != CUDACORE or using2023:
             for i, path in enumerate(paths):
-                paths[i] = os.path.join(arch, path)
+                paths[i] = os.path.join(arch_dir, path)
         return paths
