@@ -412,9 +412,11 @@ end
             'upx -d %(installdir)s/bin/*; true',
             '/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s '], APPEND_LIST),
     },
-    'GCCcore': {
-        # remove .la files, as they mess up rpath when libtool is used
-        'postinstallcmds': (["find %(installdir)s -name '*.la' -delete"], REPLACE),
+    ('GCCcore', '12.3.0'): {
+        'version': ('12.3', REPLACE),
+    },
+    ('GCC', '12.3.0'): {
+        'version': ('12.3', REPLACE),
     },
     'GObject-Introspection': {
         'multi_deps': ({'Python': ['3.6', '3.7', '3.8']}, REPLACE),
