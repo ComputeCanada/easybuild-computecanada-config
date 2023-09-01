@@ -416,9 +416,11 @@ end
             'upx -d %(installdir)s/bin/*; true',
             '/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s '], APPEND_LIST),
     },
-    'GCCcore': {
-        # remove .la files, as they mess up rpath when libtool is used
-        'postinstallcmds': (["find %(installdir)s -name '*.la' -delete"], REPLACE),
+    ('GCCcore', '12.3.0'): {
+        'version': ('12.3', REPLACE),
+    },
+    ('GCC', '12.3.0'): {
+        'version': ('12.3', REPLACE),
     },
     'GObject-Introspection': {
         'multi_deps': ({'Python': ['3.6', '3.7', '3.8']}, REPLACE),
@@ -566,16 +568,11 @@ end
         'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s'], REPLACE),
         'modluafooter': ('setenv("JAVA_TOOL_OPTIONS", "-Xmx2g")', REPLACE),
     },
-    ('libfabric', '1.15.1'): {
-        'builddependencies': ([('opa-psm2', '11.2.206'), ('GDRCopy', '2.3'), ('CUDAcore', '10.1.243')], REPLACE),
-        'configopts': ('--disable-efa --enable-cuda-dlopen ', PREPEND),
-        'patches': (['libfabric-1.15.1_eliminate-cudart-use.patch'], APPEND_LIST),
-        'checksums': ('a43b1169b18c6bd589150ef5711501fe46f65ec8a56206f6e954b14a819bc4ed', APPEND_LIST),
-    },
-    'libfabric': {
-        #'builddependencies': ([('opa-psm2', '11.2.185', '', ("%(toolchain_name)s", "%(toolchain_version)s"))], REPLACE),
-        'builddependencies': ([('opa-psm2', '11.2.185')], REPLACE),
-        'configopts': ('--disable-efa ', PREPEND),
+    ('libfabric', '1.18.0'): {
+        'builddependencies': ([('opa-psm2', '12.0.1'), ('GDRCopy', '2.3.1'), ('CUDAcore', '12.2.0')], REPLACE),
+        'configopts': ('--enable-cuda-dlopen ', PREPEND),
+        'patches': (['libfabric-1.18.0_eliminate-cudart-use.patch'], APPEND_LIST),
+        'checksums': ('71e2e1bbbbcebae20d1ffc3255598949e06fb1bc1d3e5c040244df3f69db00fa', APPEND_LIST),
     },
     'libxsmm': {
         'skipsteps': ([], REPLACE),
@@ -720,7 +717,7 @@ end""".format(version="v2212"), REPLACE),
     },
     "OpenMPI": {
         # local customizations for OpenMPI
-        'builddependencies': ([('opa-psm2', '11.2.206')], REPLACE),
+        'builddependencies': ([('opa-psm2', '12.0.1')], REPLACE),
         'configopts': ('--enable-shared --with-verbs ' +
                     '--with-hwloc=external '  + # hwloc support
                     '--with-libevent=external ' + # libevent from Gentoo
@@ -730,7 +727,6 @@ end""".format(version="v2212"), REPLACE),
                     '--with-munge ' + #enable Munge in PMIx
                     '--with-slurm --with-pmi=/opt/software/slurm ' +
                     '--enable-mpi-cxx ' +
-                    '--with-hcoll ' +
                     '--disable-show-load-errors-by-default ' +
                     '--enable-mpi1-compatibility ' +
                     # enumerate all mca's that should be compiled as plugins
@@ -738,7 +734,7 @@ end""".format(version="v2212"), REPLACE),
                     # libraries (lustre, fabric, and scheduler)
                     '--enable-mca-dso=common-ofi,common-ucx,common-verbs,event-external,' +
                     'atomic-ucx,btl-ofi,btl-openib,btl-uct,' +
-                    'coll-hcoll,coll-ucc,ess-tm,fs-lustre,mtl-ofi,mtl-psm,mtl-psm2,osc-ucx,' +
+                    'coll-ucc,ess-tm,fs-lustre,mtl-ofi,mtl-psm,mtl-psm2,osc-ucx,' +
                     'plm-tm,pmix-ext3x,pmix-s1,pmix-s2,pml-ucx,pnet-opa,psec-munge,' +
                     'ras-tm,scoll-ucc,spml-ucx,sshmem-ucx,hwloc-external ',
                     PREPEND),
