@@ -713,7 +713,7 @@ end""".format(version="v2212"), REPLACE),
     },
     "OpenMPI": {
         # local customizations for OpenMPI
-        'builddependencies': ([('opa-psm2', '11.2.206')], REPLACE),
+        'builddependencies': ([('opa-psm2', '12.0.1')], REPLACE),
         'configopts': ('--enable-shared --with-verbs ' +
                     '--with-hwloc=external '  + # hwloc support
                     '--with-libevent=external ' + # libevent from Gentoo
@@ -723,7 +723,6 @@ end""".format(version="v2212"), REPLACE),
                     '--with-munge ' + #enable Munge in PMIx
                     '--with-slurm --with-pmi=/opt/software/slurm ' +
                     '--enable-mpi-cxx ' +
-                    '--with-hcoll ' +
                     '--disable-show-load-errors-by-default ' +
                     '--enable-mpi1-compatibility ' +
                     # enumerate all mca's that should be compiled as plugins
@@ -731,7 +730,7 @@ end""".format(version="v2212"), REPLACE),
                     # libraries (lustre, fabric, and scheduler)
                     '--enable-mca-dso=common-ofi,common-ucx,common-verbs,event-external,' +
                     'atomic-ucx,btl-ofi,btl-openib,btl-uct,' +
-                    'coll-hcoll,coll-ucc,ess-tm,fs-lustre,mtl-ofi,mtl-psm,mtl-psm2,osc-ucx,' +
+                    'coll-ucc,ess-tm,fs-lustre,mtl-ofi,mtl-psm,mtl-psm2,osc-ucx,' +
                     'plm-tm,pmix-ext3x,pmix-s1,pmix-s2,pml-ucx,pnet-opa,psec-munge,' +
                     'ras-tm,scoll-ucc,spml-ucx,sshmem-ucx,hwloc-external ',
                     PREPEND),
