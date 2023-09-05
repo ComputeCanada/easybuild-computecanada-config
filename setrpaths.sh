@@ -16,8 +16,15 @@ function patch_rpath {
 
 	if [[ -n "$NIXUSER_PROFILE" ]]; then
 		PREFIX=$NIXUSER_PROFILE
+		INTERPRETER=$PREFIX/lib/ld-linux-x86-64.so.2
 		FORCE_RPATH=""
 	elif [[ -n "$EPREFIX" ]]; then
+		PREFIX=$EPREFIX
+		if [[ $EBVERSIONGENTOO -ge 2023 ]]; then
+			INTERPRETER=$PREFIX/lib64/ld-linux-x86-64.so.2
+		else
+			INTERPRETER=$PREFIX/lib/ld-linux-x86-64.so.2
+		fi
 		PREFIX=$EPREFIX
 		FORCE_RPATH="--force-rpath"
 	else
@@ -27,10 +34,10 @@ function patch_rpath {
 
 	if [[ $filetype =~ $REX_DYNAMIC ]]; then
 		if [[ $filetype =~ $REX_OS_INTERPRETER ]]; then
-			patchelf --set-interpreter "$PREFIX/lib/ld-linux-x86-64.so.2" "$filename"
+			patchelf --set-interpreter "$INTERPRETER" "$filename"
 			rpath='set'
 		elif [[ $ARG_ANY_INTERPRETER -eq 1 && ( $filetype =~ $REX_LINUX_INTERPRETER || $filetype =~ $REX_LSB_INTERPRETER ) ]]; then
-			patchelf --set-interpreter "$PREFIX/lib/ld-linux-x86-64.so.2" "$filename"
+			patchelf --set-interpreter "$INTEPRETER" "$filename"
 			rpath='set'
 		fi
 	fi
