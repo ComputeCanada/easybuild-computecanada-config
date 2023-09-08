@@ -636,14 +636,6 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
         done
         '''], REPLACE),
     },
-    'OpenBLAS': {
-        **dict.fromkeys(['buildopts','installopts','testopts'],
-                        ({'sse3': 'DYNAMIC_ARCH=1',
-                        'avx': 'TARGET=SANDYBRIDGE',
-                        'avx2': 'DYNAMIC_ARCH=1 DYNAMIC_LIST="HASWELL ZEN SKYLAKEX"',
-                        'avx512': 'TARGET=SKYLAKEX'}[os.getenv('RSNT_ARCH')] + ' NUM_THREADS=64',
-                        PREPEND))
-    },
     ("OpenFOAM", "8"): {
         'patches': (['OpenFOAM-8-cleanup-cc.patch'], APPEND_LIST),
         'checksums': ('51ef17739ced32c1cbf239c377bbf4abfa4e4f12eaf19a635c432e071ce58197', APPEND_LIST),
