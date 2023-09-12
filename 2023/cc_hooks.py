@@ -987,7 +987,7 @@ def python_fetchhook(ec):
         python_extensions_to_keep += ['tomli', "flit-core", "packaging", "pyparsing", "platformdirs"]
 
     if ver >= LooseVersion('3.11') and ver <= LooseVersion('3.12'):
-        python_extensions_to_keep += ['tomli', "flit-core", "flit_core", "packaging", "pyparsing", "platformdirs", "hatchling", "pathspec", "pluggy", "hatch_vcs", "typing_extensions", "editables"]
+        python_extensions_to_keep += ['tomli', "flit-core", "flit_core", "packaging", "pyparsing", "platformdirs", "hatchling", "pathspec", "pluggy", "hatch_vcs", "typing_extensions", "editables", "trove-classifiers"]
 
     new_ext_list = [ext for ext in ec['exts_list'] if ext[0] in python_extensions_to_keep]
     ec['exts_list'] = new_ext_list
@@ -1068,7 +1068,7 @@ def post_module_hook(self, *args, **kwargs):
 
 def pre_prepare_hook(self, *args, **kwargs):
     packages_in_gentoo = ["EBROOTLIBXML2", "EBROOTLIBJPEGMINTURBO", "EBROOTLIBPNG", "EBROOTLIBTIFF", "EBROOTZLIB",
-                          "EBROOTLIBGLU", "EBROOTMESA", "EBROOTFLTK", "EBROOTTCL", "EBROOTTK", "EBROOTBZIP2",
+                          "EBROOTLIBGLU", "EBROOTMESA", "EBROOTFLTK", "EBROOTBZIP2",
                           "EBROOTZSTD", "EBROOTFREETYPE", "EBROOTGLIB", "EBROOTSZIP", "EBROOTLIBXMLPLUSPLUS",
                           "EBROOTSQLITE3", "EBROOTPKGMINCONFIG", "EBROOTMESON", "EBROOTGPERFTOOLS"]
     ebrootgentoo = os.environ["EBROOTGENTOO"]
@@ -1084,8 +1084,6 @@ def pre_prepare_hook(self, *args, **kwargs):
     if self.cfg['name'] == 'OpenFOAM':
         setvar("EBROOTLIBREADLINE", ebrootgentoo)
 
-    setvar("EBVERSIONTCL", "8.6")
-    setvar("EBVERSIONTK", "8.6")
     setvar("EBVERSIONMESON", "0.55.0")
     setvar("EBVERSIONGPERFTOOLS", "2.6.2")
 
