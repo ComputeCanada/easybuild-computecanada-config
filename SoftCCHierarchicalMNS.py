@@ -105,7 +105,7 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
                 modname_regex = re.compile('^%s/\S+$' % re.escape('intel'))
             elif name == 'impi':
                 modname_regex = re.compile('^%s/\S+$' % re.escape('intelmpi'))
-            elif name == 'FFTW':
+            elif name in ['FFTW', 'FFTW.MPI']:
                 modname_regex = re.compile('^%s/\S+$' % re.escape('fftw-mpi'))
             res = bool(modname_regex.match(short_modname.lower()))
 
