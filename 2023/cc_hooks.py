@@ -964,19 +964,8 @@ def python_fetchhook(ec):
     python_extensions_to_keep = ['setuptools', 'pip', 'wheel', 'virtualenv', 'appdirs', 'distlib', 'filelock',
                                  'six', 'setuptools_scm']
     ver = LooseVersion(ec['version'])
-    if ver < LooseVersion('3.8'):
-        python_extensions_to_keep += ['importlib_metadata', 'importlib_resources', 'zipp']
-    if ver < LooseVersion('3.0'): # 2.7
-        python_extensions_to_keep += ['contextlib2', 'pathlib2', 'configparser', 'scandir',
-                                      'singledispatch', 'typing']
-    else: # 3.6, 3.7
-        python_extensions_to_keep += ['more-itertools']
-
-    # python 3.10
-    if ver >= LooseVersion('3.10') and ver <= LooseVersion('3.11'):
-        python_extensions_to_keep += ['tomli', "flit-core", "packaging", "pyparsing", "platformdirs"]
-
-    if ver >= LooseVersion('3.11') and ver <= LooseVersion('3.12'):
+    # python 3.10, 3.11
+    if ver >= LooseVersion('3.10') and ver <= LooseVersion('3.12'):
         python_extensions_to_keep += ['tomli', "flit-core", "flit_core", "packaging", "pyparsing", "platformdirs", "hatchling", "pathspec", "pluggy", "hatch_vcs", "typing_extensions", "editables", "trove-classifiers"]
 
     new_ext_list = [ext for ext in ec['exts_list'] if ext[0] in python_extensions_to_keep]
