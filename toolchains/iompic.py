@@ -35,7 +35,6 @@ Authors:
 from easybuild.toolchains.iompi import Iompi
 from easybuild.toolchains.iccifortcuda import IccIfortCUDA
 from easybuild.toolchains.intelcompilerscuda import IntelCompilersCUDA
-from easybuild.toolchains.intel_compilers import IntelCompilersToolchain
 
 
 class Iompic(Iompi, IccIfortCUDA, IntelCompilersCUDA):
@@ -50,7 +49,7 @@ class Iompic(Iompi, IccIfortCUDA, IntelCompilersCUDA):
         """Constructor for Iompic toolchain class."""
 
         super(Iompic, self).__init__(*args, **kwargs)
-        if self.SUBTOOLCHAIN == IntelCompilersToolchain.NAME:
+        if self.oneapi_gen:
             self.SUBTOOLCHAIN = IntelCompilersCUDA.NAME
             self.COMPILER_MODULE_NAME = IntelCompilersCUDA.COMPILER_MODULE_NAME
         else:
