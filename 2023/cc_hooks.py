@@ -24,13 +24,10 @@ PARSE_OPTS = ['multi_deps', 'dependencies', 'builddependencies', 'license_file',
               'skip_license_file_in_module', 'withnvptx', 'skipsteps']
 
 SYSTEM = [('system', 'system')]
-GCCCORE93 = [('GCCcore', '9.3.0')]
-GCCCORE102 = [('GCCcore', '10.2.0')]
-GCCCORE103 = [('GCCcore', '10.3.0')]
-GCCCORE113 = [('GCCcore', '11.3.0')]
-GCC93 = [('GCC', '9.3.0')]
+GCCCORE123 = [('GCCcore', '12.3.0')]
+GCC123 = [('GCC', '12.3.0')]
 ICC2020a = [('iccifort', '2020.1.217')]
-COMPILERS_2020a = [ICC2020a[0], GCC93[0]]
+COMPILERS_2020a = [ICC2020a[0], GCC123[0]]
 cOMPI_2020a = [('iompi', '2020a'),('gompi', '2020a')]
 cOMPI_2021a = [('iompi', '2021a'),('gompi', '2021a')]
 cOMKL_2020a = [('iomkl', '2020a'),('gomkl', '2020a')]
@@ -78,7 +75,6 @@ new_version_mapping_2020a = {
         ('imkl','2020.4.304'): ('2020.4.304', SYSTEM),
         ('imkl','2021.2.0'): ('2021.2.0', SYSTEM),
         ('libbeef', '0.1.2'): ('0.1.2', COMPILERS_2020a),
-        ('libfabric', '1.11.0'): ('1.10.1', GCCCORE93 + GCCCORE102 + [('gcccorecuda', '2020a'), ('gcccorecuda', '2020.1.112')] + COMPILERS_2020a),
         ('netCDF','4.9.0',""): ('4.9.0', COMPILERS_2020a, None),
         ('netCDF','4.9.0',''): ('4.9.0', cOMPI_2020a, "-mpi"),
         ('netCDF','4.9.0','-mpi'): ('4.9.0', cOMPI_2020a, "-mpi"),
@@ -93,16 +89,10 @@ new_version_mapping_2020a = {
         ('PLUMED', '2.6.0'): ('2.6.2', cOMKL_2020a, None),
         'UDUNITS': ('2.2.26', SYSTEM),
         ('UCX', '1.10.0'): ('1.9.0', SYSTEM),
-        **dict.fromkeys([('Python', '2.7.%s' % str(x)) for x in range(0,18)], ('2.7', GCCCORE93)),
-        **dict.fromkeys([('Python', '3.5.%s' % str(x)) for x in range(0,8)], ('3.7', GCCCORE93)),
-        **dict.fromkeys([('Python', '3.6.%s' % str(x)) for x in range(0,10)], ('3.6', GCCCORE93)),
-        **dict.fromkeys([('Python', '3.7.%s' % str(x)) for x in range(0,8)], ('3.7', GCCCORE93)),
-        **dict.fromkeys([('Python', '3.8.%s' % str(x)) for x in range(0,10)], ('3.8', GCCCORE93)),
-        **dict.fromkeys([('Python', '3.9.%s' % str(x)) for x in range(0,8)], ('3.9', GCCCORE93 + GCCCORE103)),
-        **dict.fromkeys([('Python', '3.10.%s' % str(x)) for x in range(0,8)], ('3.10', GCCCORE93 + GCCCORE103 + GCCCORE113)),
-        ('Qt5', '5.15.8'): ('5.15.8', GCCCORE93 + GCCCORE103 + SYSTEM),
-        ('Qt5', '5.15.2'): ('5.15.8', GCCCORE93 + GCCCORE103 + SYSTEM),
-        'Qt5': ('5.12.8', GCCCORE93 + GCCCORE103 + SYSTEM),
+        **dict.fromkeys([('Python', '3.10.%s' % str(x)) for x in range(0,14)], ('3.10', GCCCORE123)),
+        **dict.fromkeys([('Python', '3.11.%s' % str(x)) for x in range(0,6)], ('3.11', GCCCORE123)),
+        ('Qt5', '5.15.8'): ('5.15.8', GCCCORE123 + SYSTEM),
+        'Qt5': ('5.12.8', GCCCORE123 + SYSTEM),
         'SCOTCH': ('6.0.9', cOMPI_2020a, None),
 }
 
