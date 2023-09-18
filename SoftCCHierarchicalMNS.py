@@ -89,6 +89,8 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
         COMP_NAME_VERSION_TEMPLATES['CUDA,NVHPC'] = ('NVHPC-CUDA', '%(NVHPC)s-%(CUDA)s')
         # required for use of gcccorecuda toolchain
         COMP_NAME_VERSION_TEMPLATES['CUDAcore,GCCcore'] = ('GCCcore-CUDAcore', '%(GCCcore)s-%(CUDAcore)s')
+        # required for use of intelcompilerscuda toolchain
+        COMP_NAME_VERSION_TEMPLATES['CUDA,intel-compilers'] = ('intel-CUDA', '%(intel-compilers)s-%(CUDA)s')
         super(SoftCCHierarchicalMNS, self).__init__(*args, **kwargs)
 
     def is_short_modname_for(self, short_modname, name):
