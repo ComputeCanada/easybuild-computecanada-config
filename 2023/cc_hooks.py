@@ -700,6 +700,8 @@ end""".format(version="v2212"), REPLACE),
     "OpenMPI": {
         # local customizations for OpenMPI
         'builddependencies': ([('opa-psm2', '12.0.1')], REPLACE),
+        'patches': (['OpenMPI-4.1.5_fix-pmix3x.patch'], APPEND_LIST),
+        'checksums': ('46edac3dbf32f2a611d45e8a3c8edd3ae2f430eec16a1373b510315272115c40', APPEND_LIST),
         'configopts': ('--enable-shared --with-verbs ' +
                     '--with-hwloc=external '  + # hwloc support
                     '--with-libevent=external ' + # libevent from Gentoo
