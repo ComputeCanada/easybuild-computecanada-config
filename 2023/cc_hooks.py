@@ -48,7 +48,7 @@ new_version_mapping_2023a = {
         ('Boost','1.80.0','-mpi'): ('1.80.0', cOMPI_2023a),
         ('Boost', 'ANY', ''): ('1.72.0', COMPILERS_2023a),
         ('Boost','ANY','-mpi'): ('1.72.0', cOMPI_2023a),
-        ('CUDA', '11.0.2'): ('11.0', COMPILERS_2023a),
+        ('CUDA', '12.2.2'): ('12.2', COMPILERS_2023a),
         'CGAL': ('4.14.3', COMPILERS_2023a, None),
         ('CGAL', '5.5.2'): ('5.5.2', SYSTEM),
         'CMake': ('3.23.1', SYSTEM),
@@ -363,22 +363,11 @@ opts_changes = {
         'multi_deps': ({'Python': ['2.7', '3.6', '3.7', '3.8']}, REPLACE),
         'modluafooter': ('depends_on("python")', REPLACE),
     },
-    ('CUDA', '11.0.2'): {
-        'version': ('11.0', REPLACE),
+    ('CUDA', '11.8.0'): {
+        'version': ('11.8', REPLACE),
     },
-    ('CUDA', '11.4.2'): {
-        'version': ('11.4', REPLACE),
-    },
-    ('CUDA', '11.7.0'): {
-        'version': ('11.7', REPLACE),
-    },
-    ('CUDAcore','10.1.243'): {
-        'builddependencies': ([('GCCcore', '8.4.0')], REPLACE),
-        'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_origin'], APPEND_LIST),
-    },
-    ('CUDAcore','10.2.89'): {
-        'builddependencies': ([('GCCcore', '8.4.0')], REPLACE),
-        'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_origin'], APPEND_LIST),
+    ('CUDA', '12.2.2'): {
+        'version': ('12.2', REPLACE),
     },
     'CUDAcore': {
         'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_origin'], APPEND_LIST),
