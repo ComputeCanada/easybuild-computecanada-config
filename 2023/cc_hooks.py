@@ -26,11 +26,10 @@ PARSE_OPTS = ['multi_deps', 'dependencies', 'builddependencies', 'license_file',
 SYSTEM = [('system', 'system')]
 GCCCORE123 = [('GCCcore', '12.3.0')]
 GCC123 = [('GCC', '12.3.0')]
-ICC2020a = [('iccifort', '2020.1.217')]
-COMPILERS_2020a = [ICC2020a[0], GCC123[0]]
-cOMPI_2020a = [('iompi', '2020a'),('gompi', '2020a')]
-cOMPI_2021a = [('iompi', '2021a'),('gompi', '2021a')]
-cOMKL_2020a = [('iomkl', '2020a'),('gomkl', '2020a')]
+ICC2023a = [('intel-compilers', '2023.2.1')]
+COMPILERS_2023a = [ICC2023a[0], GCC123[0]]
+cOMPI_2023a = [('iompi', '2023a'),('gompi', '2023a')]
+cOMKL_2023a = [('iomkl', '2023a'),('gomkl', '2023a')]
 
 # Dictionary containing version mapping
 # Keys can be one of :
@@ -44,56 +43,56 @@ cOMKL_2020a = [('iomkl', '2020a'),('gomkl', '2020a')]
 # Values can be one of :
 # - (new software version, list of compatible toolchains)
 # - (new software version, list of compatible toolchains, None)
-new_version_mapping_2020a = {
-        ('Boost', '1.80.0', ''): ('1.80.0', COMPILERS_2020a),
-        ('Boost','1.80.0','-mpi'): ('1.80.0', cOMPI_2020a),
-        ('Boost', 'ANY', ''): ('1.72.0', COMPILERS_2020a),
-        ('Boost','ANY','-mpi'): ('1.72.0', cOMPI_2020a),
-        ('CUDA', '11.0.2'): ('11.0', COMPILERS_2020a),
-        'CGAL': ('4.14.3', COMPILERS_2020a, None),
+new_version_mapping_2023a = {
+        ('Boost', '1.80.0', ''): ('1.80.0', COMPILERS_2023a),
+        ('Boost','1.80.0','-mpi'): ('1.80.0', cOMPI_2023a),
+        ('Boost', 'ANY', ''): ('1.72.0', COMPILERS_2023a),
+        ('Boost','ANY','-mpi'): ('1.72.0', cOMPI_2023a),
+        ('CUDA', '11.0.2'): ('11.0', COMPILERS_2023a),
+        'CGAL': ('4.14.3', COMPILERS_2023a, None),
         ('CGAL', '5.5.2'): ('5.5.2', SYSTEM),
         'CMake': ('3.23.1', SYSTEM),
-        'ETSF_IO': ('1.0.4', [('iompi', '2020a'), ('iccifort', '2020.1.217')]),
-        ('FFTW', 'ANY', ""): ('3.3.8', COMPILERS_2020a),
-        ('FFTW','ANY','-mpi'): ('3.3.8', cOMPI_2020a),
+        'ETSF_IO': ('1.0.4', [('iompi', '2023a'), ('iccifort', '2020.1.217')]),
+        ('FFTW', 'ANY', ""): ('3.3.8', COMPILERS_2023a),
+        ('FFTW','ANY','-mpi'): ('3.3.8', cOMPI_2023a),
         'Eigen': ('3.3.7', SYSTEM),
         ('Eigen', '3.4.0'): ('3.4.0', SYSTEM),
-#        'GDAL': ('3.0.4', COMPILERS_2020a, None),
+#        'GDAL': ('3.0.4', COMPILERS_2023a, None),
 #        'GEOS': ('3.8.1', GCCCORE93, None),
         'GObject-Introspection': ('1.64.0', SYSTEM, None),
-        'GSL': ('2.6', COMPILERS_2020a),
-        ('GSL', '1.16'): ('1.16', COMPILERS_2020a),
+        'GSL': ('2.6', COMPILERS_2023a),
+        ('GSL', '1.16'): ('1.16', COMPILERS_2023a),
         ('hwloc', '2.4.1'): ('2.4.0', SYSTEM),
         'JasPer': ('2.0.16', SYSTEM),
         ('Java', '11'): ('13', SYSTEM),
-        ('HDF5','1.12.1',''): ('1.12.1', COMPILERS_2020a),
-        ('HDF5','1.12.1',''): ('1.12.1', cOMPI_2020a + cOMPI_2021a, '-mpi'),
-        ('HDF5','1.12.1','-mpi'): ('1.12.1', cOMPI_2020a + cOMPI_2021a, '-mpi'),
-        ('HDF5','ANY',""): ('1.10.6', cOMPI_2020a + COMPILERS_2020a, None),
-        ('HDF5','ANY','-mpi'): ('1.10.6', cOMPI_2020a),
+        ('HDF5','1.12.1',''): ('1.12.1', COMPILERS_2023a),
+        ('HDF5','1.12.1',''): ('1.12.1', cOMPI_2023a, '-mpi'),
+        ('HDF5','1.12.1','-mpi'): ('1.12.1', cOMPI_2023a, '-mpi'),
+        ('HDF5','ANY',""): ('1.10.6', cOMPI_2023a + COMPILERS_2023a, None),
+        ('HDF5','ANY','-mpi'): ('1.10.6', cOMPI_2023a),
         ('imkl','2020.1.217'): ('2020.1.217', SYSTEM),
         ('imkl','2020.4.304'): ('2020.4.304', SYSTEM),
         ('imkl','2021.2.0'): ('2021.2.0', SYSTEM),
-        ('libbeef', '0.1.2'): ('0.1.2', COMPILERS_2020a),
-        ('netCDF','4.9.0',""): ('4.9.0', COMPILERS_2020a, None),
-        ('netCDF','4.9.0',''): ('4.9.0', cOMPI_2020a, "-mpi"),
-        ('netCDF','4.9.0','-mpi'): ('4.9.0', cOMPI_2020a, "-mpi"),
-        ('netCDF','ANY',""): ('4.7.4', cOMPI_2020a + COMPILERS_2020a, None),
-        ('netCDF','ANY','-mpi'): ('4.7.4', cOMPI_2020a, None),
-        ('netCDF-C++4','ANY', ""): ('4.3.1', cOMPI_2020a + COMPILERS_2020a, None),
-        ('netCDF-C++4','ANY','-mpi'): ('4.3.1', cOMPI_2020a, None),
-        ('netCDF-Fortran','ANY', ""): ('4.5.2', cOMPI_2020a + COMPILERS_2020a, None),
-        ('netCDF-Fortran','ANY','-mpi'): ('4.5.2', cOMPI_2020a, None),
-        ('ParaView', '5.8.0'): ('5.8.0', [('gompi', '2020a')], None),
+        ('libbeef', '0.1.2'): ('0.1.2', COMPILERS_2023a),
+        ('netCDF','4.9.0',""): ('4.9.0', COMPILERS_2023a, None),
+        ('netCDF','4.9.0',''): ('4.9.0', cOMPI_2023a, "-mpi"),
+        ('netCDF','4.9.0','-mpi'): ('4.9.0', cOMPI_2023a, "-mpi"),
+        ('netCDF','ANY',""): ('4.7.4', cOMPI_2023a + COMPILERS_2023a, None),
+        ('netCDF','ANY','-mpi'): ('4.7.4', cOMPI_2023a, None),
+        ('netCDF-C++4','ANY', ""): ('4.3.1', cOMPI_2023a + COMPILERS_2023a, None),
+        ('netCDF-C++4','ANY','-mpi'): ('4.3.1', cOMPI_2023a, None),
+        ('netCDF-Fortran','ANY', ""): ('4.5.2', cOMPI_2023a + COMPILERS_2023a, None),
+        ('netCDF-Fortran','ANY','-mpi'): ('4.5.2', cOMPI_2023a, None),
+        ('ParaView', '5.8.0'): ('5.8.0', [('gompi', '2023a')], None),
         'Perl': ('5.30.2', SYSTEM),
-        ('PLUMED', '2.6.0'): ('2.6.2', cOMKL_2020a, None),
+        ('PLUMED', '2.6.0'): ('2.6.2', cOMKL_2023a, None),
         'UDUNITS': ('2.2.26', SYSTEM),
         ('UCX', '1.10.0'): ('1.9.0', SYSTEM),
         **dict.fromkeys([('Python', '3.10.%s' % str(x)) for x in range(0,14)], ('3.10', GCCCORE123)),
         **dict.fromkeys([('Python', '3.11.%s' % str(x)) for x in range(0,6)], ('3.11', GCCCORE123)),
         ('Qt5', '5.15.8'): ('5.15.8', GCCCORE123 + SYSTEM),
         'Qt5': ('5.12.8', GCCCORE123 + SYSTEM),
-        'SCOTCH': ('6.0.9', cOMPI_2020a, None),
+        'SCOTCH': ('6.0.9', cOMPI_2023a, None),
 }
 
 def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
@@ -137,7 +136,7 @@ def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
             if match_found: break
 
         if dep_name == 'SciPy-bundle':
-            new_dep = ('SciPy-Stack', '2020a')
+            new_dep = ('SciPy-Stack', '2023a')
         elif dep_name == 'Boost.Serial':
             new_dep = ('Boost', dep_version)
         elif dep_name == 'HDF5.Serial':
@@ -324,7 +323,7 @@ opts_changes = {
     'Boost.Serial': {
         'name': ('Boost', REPLACE),
         'multi_deps': ({'Python': ['2.7', '3.6', '3.7', '3.8']}, REPLACE),
-        'builddependencies': ([[('SciPy-Stack', '2020a'), ('Python', v)] for v in ['2.7', '3.6', '3.7', '3.8'] ], REPLACE),
+        'builddependencies': ([[('SciPy-Stack', '2023a'), ('Python', v)] for v in ['2.7', '3.6', '3.7', '3.8'] ], REPLACE),
         'patches': (['Boost-1.65.1_python3.patch'], REPLACE),
         'checksums': ('d86d34cf48fdbc4b9a36ae7706b3f3353f9ad521ff1d5a716cce750ae9f5dd33', APPEND_LIST),
     },
@@ -635,7 +634,7 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
         'patches': (['OpenFOAM-8-cleanup-cc.patch'], APPEND_LIST),
         'checksums': ('51ef17739ced32c1cbf239c377bbf4abfa4e4f12eaf19a635c432e071ce58197', APPEND_LIST),
         'modluafooter': (openfoam_modluafooter % ('Gcc', 'mpi', '5.8.0', '5.8'), REPLACE),
-        'dependencies': ([(('ParaView', '5.9.1', '-mpi'), ('ParaView', '5.8.0', '', ('gompi', '2020a'))),
+        'dependencies': ([(('ParaView', '5.9.1', '-mpi'), ('ParaView', '5.8.0', '', ('gompi', '2023a'))),
                           (('gnuplot', '5.4.2'), ('gnuplot', '5.2.8'))], REPLACE_IN_LIST),
     },
     ("OpenFOAM", "v2006"): {
@@ -652,7 +651,7 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
 #end""".format(version="v2112"), REPLACE),
         'modluafooter': (openfoam_modluafooter % ('Gcc', 'eb-mpi', '5.9.1', '5.9'), REPLACE),
         'dependencies': ([
-                          (('ParaView', '5.9.1', '-mpi'), ('ParaView', '5.9.1', None, ('gompi', '2020a'))),
+                          (('ParaView', '5.9.1', '-mpi'), ('ParaView', '5.9.1', None, ('gompi', '2023a'))),
                           (('gnuplot', '5.4.2'), ('gnuplot', '5.2.8')),
                         ], REPLACE_IN_LIST),
     },
@@ -662,8 +661,8 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
         source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
 end""".format(version="10"), REPLACE),
         'dependencies': ([
-                          (('ParaView', '5.9.1', '-mpi'), ('ParaView', '5.10.0', None, ('gompi', '2020a'))),
-                          (('SCOTCH', '6.0.9', None, ('gompi', '2020a')), ('SCOTCH', '6.1.2', '-no-thread', ('gompi', '2020a'))),
+                          (('ParaView', '5.9.1', '-mpi'), ('ParaView', '5.10.0', None, ('gompi', '2023a'))),
+                          (('SCOTCH', '6.0.9', None, ('gompi', '2023a')), ('SCOTCH', '6.1.2', '-no-thread', ('gompi', '2023a'))),
                         ], REPLACE_IN_LIST),
         'patches': (['OpenFOAM-10-cleanup-cc.patch'], APPEND_LIST),
         'checksums': ('1ba356d23974749c080ff3731551ce5be2f2b75f5e38bfe500d0a2006d4646c1', APPEND_LIST),
@@ -673,8 +672,8 @@ end""".format(version="10"), REPLACE),
         source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
 end""".format(version="11"), REPLACE),
         'dependencies': ([
-                          (('ParaView', '5.9.1', '-mpi'), ('ParaView', '5.10.0', None, ('gompi', '2020a'))),
-                          (('SCOTCH', '6.0.9', None, ('gompi', '2020a')), ('SCOTCH', '6.1.2', '-no-thread', ('gompi', '2020a'))),
+                          (('ParaView', '5.9.1', '-mpi'), ('ParaView', '5.10.0', None, ('gompi', '2023a'))),
+                          (('SCOTCH', '6.0.9', None, ('gompi', '2023a')), ('SCOTCH', '6.1.2', '-no-thread', ('gompi', '2023a'))),
                         ], REPLACE_IN_LIST),
         'patches': (['OpenFOAM-11-cleanup-cc.patch'], APPEND_LIST),
         'checksums': ('56a98703a1022d5e75f7b1f7cd4592bc79ba93c1dd53d3e52316726797430c33', APPEND_LIST),
@@ -684,8 +683,8 @@ end""".format(version="11"), REPLACE),
         source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
 end""".format(version="v2206"), REPLACE),
         'dependencies': ([
-                          (('ParaView', '5.9.1', '-mpi'), ('ParaView', '5.10.0', None, ('gompi', '2020a'))),
-                          (('SCOTCH', '6.0.9', None, ('gompi', '2020a')), ('SCOTCH', '6.1.2', '-no-thread', ('gompi', '2020a'))),
+                          (('ParaView', '5.9.1', '-mpi'), ('ParaView', '5.10.0', None, ('gompi', '2023a'))),
+                          (('SCOTCH', '6.0.9', None, ('gompi', '2023a')), ('SCOTCH', '6.1.2', '-no-thread', ('gompi', '2023a'))),
                         ], REPLACE_IN_LIST),
     },
     ("OpenFOAM", "v2212"): {
@@ -693,8 +692,8 @@ end""".format(version="v2206"), REPLACE),
         source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
 end""".format(version="v2212"), REPLACE),
         'dependencies': ([
-                          (('ParaView', '5.11.0', '-mpi'), ('ParaView', '5.11.0', None, ('gofb', '2020a'))),
-                          (('SCOTCH', '7.0.3'), ('SCOTCH', '7.0.3', '-no-thread', ('gofb', '2020a'))),
+                          (('ParaView', '5.11.0', '-mpi'), ('ParaView', '5.11.0', None, ('gofb', '2023a'))),
+                          (('SCOTCH', '7.0.3'), ('SCOTCH', '7.0.3', '-no-thread', ('gofb', '2023a'))),
                         ], REPLACE_IN_LIST),
     },
     "OpenMPI": {
@@ -892,8 +891,8 @@ def parse_hook(ec, *args, **kwargs):
         exit(1)
 
     disable_use_mpi_for_non_mpi_toolchains(ec)
-    modify_dependencies(ec, 'dependencies', new_version_mapping_2020a)
-    modify_dependencies(ec, 'builddependencies', new_version_mapping_2020a)
+    modify_dependencies(ec, 'dependencies', new_version_mapping_2023a)
+    modify_dependencies(ec, 'builddependencies', new_version_mapping_2023a)
     drop_dependencies(ec, 'dependencies')
     drop_dependencies(ec, 'builddependencies')
     set_modaltsoftname(ec)
