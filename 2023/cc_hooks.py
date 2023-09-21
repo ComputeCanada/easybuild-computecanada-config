@@ -823,7 +823,7 @@ def set_modluafooter(ec):
         comp = os.path.join('Compiler', name + ec['version'][:ec['version'].find('.')])
         ec['modluafooter'] += (compiler_modluafooter.format(year=year,sub_path=comp) + 'family("compiler")\n')
     if ec['name'] == 'CUDAcore':
-        comp = os.path.join('CUDA', 'cuda' + '.'.join(ec['version'].split('.')[:2]))
+        comp = os.path.join('CUDA', 'gccore', 'cuda' + '.'.join(ec['version'].split('.')[:2]))
         ec['modluafooter'] += compiler_modluafooter.format(year=year, sub_path=comp)
 
 
