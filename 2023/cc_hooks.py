@@ -766,9 +766,6 @@ end""".format(version="v2212"), REPLACE),
                        {'sse3': '--without-avx --without-sse41 --without-sse42 '}.get(os.getenv('RSNT_ARCH'), ''),
                        PREPEND)
     },
-    ('UCX-CUDA', '1.14.1', '-CUDA-%(cudaver)s'): {
-        'dependencies': (('CUDA', '12.1.1', '', {'name': 'system', 'version': 'system'}), DROP_FROM_LIST),
-    },
     'Valgrind': {
         # tell correct location of debuginfo files
         'configopts': (' && sed -i "s@/usr/lib/debug@$EPREFIX/usr/lib/debug@g" coregrind/m_debuginfo/readelf.c', APPEND)
@@ -849,6 +846,7 @@ def drop_dependencies(ec, param):
             'SQLite': '3.36',
             'pybind11': 'ALL',
             'git': 'ALL',
+            'CUDA': 'ALL',
     }
     # iterate over a copy
     for dep in ec[param][:]:
@@ -856,7 +854,7 @@ def drop_dependencies(ec, param):
             dep_copy = dep[:]
             for d in dep_copy:
                 name, version = d[0], d[1]
-                if name in to_drop:
+                if name in to_drop and name != 'CUDA':
                     if to_drop[name] == 'ALL' or LooseVersion(version) < LooseVersion(to_drop[name]):
                         print("%s: Dropped %s, %s from %s" % (ec.filename(), name, version, param))
                         dep.remove(d)
@@ -867,6 +865,9 @@ def drop_dependencies(ec, param):
                 continue
             if dep_list[0] in to_drop:
                 if to_drop[dep_list[0]] == 'ALL' or LooseVersion(dep_list[1]) < LooseVersion(to_drop[dep_list[0]]):
+                    # special case: drop CUDA dep for easyconfigs with CUDA versionsuffix (we use toolchains instead)
+                    if dep_list[0] == 'CUDA' and ec['versionsuffix'] != '-CUDA-%(cudaver)s':
+                        continue
                     print("%s: Dropped %s, %s from %s" % (ec.filename(), dep_list[0],dep_list[1],param))
                     ec[param].remove(dep)
 
