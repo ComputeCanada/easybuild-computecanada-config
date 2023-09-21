@@ -29,11 +29,10 @@ EasyBuild support for a GCCcore+CUDAcore compiler toolchain.
 :author: Bart Oldeman (McGill University, Calcul Quebec, Compute Canada)
 """
 
-from easybuild.toolchains.compiler.cuda import Cuda
 from easybuild.toolchains.gcccore import GCCcore
 
 
-class GCCcoreCUDA(GCCcore, Cuda):
+class GCCcoreCUDA(GCCcore):
     """Compiler toolchain with GCCcore and CUDAcore."""
     NAME = 'gcccorecuda'
 

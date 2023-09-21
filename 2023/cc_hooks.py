@@ -766,6 +766,9 @@ end""".format(version="v2212"), REPLACE),
                        {'sse3': '--without-avx --without-sse41 --without-sse42 '}.get(os.getenv('RSNT_ARCH'), ''),
                        PREPEND)
     },
+    ('UCX-CUDA', '1.14.1', '-CUDA-%(cudaver)s'): {
+        'dependencies': (('CUDA', '12.1.1', '', {'name': 'system', 'version': 'system'}), DROP_FROM_LIST),
+    },
     'Valgrind': {
         # tell correct location of debuginfo files
         'configopts': (' && sed -i "s@/usr/lib/debug@$EPREFIX/usr/lib/debug@g" coregrind/m_debuginfo/readelf.c', APPEND)
