@@ -371,8 +371,8 @@ opts_changes = {
         'version': ('12.2', REPLACE),
     },
     'CUDAcore': {
-        'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/bin',
-                             'for dir in %(installdir)s/[cegnt]*; do /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path $dir --add_origin; done'],
+        'postinstallcmds': (['for dir in %(installdir)s/{bin,nvvm}; do /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path $dir; done',
+                             'for dir in %(installdir)s/{c,e,g,nsight,t}*; do /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path $dir --add_origin; done'],
                             APPEND_LIST),
         'modluafooter': ('''
 if cuda_driver_library_available("%(version_major_minor)s") == "compat" then
