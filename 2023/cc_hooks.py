@@ -884,6 +884,14 @@ def parse_hook(ec, *args, **kwargs):
         exit(1)
 
     disable_use_mpi_for_non_mpi_toolchains(ec)
+
+    # automatic --try-toolchain for common cases:
+    if ec['toolchain'] == {'name': 'GCCcore', 'version': '12.3.0'}:
+        if ec['versionsuffix'] == '-CUDA-%(cudaver)s':
+            ec['toolchain'] = {'name': 'gcccorecuda', 'version': '2023a'}
+        else:
+            ec['toolchain'] = {'name': 'GCCcore', 'version': '12.3-gentoo'}
+
     modify_dependencies(ec, 'dependencies', new_version_mapping_2023a)
     modify_dependencies(ec, 'builddependencies', new_version_mapping_2023a)
     drop_dependencies(ec, 'dependencies')
