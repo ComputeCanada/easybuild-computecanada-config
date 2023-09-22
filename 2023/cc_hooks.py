@@ -869,7 +869,7 @@ def drop_dependencies(ec, param):
             if dep_list[0] in to_drop:
                 if to_drop[dep_list[0]] == 'ALL' or LooseVersion(dep_list[1]) < LooseVersion(to_drop[dep_list[0]]):
                     # special case: drop CUDA dep for easyconfigs with CUDA versionsuffix (we use toolchains instead)
-                    if dep_list[0] == 'CUDA' and ec['toolchain']['name'].endswith('cuda'):
+                    if dep_list[0] == 'CUDA' and not ec['toolchain']['name'].endswith('cuda'):
                         continue
                     print("%s: Dropped %s, %s from %s" % (ec.filename(), dep_list[0],dep_list[1],param))
                     ec[param].remove(dep)
