@@ -59,6 +59,7 @@ new_version_mapping_2023a = {
         ('Eigen', '3.4.0'): ('3.4.0', SYSTEM),
 #        'GDAL': ('3.0.4', COMPILERS_2023a, None),
 #        'GEOS': ('3.8.1', GCCCORE93, None),
+        ('GCCcore', '12.3.0'): ('12.3', SYSTEM, '-gentoo'),
         'GObject-Introspection': ('1.64.0', SYSTEM, None),
         'GSL': ('2.6', COMPILERS_2023a),
         ('GSL', '1.16'): ('1.16', COMPILERS_2023a),
@@ -395,9 +396,6 @@ end
         'postinstallcmds': ([
             'upx -d %(installdir)s/bin/*; true',
             '/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s '], APPEND_LIST),
-    },
-    ('GCCcore', '12.3.0'): {
-        'version': ('12.3', REPLACE),
     },
     ('GCC', '12.3.0'): {
         'version': ('12.3', REPLACE),
