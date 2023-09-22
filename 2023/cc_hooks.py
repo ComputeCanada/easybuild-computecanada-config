@@ -594,6 +594,9 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
         'dependencies': ([('Java', '11', '', True)], REPLACE),
         'postinstallcmds': (['sed -i -e "s/cli=(\$(/cli=(\$(export NFX_OPTS=\$JAVA_TOOL_OPTIONS; unset JAVA_TOOL_OPTIONS; /g" %(installdir)s/bin/nextflow'], APPEND_LIST),
     },
+    ('NCCL', '2.18.3'): {
+        'checksums': (['6477d83c9edbb34a0ebce6d751a1b32962bc6415d75d04972b676c6894ceaef9'], REPLACE),
+    },
     'NVHPC': {
         'postinstallcmds': (['''
         installdir=%(installdir)s/Linux_x86_64/%(version)s
