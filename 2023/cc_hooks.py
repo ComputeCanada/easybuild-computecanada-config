@@ -477,14 +477,14 @@ end
         'accept_eula': (True, REPLACE),
         #See compiler/2021.2.0/licensing/credist.txt
         'postinstallcmds': (['''
-    echo "--sysroot=$EPREFIX" > %(installdir)s/compiler/%(version)s/linux/bin/intel64/icc.cfg
-    echo "--sysroot=$EPREFIX" > %(installdir)s/compiler/%(version)s/linux/bin/intel64/icpc.cfg
-    echo "--sysroot=$EPREFIX" > %(installdir)s/compiler/%(version)s/linux/bin/icx.cfg
-    echo "--sysroot=$EPREFIX" > %(installdir)s/compiler/%(version)s/linux/bin/icpx.cfg
-    echo "-L$EBROOTGCCCORE/lib64" >> %(installdir)s/compiler/%(version)s/linux/bin/icx.cfg
-    echo "-L$EBROOTGCCCORE/lib64" >> %(installdir)s/compiler/%(version)s/linux/bin/icpx.cfg
-    echo "-Wl,-dynamic-linker=$EPREFIX/lib64/ld-linux-x86-64.so.2" >> %(installdir)s/compiler/%(version)s/linux/bin/icx.cfg
-    echo "-Wl,-dynamic-linker=$EPREFIX/lib64/ld-linux-x86-64.so.2" >> %(installdir)s/compiler/%(version)s/linux/bin/icpx.cfg
+    for compname in icc icpc ifort; do
+       echo "--sysroot=$EPREFIX" > %(installdir)s/compiler/%(version)s/linux/bin/intel64/$compname.cfg
+    done
+    for compname in icx icpx ifx; do
+       echo "--sysroot=$EPREFIX" > %(installdir)s/compiler/%(version)s/linux/bin/$compname.cfg
+       echo "-L$EBROOTGCCCORE/lib64" >> %(installdir)s/compiler/%(version)s/linux/bin/$compname.cfg
+       echo "-Wl,-dynamic-linker=$EPREFIX/lib64/ld-linux-x86-64.so.2" >> %(installdir)s/compiler/%(version)s/linux/bin/$compname.cfg
+    done
     echo "#!$EPREFIX/bin/sh" > %(installdir)s/compiler/%(version)s/linux/bin/intel64/dpcpp
     echo "exec %(installdir)s/compiler/%(version)s/linux/bin/dpcpp --sysroot=$EPREFIX -Wl,-dynamic-linker=$EPREFIX/lib64/ld-linux-x86-64.so.2 -L$EBROOTGCCCORE/lib64 \${1+\\"\$@\\"}" >> %(installdir)s/compiler/%(version)s/linux/bin/intel64/dpcpp
     chmod +x %(installdir)s/compiler/%(version)s/linux/bin/intel64/dpcpp
