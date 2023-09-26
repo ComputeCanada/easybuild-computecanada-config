@@ -524,7 +524,7 @@ end
 '''], REPLACE),
         "modluafooter": ("""
 if isloaded("imkl") then
-    always_load("imkl/%(version)s")
+    always_load("imkl/%(version_major_minor)s")
 end
 """, APPEND),
     },
