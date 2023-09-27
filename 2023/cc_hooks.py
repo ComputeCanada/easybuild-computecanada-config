@@ -74,6 +74,7 @@ new_version_mapping_2023a = {
         ('imkl','2020.1.217'): ('2020.1.217', SYSTEM),
         ('imkl','2020.4.304'): ('2020.4.304', SYSTEM),
         ('imkl','2021.2.0'): ('2021.2.0', SYSTEM),
+        ('intel-compilers', '2023.1.0'): ('2023.2.1', SYSTEM),
         ('libbeef', '0.1.2'): ('0.1.2', COMPILERS_2023a),
         ('netCDF','4.9.0',""): ('4.9.0', COMPILERS_2023a, None),
         ('netCDF','4.9.0',''): ('4.9.0', cOMPI_2023a, "-mpi"),
@@ -896,6 +897,8 @@ def parse_hook(ec, *args, **kwargs):
             ec['versionsuffix'] = ''
         else:
             ec['toolchain'] = {'name': 'GCCcore', 'version': '12.3-gentoo'}
+    elif ec['toolchain'] == {'name': 'intel-compilers', 'version': '2023.1.0'}:
+        ec['toolchain']['version'] = '2023.2.1'
 
     # Use ifx by default as Fortran compiler for Intel toolchains.
     # Adapt optarch if oneapi compilers are used.
