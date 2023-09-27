@@ -911,7 +911,7 @@ def parse_hook(ec, *args, **kwargs):
             tcopts['oneapi_fortran'] = True
         if tcopts.get('optarch', True) == True:
             if (tcopts.get('oneapi') or (tcopts.get('oneapi_c_cxx', True) and tcopts.get('oneapi_fortran'))):
-                tcopts['optarch'] = 'march=x86-64-v3 -axx86-64-v4'
+                tcopts['optarch'] = 'march=x86-64-v3 -axcore-avx512'
                 if os.getenv('RSNT_ARCH') == 'avx512':
                     tcopts['optarch'] = 'march=x86-64-v4'
 
