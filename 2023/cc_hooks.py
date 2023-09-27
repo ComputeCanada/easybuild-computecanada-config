@@ -897,6 +897,21 @@ def parse_hook(ec, *args, **kwargs):
         else:
             ec['toolchain'] = {'name': 'GCCcore', 'version': '12.3-gentoo'}
 
+    # Use ifx by default as Fortran compiler for Intel toolchains.
+    # Adapt optarch if oneapi compilers are used.
+    toolchain, _ = search_toolchain(ec['toolchain']['name'])
+    if toolchain.COMPILER_FAMILY == 'Intel':
+        if ec['toolchainopts'] is None:
+            ec['toolchainopts'] = {}
+        tcopts = ec['toolchainopts']
+        if 'oneapi' not in tcopts and 'oneapi_fortran' not in tcopts:
+            tcopts['oneapi_fortran'] = True
+        if tcopts.get('optarch', True) == True:
+            if (tcopts.get('oneapi') or (tcopts.get('oneapi_c_cxx', True) and tcopts.get('oneapi_fortran'))):
+                tcopts['optarch'] = 'march=x86-64-v3 -axx86-64-v4'
+                if os.getenv('RSNT_ARCH') == 'avx512':
+                    tcopts['optarch'] = 'march=x86-64-v4'
+
     modify_dependencies(ec, 'dependencies', new_version_mapping_2023a)
     modify_dependencies(ec, 'builddependencies', new_version_mapping_2023a)
     drop_dependencies(ec, 'dependencies')
