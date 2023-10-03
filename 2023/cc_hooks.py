@@ -12,6 +12,7 @@ if parentdir not in sys.path:
     sys.path.append(parentdir)
 from cc_hooks_common import modify_all_opts, update_opts, PREPEND, APPEND, REPLACE, APPEND_LIST, DROP, DROP_FROM_LIST, REPLACE_IN_LIST
 from cc_hooks_common import get_matching_keys, get_matching_keys_from_ec
+from easybuild.tools.config import build_option
 from easybuild.tools.toolchain.utilities import search_toolchain
 from easybuild.tools.environment import setvar
 from easybuild.tools.run import run_cmd
@@ -907,13 +908,18 @@ def parse_hook(ec, *args, **kwargs):
         if ec['toolchainopts'] is None:
             ec['toolchainopts'] = {}
         tcopts = ec['toolchainopts']
-        if 'oneapi' not in tcopts and 'oneapi_fortran' not in tcopts:
-            tcopts['oneapi_fortran'] = True
         if tcopts.get('optarch', True) == True:
+            optarch = '-' + build_option('optarch')['Intel']
+            optarch_new = optarch.replace('core-avx2', 'x86-64-v3').replace('skylake-avx512', 'x86-64-v4')
             if (tcopts.get('oneapi') or (tcopts.get('oneapi_c_cxx', True) and tcopts.get('oneapi_fortran'))):
-                tcopts['optarch'] = 'march=x86-64-v3 -axcore-avx512'
-                if os.getenv('RSNT_ARCH') == 'avx512':
-                    tcopts['optarch'] = 'march=x86-64-v4'
+                tcopts['optarch'] = optarch_new
+            elif tcopts.get('oneapi_c_cxx', True):
+                # use new optarch flags for C/C++ only (default)
+                for key in 'extra_cflags', 'extra_cxxflags':
+                    tcopts[key] = optarch_new + ' ' + tcopts.get(key, '')
+                for key in 'extra_fflags', 'extra_fcflags', 'extra_f90flags':
+                    tcopts[key] = optarch + ' ' + tcopts.get(key, '')
+                tcopts['optarch'] = ''
 
     modify_dependencies(ec, 'dependencies', new_version_mapping_2023a)
     modify_dependencies(ec, 'builddependencies', new_version_mapping_2023a)
