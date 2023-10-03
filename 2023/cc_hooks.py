@@ -24,7 +24,7 @@ PARSE_OPTS = ['multi_deps', 'dependencies', 'builddependencies', 'license_file',
               'skip_license_file_in_module', 'withnvptx', 'skipsteps']
 
 SYSTEM = [('system', 'system')]
-GCCCORE123 = [('GCCcore', '12.3.0')]
+GCCCORE123 = [('GCCcore', '12.3.0'), ('GCCcore', '12.3-gentoo')]
 GCC123 = [('GCC', '12.3.0')]
 ICC2023a = [('intel-compilers', '2023.2.1')]
 COMPILERS_2023a = [ICC2023a[0], GCC123[0]]
