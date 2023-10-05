@@ -52,7 +52,7 @@ new_version_mapping_2023a = {
         ('CUDA', '12.2.2'): ('12.2', COMPILERS_2023a),
         'CGAL': ('4.14.3', COMPILERS_2023a, None),
         ('CGAL', '5.5.2'): ('5.5.2', SYSTEM),
-        'CMake': ('3.23.1', SYSTEM),
+        'CMake': ('3.26.5', SYSTEM),
         'ETSF_IO': ('1.0.4', [('iompi', '2023a'), ('iccifort', '2020.1.217')]),
         ('FFTW', 'ANY', ""): ('3.3.8', COMPILERS_2023a),
         ('FFTW','ANY','-mpi'): ('3.3.8', cOMPI_2023a),
