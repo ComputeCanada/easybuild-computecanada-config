@@ -849,7 +849,7 @@ def drop_dependencies(ec, param):
             'Meson': 'ALL',
             'Ninja': 'ALL',
             'PyQt5': 'ALL',
-            'SQLite': '3.36',
+            'SQLite': '3.42.0',
             'pybind11': 'ALL',
             'git': 'ALL',
             'CUDA': 'ALL',
