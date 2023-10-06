@@ -753,6 +753,9 @@ end""".format(version="v2212"), REPLACE),
         # Cling needs to know about different sysroot
         'configopts': ("-DDEFAULT_SYSROOT=$EPREFIX", PREPEND),
     },
+    'Rust': {
+        'prebuildopts': ("sed -i 's/\\(ninja.*=.*\\)false/\\1true/' config.toml && export EASYBUILD_SYSROOT=$EPREFIX && ", PREPEND),
+    },
     ('SCOTCH', '6.1.2', '-no-thread'): {
         'modaltsoftname': ('scotch-no-thread', REPLACE),
     },
