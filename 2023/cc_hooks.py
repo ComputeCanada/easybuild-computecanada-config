@@ -45,10 +45,8 @@ cOMKL_2023a = [('iomkl', '2023a'),('gomkl', '2023a')]
 # - (new software version, list of compatible toolchains)
 # - (new software version, list of compatible toolchains, None)
 new_version_mapping_2023a = {
-        ('Boost', '1.80.0', ''): ('1.80.0', COMPILERS_2023a),
-        ('Boost','1.80.0','-mpi'): ('1.80.0', cOMPI_2023a),
-        ('Boost', 'ANY', ''): ('1.72.0', COMPILERS_2023a),
-        ('Boost','ANY','-mpi'): ('1.72.0', cOMPI_2023a),
+        ('Boost', 'ANY', ''): ('1.82.0', COMPILERS_2023a),
+        ('Boost','ANY','-mpi'): ('1.82.0', cOMPI_2023a),
         ('CUDA', '12.2.2'): ('12.2', COMPILERS_2023a),
         'CGAL': ('4.14.3', COMPILERS_2023a, None),
         ('CGAL', '5.5.2'): ('5.5.2', SYSTEM),
