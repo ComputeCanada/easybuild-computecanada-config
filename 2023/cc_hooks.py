@@ -62,8 +62,6 @@ new_version_mapping_2023a = {
         'GObject-Introspection': ('1.64.0', SYSTEM, None),
         'GSL': ('2.6', COMPILERS_2023a),
         ('GSL', '1.16'): ('1.16', COMPILERS_2023a),
-        ('hwloc', '2.4.1'): ('2.4.0', SYSTEM),
-        'JasPer': ('2.0.16', SYSTEM),
         ('Java', '11'): ('13', SYSTEM),
         ('HDF5','ANY',''): ('1.14.2', COMPILERS_2023a),
         ('HDF5','ANY',''): ('1.14.2', cOMPI_2023a, '-mpi'),
