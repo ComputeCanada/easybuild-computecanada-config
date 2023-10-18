@@ -574,6 +574,11 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
 ], REPLACE),
         'modextrapaths': ({'EBPYTHONPREFIXES': ['extern/engines/python']}, REPLACE),
     },
+    'mpi4py': {
+        'builddependencies': ([[('Python', v), ('Cython', '0.29.36')] for v in ['3.10', '3.11'] ], REPLACE),
+        'dependencies': ([], REPLACE),
+        'multi_deps': ({'Python': ['3.10', '3.11'] }, REPLACE),
+    },
     'Nextflow': {
         # Nextflow really needs to use Java 11, not 13
         'dependencies': ([('Java', '11', '', True)], REPLACE),
