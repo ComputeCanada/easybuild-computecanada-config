@@ -402,7 +402,7 @@ end
 ''', REPLACE)
     },
     'cuDNN': {
-        'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_path $EBROOTCUDA/lib64 --add_origin'], APPEND_LIST),
+        'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_path $EBROOTCUDACORE/lib64 --add_origin'], APPEND_LIST),
     },
     'DB': {
         'configopts': ('--enable-cxx --enable-stl --enable-dbm', APPEND),
