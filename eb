@@ -101,11 +101,10 @@ else
 		export EASYBUILD_SOURCEPATH=/cvmfs/restricted.computecanada.ca/easybuild/sources
 	fi
 fi
+export EASYBUILD_ROBOT_PATHS=$EASYBUILD_ROOT/site-packages/custom-easyconfigs/easybuild/easyconfigs:$EASYBUILD_ROBOT_PATHS:
 if [ "$YEAR" -ge "2023" ]; then
-	export EASYBUILD_ROBOT_PATHS=$EASYBUILD_ROOT/site-packages/custom-easyconfigs/$YEAR/easybuild/easyconfigs:$EASYBUILD_ROBOT_PATHS:
 	EB=$EBROOTGENTOO/bin/eb
 else
-	export EASYBUILD_ROBOT_PATHS=$EASYBUILD_ROBOT_PATHS:$EASYBUILD_ROOT/easyconfigs
 	export PYTHONPATH=$EASYBUILD_ROOT/site-packages
 	EB=$EASYBUILD_ROOT/framework/eb
 fi
