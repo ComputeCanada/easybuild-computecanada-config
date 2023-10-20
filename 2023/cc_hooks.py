@@ -365,7 +365,7 @@ end
 ''', REPLACE)
     },
     'cuDNN': {
-        'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_origin'], APPEND_LIST),
+        'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_path $CUDA_HOME/lib64 --add_origin'], APPEND_LIST),
     },
     'DB': {
         'configopts': ('--enable-cxx --enable-stl --enable-dbm', APPEND),
