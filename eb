@@ -152,7 +152,6 @@ for argument in "$@"; do
 				custom_ec=$(find $EASYBUILD_ROOT/site-packages/custom-easyconfigs/easybuild/easyconfigs/$letter/$name* -name $argument 2>/dev/null)
 				if [[ -n "$ec" && -f $ec && -z "$custom_ec" ]]; then
 					NEW_ARGS+=("$ec")
-echo "XXXX", $NEW_ARGS
 				else    # if no corresponding easyconfig was found in easyconfigs folder, we get it found normally
 					NEW_ARGS+=("$argument")
 				fi
