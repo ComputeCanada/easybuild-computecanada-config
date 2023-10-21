@@ -393,8 +393,7 @@ end
         'versionsuffix': ('', REPLACE),
     },
     'HDF': {
-        'preconfigopts': ('CPATH=$EBROOTGENTOO/include/tirpc:$CPATH LDFLAGS="$LDFLAGS -ltirpc" ', REPLACE),
-        'prebuildopts': ('CPATH=$EBROOTGENTOO/include/tirpc:$CPATH LDFLAGS="$LDFLAGS -ltirpc" ', REPLACE),
+        'configopts': (' --with-szlib=$EBROOTGENTOO CFLAGS="$CFLAGS -I$EBROOTGENTOO/include/tirpc"', APPEND),
     },
     'HDF5.Serial': {
         'name': ('HDF5', REPLACE),
