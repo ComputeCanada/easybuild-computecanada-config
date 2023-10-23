@@ -536,6 +536,9 @@ end
         'patches': (['libfabric-1.18.0_eliminate-cudart-use.patch'], APPEND_LIST),
         'checksums': ('71e2e1bbbbcebae20d1ffc3255598949e06fb1bc1d3e5c040244df3f69db00fa', APPEND_LIST),
     },
+    'libgeotiff': {
+        'configopts': (' --with-libtiff=$EBROOTGENTOO --with-zlib=$EBROOTGENTOO --with-jpeg=$EBROOTGENTOO', APPEND),
+    },
     'libxsmm': {
         'skipsteps': ([], REPLACE),
         'preconfigopts': ('#', REPLACE),
