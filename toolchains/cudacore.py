@@ -33,6 +33,7 @@ from easybuild.toolchains.compiler.cuda import Cuda
 from easybuild.toolchains.compiler.gcc import Gcc
 from easybuild.toolchains.gcccore import GCCcore
 from easybuild.tools.toolchain.toolchain import SYSTEM_TOOLCHAIN_NAME
+from easybuild.tools.modules import get_software_root
 
 
 class CUDAcore(Cuda):
