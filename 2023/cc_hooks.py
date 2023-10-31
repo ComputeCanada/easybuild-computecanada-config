@@ -504,6 +504,9 @@ if isloaded("imkl") then
 end
 """, APPEND),
     },
+    'ispc': {
+        'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s'], REPLACE),
+    }
     'itac': {
         'postinstallcmds': (['chmod -R u+w %(installdir)s && /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s'], REPLACE),
     },
