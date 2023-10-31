@@ -319,9 +319,6 @@ opts_changes = {
         'configopts': ('--without-libraries=python', DROP),
         'prebuildopts': ('[ "$(ls -A %(installdir)s)" ] && mv %(installdir)s/* %(builddir)s/obj ; ', REPLACE),
     },
-    'BioPerl': {
-        'dependencies': ([('Perl', '5.30.2'), ('XML-LibXML', '2.0205')], REPLACE),
-    },
     'BOLT-LMM': {
         'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s '], REPLACE),
     },
