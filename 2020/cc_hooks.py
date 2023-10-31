@@ -720,6 +720,15 @@ end""".format(version="v2212"), REPLACE),
                           (('SCOTCH', '7.0.3'), ('SCOTCH', '7.0.3', '-no-thread', ('gofb', '2020a'))),
                         ], REPLACE_IN_LIST),
     },
+    ("OpenFOAM", "v2306"): {
+        'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
+        source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
+end""".format(version="v2306"), REPLACE),
+        'dependencies': ([
+                          (('ParaView', '5.11.0', '-mpi'), ('ParaView', '5.11.0', None, ('gofb', '2020a'))),
+                          (('SCOTCH', '7.0.3'), ('SCOTCH', '7.0.3', '-no-thread', ('gofb', '2020a'))),
+                        ], REPLACE_IN_LIST),
+    },
     "OpenMPI": {
         # local customizations for OpenMPI
         'builddependencies': ([('opa-psm2', '11.2.206')], REPLACE),
