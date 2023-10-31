@@ -12,6 +12,7 @@ if parentdir not in sys.path:
     sys.path.append(parentdir)
 from cc_hooks_common import modify_all_opts, update_opts, PREPEND, APPEND, REPLACE, APPEND_LIST, DROP, DROP_FROM_LIST, REPLACE_IN_LIST
 from cc_hooks_common import get_matching_keys, get_matching_keys_from_ec
+from easybuild.tools.config import build_option
 from easybuild.tools.toolchain.utilities import search_toolchain
 from easybuild.tools.environment import setvar
 from easybuild.tools.run import run_cmd
@@ -24,7 +25,7 @@ PARSE_OPTS = ['multi_deps', 'dependencies', 'builddependencies', 'license_file',
               'skip_license_file_in_module', 'withnvptx', 'skipsteps']
 
 SYSTEM = [('system', 'system')]
-GCCCORE123 = [('GCCcore', '12.3.0')]
+GCCCORE123 = [('GCCcore', '12.3.0'), ('GCCcore', '12.3-gentoo')]
 GCC123 = [('GCC', '12.3.0')]
 ICC2023a = [('intel-compilers', '2023.2.1')]
 COMPILERS_2023a = [ICC2023a[0], GCC123[0]]
@@ -44,57 +45,40 @@ cOMKL_2023a = [('iomkl', '2023a'),('gomkl', '2023a')]
 # - (new software version, list of compatible toolchains)
 # - (new software version, list of compatible toolchains, None)
 new_version_mapping_2023a = {
-        ('Boost', '1.80.0', ''): ('1.80.0', COMPILERS_2023a),
-        ('Boost','1.80.0','-mpi'): ('1.80.0', cOMPI_2023a),
-        ('Boost', 'ANY', ''): ('1.72.0', COMPILERS_2023a),
-        ('Boost','ANY','-mpi'): ('1.72.0', cOMPI_2023a),
+        ('Boost', 'ANY', ''): ('1.82.0', COMPILERS_2023a),
+        ('Boost','ANY','-mpi'): ('1.82.0', cOMPI_2023a),
         ('CUDA', '12.2.2'): ('12.2', COMPILERS_2023a),
-        'CGAL': ('4.14.3', COMPILERS_2023a, None),
-        ('CGAL', '5.5.2'): ('5.5.2', SYSTEM),
-        'CMake': ('3.23.1', SYSTEM),
+        'CGAL': ('5.5.2', SYSTEM),
+        'CMake': ('3.26.5', SYSTEM),
         'ETSF_IO': ('1.0.4', [('iompi', '2023a'), ('iccifort', '2020.1.217')]),
-        ('FFTW', 'ANY', ""): ('3.3.8', COMPILERS_2023a),
-        ('FFTW','ANY','-mpi'): ('3.3.8', cOMPI_2023a),
-        'Eigen': ('3.3.7', SYSTEM),
-        ('Eigen', '3.4.0'): ('3.4.0', SYSTEM),
-#        'GDAL': ('3.0.4', COMPILERS_2023a, None),
-#        'GEOS': ('3.8.1', GCCCORE93, None),
+        ('FFTW', 'ANY', ""): ('3.3.10', COMPILERS_2023a),
+        ('FFTW','ANY','-mpi'): ('3.3.10', cOMPI_2023a),
+        'Eigen': ('3.4.0', SYSTEM),
         ('GCCcore', '12.3.0'): ('12.3', SYSTEM, '-gentoo'),
-        'GObject-Introspection': ('1.64.0', SYSTEM, None),
-        'GSL': ('2.6', COMPILERS_2023a),
-        ('GSL', '1.16'): ('1.16', COMPILERS_2023a),
-        ('hwloc', '2.4.1'): ('2.4.0', SYSTEM),
-        'JasPer': ('2.0.16', SYSTEM),
-        ('Java', '11'): ('13', SYSTEM),
-        ('HDF5','1.12.1',''): ('1.12.1', COMPILERS_2023a),
-        ('HDF5','1.12.1',''): ('1.12.1', cOMPI_2023a, '-mpi'),
-        ('HDF5','1.12.1','-mpi'): ('1.12.1', cOMPI_2023a, '-mpi'),
-        ('HDF5','ANY',""): ('1.10.6', cOMPI_2023a + COMPILERS_2023a, None),
-        ('HDF5','ANY','-mpi'): ('1.10.6', cOMPI_2023a),
-        ('imkl','2020.1.217'): ('2020.1.217', SYSTEM),
-        ('imkl','2020.4.304'): ('2020.4.304', SYSTEM),
-        ('imkl','2021.2.0'): ('2021.2.0', SYSTEM),
+        'GSL': ('2.7', COMPILERS_2023a),
+        ('Java', '11'): ('17', SYSTEM),
+        ('HDF5','ANY',''): ('1.14.2', COMPILERS_2023a),
+        ('HDF5','ANY',''): ('1.14.2', cOMPI_2023a, '-mpi'),
+        ('HDF5','ANY','-mpi'): ('1.14.2', cOMPI_2023a, '-mpi'),
+        ('imkl','2023.1.0'): ('2023.2.0', SYSTEM),
+        ('imkl','2023.2.0'): ('2023.2.0', SYSTEM),
         ('intel-compilers', '2023.1.0'): ('2023.2.1', SYSTEM),
         ('libbeef', '0.1.2'): ('0.1.2', COMPILERS_2023a),
-        ('netCDF','4.9.0',""): ('4.9.0', COMPILERS_2023a, None),
-        ('netCDF','4.9.0',''): ('4.9.0', cOMPI_2023a, "-mpi"),
-        ('netCDF','4.9.0','-mpi'): ('4.9.0', cOMPI_2023a, "-mpi"),
-        ('netCDF','ANY',""): ('4.7.4', cOMPI_2023a + COMPILERS_2023a, None),
-        ('netCDF','ANY','-mpi'): ('4.7.4', cOMPI_2023a, None),
+        ('netCDF','ANY',""): ('4.9.2', COMPILERS_2023a),
+        ('netCDF','ANY',""): ('4.9.2', cOMPI_2023a, '-mpi'),
+        ('netCDF','ANY','-mpi'): ('4.9.2', cOMPI_2023a, '-mpi'),
         ('netCDF-C++4','ANY', ""): ('4.3.1', cOMPI_2023a + COMPILERS_2023a, None),
         ('netCDF-C++4','ANY','-mpi'): ('4.3.1', cOMPI_2023a, None),
-        ('netCDF-Fortran','ANY', ""): ('4.5.2', cOMPI_2023a + COMPILERS_2023a, None),
-        ('netCDF-Fortran','ANY','-mpi'): ('4.5.2', cOMPI_2023a, None),
+        ('netCDF-Fortran','ANY', ""): ('4.6.1', cOMPI_2023a + COMPILERS_2023a, None),
+        ('netCDF-Fortran','ANY','-mpi'): ('4.6.1', cOMPI_2023a, None),
         ('ParaView', '5.8.0'): ('5.8.0', [('gompi', '2023a')], None),
-        'Perl': ('5.30.2', SYSTEM),
+        'Perl': ('5.36.1', SYSTEM),
         ('PLUMED', '2.6.0'): ('2.6.2', cOMKL_2023a, None),
-        'UDUNITS': ('2.2.26', SYSTEM),
-        ('UCX', '1.10.0'): ('1.9.0', SYSTEM),
+        'UDUNITS': ('2.2.28', SYSTEM),
         **dict.fromkeys([('Python', '3.10.%s' % str(x)) for x in range(0,14)], ('3.10', GCCCORE123)),
         **dict.fromkeys([('Python', '3.11.%s' % str(x)) for x in range(0,6)], ('3.11', GCCCORE123)),
-        ('Qt5', '5.15.8'): ('5.15.8', GCCCORE123 + SYSTEM),
-        'Qt5': ('5.12.8', GCCCORE123 + SYSTEM),
-        'SCOTCH': ('6.0.9', cOMPI_2023a, None),
+        'Qt5': ('5.15.11', GCCCORE123 + SYSTEM),
+        'SCOTCH': ('7.0.3', cOMPI_2023a, None),
 }
 
 def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
@@ -307,8 +291,10 @@ intelmpi2021_dict = {
     # it can only be used with srun.
     'postinstallcmds': ([
         "sed -i 's@\\(#!/bin/sh.*\\)$@\\1\\nunset I_MPI_PMI_LIBRARY@' %(installdir)s/mpi/%(version)s/bin/mpirun",
-        "/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/mpi/%(version)s/bin --add_path='$ORIGIN/../lib/release'",
-        "for dir in release release_mt debug debug_mt; do /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/mpi/%(version)s/lib/$dir --add_path='$ORIGIN/../../libfabric/lib'; done",
+        "/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/mpi/%(version)s/bin",
+        "for i in %(installdir)s/mpi/%(version)s/bin/I*; do patchelf --set-rpath '$ORIGIN/../lib/release' --force-rpath $i; done",
+        "patchelf --set-rpath '$ORIGIN/../lib/release:$ORIGIN/../libfabric/lib' --force-rpath %(installdir)s/mpi/%(version)s/bin/impi_info",
+        "for dir in release debug; do /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/mpi/%(version)s/lib/$dir --add_path='$ORIGIN/../../libfabric/lib'; done",
         "patchelf --set-rpath $EBROOTUCX/lib --force-rpath %(installdir)s/mpi/%(version)s/libfabric/lib/prov/libmlx-fi.so"
     ], REPLACE),
     'modluafooter': (mpi_modluafooter % 'intelmpi', REPLACE),
@@ -338,6 +324,9 @@ opts_changes = {
     },
     'BOLT-LMM': {
         'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s '], REPLACE),
+    },
+    'Brunsli' : {
+        'buildopts': (" BROTLI_DIR=$EBROOTGENTOO BROTLI_INCLUDE=$EBROOTGENTOO/include", APPEND),
     },
     'Clang': {
         'preconfigopts': ("""pushd %(builddir)s/llvm-%(version)s.src/tools/clang || pushd %(builddir)s/llvm-project-%(version)s.src/clang; """ +
@@ -382,7 +371,7 @@ end
 ''', REPLACE)
     },
     'cuDNN': {
-        'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_origin'], APPEND_LIST),
+        'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_path $EBROOTCUDACORE/lib64 --add_origin'], APPEND_LIST),
     },
     'DB': {
         'configopts': ('--enable-cxx --enable-stl --enable-dbm', APPEND),
@@ -410,8 +399,7 @@ end
         'versionsuffix': ('', REPLACE),
     },
     'HDF': {
-        'preconfigopts': ('CPATH=$EBROOTGENTOO/include/tirpc:$CPATH LDFLAGS="$LDFLAGS -ltirpc" ', REPLACE),
-        'prebuildopts': ('CPATH=$EBROOTGENTOO/include/tirpc:$CPATH LDFLAGS="$LDFLAGS -ltirpc" ', REPLACE),
+        'configopts': (' --with-szlib=$EBROOTGENTOO CFLAGS="$CFLAGS -I$EBROOTGENTOO/include/tirpc"', APPEND),
     },
     'HDF5.Serial': {
         'name': ('HDF5', REPLACE),
@@ -460,20 +448,7 @@ if isloaded("imkl") then
 end
 """, APPEND),
     },
-    ('impi', '2019.7.217'): {
-        'set_mpi_wrappers_all': (True, REPLACE),
-        # Fix mpirun from IntelMPI to explicitly unset I_MPI_PMI_LIBRARY
-        # it can only be used with srun.
-        'postinstallcmds': ([
-                "sed -i 's@\\(#!/bin/sh.*\\)$@\\1\\nunset I_MPI_PMI_LIBRARY@' %(installdir)s/intel64/bin/mpirun",
-                "/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/intel64/bin --add_path='$ORIGIN/../lib/release'",
-                "for dir in release release_mt debug debug_mt; do /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/intel64/lib/$dir --add_path='$ORIGIN/../../libfabric/lib'; done",
-                "patchelf --set-rpath $EBROOTUCX/lib --force-rpath %(installdir)s/intel64/libfabric/lib/prov/libmlx-fi.so"
-            ], REPLACE),
-        'modluafooter': (mpi_modluafooter % 'intelmpi', REPLACE),
-    },
-    ('impi', '2021.2.0'): intelmpi2021_dict,
-    ('impi', '2021.6.0'): intelmpi2021_dict,
+    'impi': intelmpi2021_dict,
     'intel-compilers': {
         'accept_eula': (True, REPLACE),
         #See compiler/2021.2.0/licensing/credist.txt
@@ -529,6 +504,9 @@ if isloaded("imkl") then
 end
 """, APPEND),
     },
+    'ispc': {
+        'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s'], REPLACE),
+    },
     'itac': {
         'postinstallcmds': (['chmod -R u+w %(installdir)s && /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s'], REPLACE),
     },
@@ -553,6 +531,9 @@ end
         'configopts': ('--enable-cuda-dlopen --enable-gdrcopy-dlopen ', PREPEND),
         'patches': (['libfabric-1.18.0_eliminate-cudart-use.patch'], APPEND_LIST),
         'checksums': ('71e2e1bbbbcebae20d1ffc3255598949e06fb1bc1d3e5c040244df3f69db00fa', APPEND_LIST),
+    },
+    'libgeotiff': {
+        'configopts': (' --with-libtiff=$EBROOTGENTOO --with-zlib=$EBROOTGENTOO --with-jpeg=$EBROOTGENTOO', APPEND),
     },
     'libxsmm': {
         'skipsteps': ([], REPLACE),
@@ -591,10 +572,18 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
 ], REPLACE),
         'modextrapaths': ({'EBPYTHONPREFIXES': ['extern/engines/python']}, REPLACE),
     },
+    'mpi4py': {
+        'builddependencies': ([[('Python', v), ('Cython', '0.29.36')] for v in ['3.10', '3.11'] ], REPLACE),
+        'dependencies': ([], REPLACE),
+        'multi_deps': ({'Python': ['3.10', '3.11'] }, REPLACE),
+    },
     'Nextflow': {
         # Nextflow really needs to use Java 11, not 13
         'dependencies': ([('Java', '11', '', True)], REPLACE),
         'postinstallcmds': (['sed -i -e "s/cli=(\$(/cli=(\$(export NFX_OPTS=\$JAVA_TOOL_OPTIONS; unset JAVA_TOOL_OPTIONS; /g" %(installdir)s/bin/nextflow'], APPEND_LIST),
+    },
+    'nodejs': {
+        'postinstallcmds': (["export PATH=%(installdir)s/bin:$PATH; %(installdir)s/bin/npm install --global yarn"], APPEND_LIST),
     },
     ('NCCL', '2.18.3'): {
         'checksums': (['6477d83c9edbb34a0ebce6d751a1b32962bc6415d75d04972b676c6894ceaef9'], REPLACE),
@@ -752,6 +741,9 @@ end""".format(version="v2212"), REPLACE),
         # Cling needs to know about different sysroot
         'configopts': ("-DDEFAULT_SYSROOT=$EPREFIX", PREPEND),
     },
+    'Rust': {
+        'prebuildopts': ("sed -i 's/\\(ninja.*=.*\\)false/\\1true/' config.toml && export EASYBUILD_SYSROOT=$EPREFIX && ", PREPEND),
+    },
     ('SCOTCH', '6.1.2', '-no-thread'): {
         'modaltsoftname': ('scotch-no-thread', REPLACE),
     },
@@ -848,7 +840,7 @@ def drop_dependencies(ec, param):
             'Meson': 'ALL',
             'Ninja': 'ALL',
             'PyQt5': 'ALL',
-            'SQLite': '3.36',
+            'SQLite': '3.42.0',
             'pybind11': 'ALL',
             'git': 'ALL',
             'CUDA': 'ALL',
@@ -907,13 +899,18 @@ def parse_hook(ec, *args, **kwargs):
         if ec['toolchainopts'] is None:
             ec['toolchainopts'] = {}
         tcopts = ec['toolchainopts']
-        if 'oneapi' not in tcopts and 'oneapi_fortran' not in tcopts:
-            tcopts['oneapi_fortran'] = True
         if tcopts.get('optarch', True) == True:
+            optarch = '-' + build_option('optarch')['Intel']
+            optarch_new = optarch.replace('core-avx2', 'x86-64-v3').replace('skylake-avx512', 'x86-64-v4')
             if (tcopts.get('oneapi') or (tcopts.get('oneapi_c_cxx', True) and tcopts.get('oneapi_fortran'))):
-                tcopts['optarch'] = 'march=x86-64-v3 -axcore-avx512'
-                if os.getenv('RSNT_ARCH') == 'avx512':
-                    tcopts['optarch'] = 'march=x86-64-v4'
+                tcopts['optarch'] = optarch_new
+            elif tcopts.get('oneapi_c_cxx', True):
+                # use new optarch flags for C/C++ only (default)
+                for key in 'extra_cflags', 'extra_cxxflags':
+                    tcopts[key] = optarch_new + ' ' + tcopts.get(key, '')
+                for key in 'extra_fflags', 'extra_fcflags', 'extra_f90flags':
+                    tcopts[key] = optarch + ' ' + tcopts.get(key, '')
+                tcopts['optarch'] = ''
 
     modify_dependencies(ec, 'dependencies', new_version_mapping_2023a)
     modify_dependencies(ec, 'builddependencies', new_version_mapping_2023a)
@@ -1071,9 +1068,9 @@ def post_module_hook(self, *args, **kwargs):
         self.cfg['toolchain'] = EASYCONFIG_CONSTANTS['SYSTEM'][0]
 
 def pre_prepare_hook(self, *args, **kwargs):
-    packages_in_gentoo = ["EBROOTLIBXML2", "EBROOTLIBJPEGMINTURBO", "EBROOTLIBPNG", "EBROOTLIBTIFF", "EBROOTZLIB",
+    packages_in_gentoo = ["EBROOTLIBXML2", "EBROOTLIBJPEGMINTURBO", "EBROOTLIBPNG", "EBROOTLIBTIFF",
                           "EBROOTLIBGLU", "EBROOTMESA", "EBROOTFLTK", "EBROOTBZIP2",
-                          "EBROOTZSTD", "EBROOTFREETYPE", "EBROOTGLIB", "EBROOTSZIP", "EBROOTLIBXMLPLUSPLUS",
+                          "EBROOTZSTD", "EBROOTFREETYPE", "EBROOTGLIB", "EBROOTLIBXMLPLUSPLUS",
                           "EBROOTSQLITE3", "EBROOTPKGMINCONFIG", "EBROOTMESON", "EBROOTGPERFTOOLS"]
     ebrootgentoo = os.environ["EBROOTGENTOO"]
     for package in packages_in_gentoo:

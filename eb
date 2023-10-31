@@ -101,11 +101,10 @@ else
 		export EASYBUILD_SOURCEPATH=/cvmfs/restricted.computecanada.ca/easybuild/sources
 	fi
 fi
+export EASYBUILD_ROBOT_PATHS=$EASYBUILD_ROOT/site-packages/custom-easyconfigs/easybuild/easyconfigs:$EASYBUILD_ROBOT_PATHS:
 if [ "$YEAR" -ge "2023" ]; then
-	export EASYBUILD_ROBOT_PATHS=$EASYBUILD_ROOT/site-packages/custom-easyconfigs/$YEAR/easybuild/easyconfigs:$EASYBUILD_ROBOT_PATHS:
 	EB=$EBROOTGENTOO/bin/eb
 else
-	export EASYBUILD_ROBOT_PATHS=$EASYBUILD_ROBOT_PATHS:$EASYBUILD_ROOT/easyconfigs
 	export PYTHONPATH=$EASYBUILD_ROOT/site-packages
 	EB=$EASYBUILD_ROOT/framework/eb
 fi
@@ -150,7 +149,8 @@ for argument in "$@"; do
 				name=${argument%%-*}
 				# some names contain - (e.g. HOOMD-blue) so we need pathname expansion
 				ec=$(find $EASYBUILD_ROOT/easyconfigs/$letter/$name* -name $argument 2>/dev/null)
-				if [[ -f $ec ]]; then
+				custom_ec=$(find $EASYBUILD_ROOT/site-packages/custom-easyconfigs/easybuild/easyconfigs/$letter/$name* -name $argument 2>/dev/null)
+				if [[ -n "$ec" && -f $ec && -z "$custom_ec" ]]; then
 					NEW_ARGS+=("$ec")
 				else    # if no corresponding easyconfig was found in easyconfigs folder, we get it found normally
 					NEW_ARGS+=("$argument")
