@@ -502,6 +502,7 @@ end
 """, APPEND),
     },
     'ispc': {
+        'sources': (['ispc-v%(version)s-linux-oneapi.tar.gz'], REPLACE),
         'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s'], REPLACE),
     },
     'itac': {
