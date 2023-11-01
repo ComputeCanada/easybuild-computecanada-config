@@ -811,7 +811,7 @@ def set_modluafooter(ec):
     moduleclass = ec.get('moduleclass','')
     year = os.environ['EBVERSIONGENTOO']
     name = ec['name'].lower()
-    if moduleclass == 'compiler' and not name in ('gcccore', 'llvm', 'clang', 'fpc', 'dpc++'):
+    if moduleclass == 'compiler' and not name in ('gcccore', 'llvm', 'clang', 'fpc', 'dpc++', 'ispc'):
         if name in ['iccifort', 'intel-compilers']:
             name = 'intel'
         comp = os.path.join('Compiler', name + ec['version'][:ec['version'].find('.')])
