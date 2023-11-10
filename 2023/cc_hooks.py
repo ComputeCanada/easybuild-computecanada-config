@@ -607,76 +607,17 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
         done
         '''], REPLACE),
     },
-    ("OpenFOAM", "8"): {
-        'patches': (['OpenFOAM-8-cleanup-cc.patch'], APPEND_LIST),
-        'checksums': ('51ef17739ced32c1cbf239c377bbf4abfa4e4f12eaf19a635c432e071ce58197', APPEND_LIST),
-        'modluafooter': (openfoam_modluafooter % ('Gcc', 'mpi', '5.8.0', '5.8'), REPLACE),
-    },
-    ("OpenFOAM", "9"): {
-        'patches': (['OpenFOAM-8-cleanup-cc.patch'], APPEND_LIST),
-        'checksums': ('51ef17739ced32c1cbf239c377bbf4abfa4e4f12eaf19a635c432e071ce58197', APPEND_LIST),
-        'modluafooter': (openfoam_modluafooter % ('Gcc', 'mpi', '5.8.0', '5.8'), REPLACE),
-        'dependencies': ([(('ParaView', '5.9.1', '-mpi'), ('ParaView', '5.8.0', '', ('gompi', '2023a'))),
-                          (('gnuplot', '5.4.2'), ('gnuplot', '5.2.8'))], REPLACE_IN_LIST),
-    },
-    ("OpenFOAM", "v2006"): {
-        'patches': (['OpenFOAM-v2006-cleanup-cc.patch'], APPEND_LIST),
-        'checksums': ('0bf60076f8c9aad9bd080f9e9327707f7f4d389c283b2eb08f1ea1f607381fda', APPEND_LIST),
-        'modluafooter': (openfoam_modluafooter % ('Gcc', 'mpi', '5.8.0', '5.8'), REPLACE),
-    },
-    ("OpenFOAM", "v2012"): {
-        'modluafooter': (openfoam_modluafooter % ('Gcc', 'eb-mpi', '5.8.0', '5.8'), REPLACE),
-    },
-    ("OpenFOAM", "v2112"): {
-#        'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
-#        source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
-#end""".format(version="v2112"), REPLACE),
-        'modluafooter': (openfoam_modluafooter % ('Gcc', 'eb-mpi', '5.9.1', '5.9'), REPLACE),
-        'dependencies': ([
-                          (('ParaView', '5.9.1', '-mpi'), ('ParaView', '5.9.1', None, ('gompi', '2023a'))),
-                          (('gnuplot', '5.4.2'), ('gnuplot', '5.2.8')),
-                        ], REPLACE_IN_LIST),
-    },
-    ("OpenFOAM", "10"): {
-#        'modluafooter': (openfoam_modluafooter % ('Gcc', 'eb-mpi', '5.10.0', '5.10'), REPLACE),
-        'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
-        source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
-end""".format(version="10"), REPLACE),
-        'dependencies': ([
-                          (('ParaView', '5.9.1', '-mpi'), ('ParaView', '5.10.0', None, ('gompi', '2023a'))),
-                          (('SCOTCH', '6.0.9', None, ('gompi', '2023a')), ('SCOTCH', '6.1.2', '-no-thread', ('gompi', '2023a'))),
-                        ], REPLACE_IN_LIST),
-        'patches': (['OpenFOAM-10-cleanup-cc.patch'], APPEND_LIST),
-        'checksums': ('1ba356d23974749c080ff3731551ce5be2f2b75f5e38bfe500d0a2006d4646c1', APPEND_LIST),
-    },
     ("OpenFOAM", "11"): {
         'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
         source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
 end""".format(version="11"), REPLACE),
-        'dependencies': ([
-                          (('ParaView', '5.9.1', '-mpi'), ('ParaView', '5.10.0', None, ('gompi', '2023a'))),
-                          (('SCOTCH', '6.0.9', None, ('gompi', '2023a')), ('SCOTCH', '6.1.2', '-no-thread', ('gompi', '2023a'))),
-                        ], REPLACE_IN_LIST),
         'patches': (['OpenFOAM-11-cleanup-cc.patch'], APPEND_LIST),
         'checksums': ('56a98703a1022d5e75f7b1f7cd4592bc79ba93c1dd53d3e52316726797430c33', APPEND_LIST),
     },
-    ("OpenFOAM", "v2206"): {
+    ("OpenFOAM", "v2306"): {
         'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
         source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
-end""".format(version="v2206"), REPLACE),
-        'dependencies': ([
-                          (('ParaView', '5.9.1', '-mpi'), ('ParaView', '5.10.0', None, ('gompi', '2023a'))),
-                          (('SCOTCH', '6.0.9', None, ('gompi', '2023a')), ('SCOTCH', '6.1.2', '-no-thread', ('gompi', '2023a'))),
-                        ], REPLACE_IN_LIST),
-    },
-    ("OpenFOAM", "v2212"): {
-        'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
-        source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
-end""".format(version="v2212"), REPLACE),
-        'dependencies': ([
-                          (('ParaView', '5.11.0', '-mpi'), ('ParaView', '5.11.0', None, ('gofb', '2023a'))),
-                          (('SCOTCH', '7.0.3'), ('SCOTCH', '7.0.3', '-no-thread', ('gofb', '2023a'))),
-                        ], REPLACE_IN_LIST),
+end""".format(version="v2306"), REPLACE),
     },
     "OpenMPI": {
         # local customizations for OpenMPI
