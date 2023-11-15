@@ -480,7 +480,7 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
         'postinstallcmds': (['''
         installdir=%(installdir)s/Linux_x86_64/%(version)s
         /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path $installdir
-        sed -i "s@append LDLIBARGS=-L@#append LDLIBARGS=-L@" $installdir/compilers/bin/siterc
+        sed -i "s@\(set LDSO=.*\);@\\1 --sysroot=$EPREFIX;@" $installdir/compilers/bin/localrc
         echo "set DEFLIBDIR=$EBROOTGENTOO/lib64;" >> $installdir/compilers/bin/localrc
         echo "set DEFSTDOBJDIR=$EBROOTGENTOO/lib64;" >> $installdir/compilers/bin/localrc
         echo "set NORPATH=YES;" >> $installdir/compilers/bin/localrc
