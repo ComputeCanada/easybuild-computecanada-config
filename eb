@@ -42,7 +42,7 @@ fi
 if [ "$RSNT_ARCH" == avx2 ]; then
 	if [ -n "$USE_GENTOO" ]; then
 	    if [ "$YEAR" -ge 2023 ]; then
-		export EASYBUILD_OPTARCH='NVHPC:tp=haswell;Intel:march=core-avx2 -axCore-AVX512;GCC:march=x86-64-v3'
+		export EASYBUILD_OPTARCH='NVHPC:march=x86-64-v3;Intel:march=core-avx2 -axCore-AVX512;GCC:march=x86-64-v3'
 	    else
 		export EASYBUILD_OPTARCH='NVHPC:tp=haswell;Intel:march=core-avx2 -axCore-AVX512;GCC:march=core-avx2'
 	    fi
@@ -52,7 +52,7 @@ if [ "$RSNT_ARCH" == avx2 ]; then
 elif [ "$RSNT_ARCH" == avx512 ]; then
 	if [ -n "$USE_GENTOO" ]; then
 	    if [ "$YEAR" -ge 2023 ]; then
-		export EASYBUILD_OPTARCH='NVHPC:tp=skylake;Intel:march=skylake-avx512;GCC:march=x86-64-v4'
+		export EASYBUILD_OPTARCH='NVHPC:march=x86-64-v4;Intel:march=skylake-avx512;GCC:march=x86-64-v4'
 	    else
 		export EASYBUILD_OPTARCH='NVHPC:tp=skylake;Intel:xCore-AVX512;GCC:march=skylake-avx512'
 	    fi
