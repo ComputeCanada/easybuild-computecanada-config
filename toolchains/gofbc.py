@@ -34,9 +34,11 @@ and FlexiBLAS).
 
 from easybuild.toolchains.gompic import Gompic
 from easybuild.toolchains.gccflexiblascuda import Gccflexiblascuda
+from easybuild.toolchains.gofb import Gofb
 
 
 class Gofbc(Gompic, Gccflexiblascuda):
     """Compiler toolchain with GCC, Open MPI, FlexiBLAS and Cuda."""
     NAME = 'gofbc'
-    SUBTOOLCHAIN = [Gompic.NAME, Gccflexiblascuda.NAME]
+    BLACS_LIB = []
+    SUBTOOLCHAIN = [Gompic.NAME, Gccflexiblascuda.NAME, Gofb.NAME]
