@@ -69,12 +69,15 @@ def det_toolchain_cuda(ec):
     return tc_cuda
 
 
-def get_arch_dir(using2023):
+def get_arch_dir(using2023, tc_comp_info):
     arch = os.getenv('RSNT_ARCH')
     if arch is None:
         raise EasyBuildError("Need to set architecture to determine module path in $RSNT_ARCH")
     if using2023:
-        arch_dir = 'x86-64-v' + {'avx2': '3', 'avx512': '4'}[arch]
+        if tc_comp_info is None:
+            arch_dir = 'x86-64-v3'
+        else:
+            arch_dir = 'x86-64-v' + {'avx2': '3', 'avx512': '4'}[arch]
     else:
         arch_dir = arch
     return arch_dir
@@ -186,7 +189,7 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
                 tc_mpi_fullver = self.det_twodigit_version(tc_mpi)
                 subdir = os.path.join(MPI, tc_comp_name+tc_comp_ver, tc_mpi_name+tc_mpi_fullver)
 
-        arch_dir = get_arch_dir(using2023)
+        arch_dir = get_arch_dir(using2023, tc_comp_info)
         if using2023:
             subdir = os.path.join(arch_dir, subdir)
         elif subdir != CORE and not subdir.startswith(os.path.join(CUDA, CUDA.lower())):
@@ -293,7 +296,7 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
                     paths.append(os.path.join(prefix, subdir, ec['name'].lower()+fullver))
 
         using2023 = 'EBROOTGENTOO' in os.environ and int(os.environ['EBVERSIONGENTOO']) >= 2023
-        arch_dir = get_arch_dir(using2023)
+        arch_dir = get_arch_dir(using2023, tc_comp_info)
         if ec['name'] != CUDACORE or using2023:
             for i, path in enumerate(paths):
                 paths[i] = os.path.join(arch_dir, path)
