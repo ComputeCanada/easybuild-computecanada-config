@@ -595,7 +595,9 @@ end""".format(version="v2306"), REPLACE),
     },
     'Valgrind': {
         # tell correct location of debuginfo files
-        'configopts': (' && sed -i "s@/usr/lib/debug@$EPREFIX/usr/lib/debug@g" coregrind/m_debuginfo/readelf.c', APPEND)
+        'configopts': (' && sed -i "s@/usr/lib/debug@$EPREFIX/usr/lib/debug@g" coregrind/m_debuginfo/readelf.c', APPEND),
+        'modaltsoftname': ('valgrind-mpi', REPLACE),
+        'versionsuffix': ('-mpi', REPLACE),
     },
     ('Wannier90', '2.0.1.1', '-abinit'): {
         'modaltsoftname': ('wannier90-abinit', REPLACE),
