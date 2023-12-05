@@ -472,6 +472,9 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
         'dependencies': ([('Java', '11', '', True)], REPLACE),
         'postinstallcmds': (['sed -i -e "s/cli=(\$(/cli=(\$(export NFX_OPTS=\$JAVA_TOOL_OPTIONS; unset JAVA_TOOL_OPTIONS; /g" %(installdir)s/bin/nextflow'], APPEND_LIST),
     },
+    'NextGenMap': {
+        'preconfigopts': (" sed -i '/include_directories(.*zlib/d' ../NextGenMap-%(version)s/CMakeLists.txt && ", APPEND),
+    },
     'nodejs': {
         'postinstallcmds': (["export PATH=%(installdir)s/bin:$PATH; %(installdir)s/bin/npm install --global yarn"], APPEND_LIST),
     },
