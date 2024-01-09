@@ -125,7 +125,7 @@ def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
             if match_found: break
 
         if dep_name == 'SciPy-bundle':
-            new_dep = ('SciPy-Stack', '2023a')
+            new_dep = ('SciPy-Stack', '2023b')
         elif dep_name == 'Boost.Serial':
             new_dep = ('Boost', dep_version)
         elif dep_name == 'HDF5.Serial':
