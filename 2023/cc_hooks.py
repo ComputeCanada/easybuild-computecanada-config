@@ -902,7 +902,7 @@ def post_module_hook(self, *args, **kwargs):
 
 def pre_prepare_hook(self, *args, **kwargs):
     packages_in_gentoo = ["EBROOTLIBXML2", "EBROOTLIBJPEGMINTURBO", "EBROOTLIBPNG", "EBROOTLIBTIFF",
-                          "EBROOTLIBGLU", "EBROOTMESA", "EBROOTFLTK", "EBROOTBZIP2",
+                          "EBROOTLIBGLU", "EBROOTMESA", "EBROOTFLTK", "EBROOTTCL", "EBROOTTK", "EBROOTBZIP2",
                           "EBROOTZSTD", "EBROOTFREETYPE", "EBROOTGLIB", "EBROOTLIBXMLPLUSPLUS",
                           "EBROOTSQLITE3", "EBROOTPKGMINCONFIG", "EBROOTMESON", "EBROOTGPERFTOOLS"]
     ebrootgentoo = os.environ["EBROOTGENTOO"]
@@ -918,8 +918,10 @@ def pre_prepare_hook(self, *args, **kwargs):
     if self.cfg['name'] == 'OpenFOAM':
         setvar("EBROOTLIBREADLINE", ebrootgentoo)
 
-    setvar("EBVERSIONMESON", "0.55.0")
-    setvar("EBVERSIONGPERFTOOLS", "2.6.2")
+    setvar("EBVERSIONTCL", "8.6")
+    setvar("EBVERSIONTK", "8.6")
+    setvar("EBVERSIONMESON", "1.1.1")
+    setvar("EBVERSIONGPERFTOOLS", "2.9.1")
 
 def post_prepare_hook(self, *args, **kwargs):
     # we need to define variables such as EBROOTHDF5SERIAL even though we don't use this naming scheme
