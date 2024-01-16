@@ -46,13 +46,13 @@ cOMKL_2023a = [('iomkl', '2023a'),('gomkl', '2023a')]
 # - (new software version, list of compatible toolchains, None)
 new_version_mapping_2023a = {
         ('Boost', 'ANY', ''): ('1.82.0', COMPILERS_2023a),
-        ('Boost','ANY','-mpi'): ('1.82.0', cOMPI_2023a),
+        ('Boost.MPI','ANY', ''): ('1.82.0', cOMPI_2023a),
         ('CUDA', '12.2.2'): ('12.2', COMPILERS_2023a),
         'CGAL': ('5.5.2', SYSTEM),
         'CMake': ('3.26.5', SYSTEM),
         'ETSF_IO': ('1.0.4', [('iompi', '2023a'), ('iccifort', '2020.1.217')]),
         ('FFTW', 'ANY', ""): ('3.3.10', COMPILERS_2023a),
-        ('FFTW','ANY','-mpi'): ('3.3.10', cOMPI_2023a),
+        ('FFTW.MPI', 'ANY', ''): ('3.3.10', cOMPI_2023a),
         'Eigen': ('3.4.0', SYSTEM),
         ('GCCcore', '12.3.0'): ('12.3', SYSTEM, '-gentoo'),
         'GSL': ('2.7', COMPILERS_2023a),
@@ -613,7 +613,7 @@ end""".format(version="v2306"), REPLACE),
 
 
 # modules with both -mpi and no-mpi varieties
-mpi_modaltsoftname = ['fftw', 'hdf5', 'netcdf-c++4', 'netcdf-c++', 'netcdf-fortran', 'netcdf', 'iq-tree', 'boost', 'vtk', 'libgridxc', 'etsf_io', 'valgrind']
+mpi_modaltsoftname = ['hdf5', 'netcdf-c++4', 'netcdf-c++', 'netcdf-fortran', 'netcdf', 'iq-tree', 'vtk', 'libgridxc', 'etsf_io', 'valgrind']
 modaltsoftnames = {
     "iccifort": "intel",
     "intel-compilers": "intel",
