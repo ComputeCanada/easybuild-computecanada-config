@@ -197,7 +197,7 @@ opts_changes = {
         'dependencies': ([('Boost', '1.72.0'), ('HDF5', '1.8.22'), ('Eigen', '3.3.7', '', True) ], REPLACE)
     },
     'Apptainer': {
-        'modluafooter': ('assert(loadfile("/cvmfs/soft.computecanada.ca/config/lmod/apptainer_custom.lua"))', REPLACE),
+        'modluafooter': ('assert(loadfile("/cvmfs/soft.computecanada.ca/config/lmod/apptainer_custom.lua"))()', REPLACE),
     },
     'Bazel': {
         # Bazel really needs to use Java 11, not 13
