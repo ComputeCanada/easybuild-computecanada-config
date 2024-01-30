@@ -229,16 +229,12 @@ opts_changes = {
         'buildopts': (" BROTLI_DIR=$EBROOTGENTOO BROTLI_INCLUDE=$EBROOTGENTOO/include", APPEND),
     },
     'Clang': {
-        'preconfigopts': ("""pushd %(builddir)s/llvm-%(version)s.src/tools/clang || pushd %(builddir)s/llvm-project-%(version)s.src/clang; """ +
-                 # Use ${EPREFIX} as default sysroot
-                 """sed -i -e "s@DEFAULT_SYSROOT \\"\\"@DEFAULT_SYSROOT \\"${EPREFIX}\\"@" CMakeLists.txt ; """ +
-                 """pushd lib/Driver/ToolChains ; """ +
+        'preconfigopts': (
                  # Use dynamic linker from ${EPREFIX}
-                 """sed -i -e "/LibDir.*Loader/s@return \\"\/\\"@return \\"${EPREFIX%/}/\\"@" Linux.cpp ; """ +
-                 # Remove --sysroot call on ld for native toolchain
-                 """sed -i -e "$(grep -n -B1 sysroot= Gnu.cpp | sed -ne '{1s/-.*//;1p}'),+1 d" Gnu.cpp ; """ +
-                 """popd; popd ; """,
-                 PREPEND)
+                 """sed -i -e "/LibDir.*Loader/s@return \\"\/\\"@return \\"${EPREFIX%/}/\\"@" """ +
+                 """%(builddir)s/llvm-project-%(version)s.src/clang/lib/Driver/ToolChains/Linux.cpp &&""",
+            PREPEND),
+        'configopts': ('-DSYSROOT=${EPREFIX}', PREPEND),
     },
     'CMake': {
         'patches': (['cmake-3.14.0_rc3-prefix-dirs.patch'], REPLACE),
