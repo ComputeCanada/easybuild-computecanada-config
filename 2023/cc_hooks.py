@@ -196,6 +196,9 @@ opts_changes = {
     'ALPSCore': {
         'dependencies': ([('Boost', '1.72.0'), ('HDF5', '1.8.22'), ('Eigen', '3.3.7', '', True) ], REPLACE)
     },
+    ('Apptainer', '1'): {
+        'dependencies': ([('Apptainer', '1.2.4')], REPLACE),
+    },
     'Apptainer': {
         'modluafooter': ('assert(loadfile("/cvmfs/soft.computecanada.ca/config/lmod/apptainer_custom.lua"))()', REPLACE),
     },
