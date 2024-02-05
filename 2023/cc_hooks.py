@@ -234,7 +234,7 @@ opts_changes = {
                  """sed -i -e "/LibDir.*Loader/s@return \\"\/\\"@return \\"${EPREFIX%/}/\\"@" """ +
                  """%(builddir)s/llvm-project-%(version)s.src/clang/lib/Driver/ToolChains/Linux.cpp &&""",
             PREPEND),
-        'configopts': ('-DDEFAULT_SYSROOT=${EPREFIX}', PREPEND),
+        'configopts': ('-DDEFAULT_SYSROOT=${EPREFIX} ', PREPEND),
     },
     'CMake': {
         'patches': (['cmake-3.14.0_rc3-prefix-dirs.patch'], REPLACE),
