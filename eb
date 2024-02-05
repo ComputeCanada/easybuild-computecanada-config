@@ -8,7 +8,8 @@ module --force purge
 unset CPATH
 unset LIBRARY_PATH
 unset LD_LIBRARY_PATH
-export PATH=/usr/bin
+export PATH=/usr/bin:/opt/software/slurm/bin
+export EASYBUILD_JOB_BACKEND='Slurm'
 EASYBUILD_ROOT=/cvmfs/soft.computecanada.ca/easybuild
 if [ -z "$USE_NIX" ]; then
 	module load gentoo/$USE_GENTOO_VERSION
