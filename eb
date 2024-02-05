@@ -9,6 +9,12 @@ unset CPATH
 unset LIBRARY_PATH
 unset LD_LIBRARY_PATH
 export PATH=/usr/bin
+if [[ $HOSTNAME =~ archimedes.c3.ca$ ]]; then
+	export PATH=$PATH:/opt/software/slurm/bin
+	export EASYBUILD_JOB_BACKEND='Slurm'
+	export SBATCH_MEM_PER_CPU='3500m'
+	export EASYBUILD_TMP_LOGDIR="/cvmfs/local/var/log"
+fi
 EASYBUILD_ROOT=/cvmfs/soft.computecanada.ca/easybuild
 if [ -z "$USE_NIX" ]; then
 	module load gentoo/$USE_GENTOO_VERSION
