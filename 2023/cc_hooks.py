@@ -349,6 +349,7 @@ end
        fi
     done
     ln -s %(version)s $publicdir/compiler/latest
+    ln -s intel64_lin $publicdir/compiler/%(version)s/linux/compiler/lib/intel64
 '''], REPLACE),
         "modluafooter": ("""
 if isloaded("imkl") then
