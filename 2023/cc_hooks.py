@@ -300,50 +300,6 @@ end
     'HDF5.Serial': {
         'name': ('HDF5', REPLACE),
     },
-    'iccifort': {
-        'skip_license_file_in_module': (True, REPLACE),
-        'license_file': ("/cvmfs/restricted.computecanada.ca/config/licenses/intel/2020/build-node.lic", REPLACE),
-        #See compilers_and_libraries_2020.1.217/licensing/compiler/en/credist.txt
-        'postinstallcmds': (['''
-    echo "--sysroot=$EPREFIX" > %(installdir)s/compilers_and_libraries_%(version)s/linux/bin/intel64/icc.cfg
-    echo "--sysroot=$EPREFIX" > %(installdir)s/compilers_and_libraries_%(version)s/linux/bin/intel64/icpc.cfg
-    /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s
-    /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/compilers_and_libraries_%(version)s/linux/compiler/lib --add_origin
-    patchelf --set-rpath '$ORIGIN/../lib:$ORIGIN/../compiler/lib/intel64' %(installdir)s/compilers_and_libraries_%(version)s/linux/lib/LLVMgold.so
-    installdir=%(installdir)s
-    publicdir=${installdir/restricted.computecanada.ca/soft.computecanada.ca}
-    rm -rf $publicdir
-    for i in $(grep -h "compiler.*\.so" $installdir/compilers_and_libraries_%(version)s/licensing/compiler/en/[cf]redist.txt | cut -c 13-); do
-       if [ -f $installdir/$i ]; then
-         mkdir -p $(dirname $publicdir/$i)
-         cp -p $installdir/$i $publicdir/$i
-       fi
-     done
-     for i in $(cd $installdir && find compilers_and_libraries_%(version)s/linux/tbb); do
-       if [ -f $installdir/$i ]; then
-         mkdir -p $(dirname $publicdir/$i)
-         cp -p $installdir/$i $publicdir/$i
-       elif [ -L $installdir/$i ]; then
-         mkdir -p $(dirname $publicdir/$i)
-         cp -a $installdir/$i $publicdir/$i
-       fi
-     done
-     cd $installdir
-     for i in $(find . -type l); do
-       if [ -f $publicdir/$i ]; then
-         cp -a $i $publicdir/$i
-       fi
-     done
-     ln -s compilers_and_libraries_%(version)s/linux/compiler/lib $publicdir/lib
-'''], REPLACE),
-        "modluafooter": ("""
-prepend_path("INTEL_LICENSE_FILE", pathJoin("/cvmfs/restricted.computecanada.ca/config/licenses/intel/2020", os.getenv("CC_CLUSTER") .. ".lic"))
-
-if isloaded("imkl") then
-    always_load("imkl/2020.1.217")
-end
-""", APPEND),
-    },
     'impi': intelmpi2021_dict,
     'intel-compilers': {
         'accept_eula': (True, REPLACE),
