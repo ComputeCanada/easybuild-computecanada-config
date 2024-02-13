@@ -49,7 +49,7 @@ new_version_mapping_2023a = {
         ('Boost.MPI','ANY', ''): ('1.82.0', cOMPI_2023a),
         ('CUDA', '12.2.2'): ('12.2', COMPILERS_2023a),
         'CGAL': ('5.5.2', SYSTEM),
-        'CMake': ('3.26.5', SYSTEM),
+        'CMake': ('3.27.7', SYSTEM),
         'ETSF_IO': ('1.0.4', [('iompi', '2023a'), ('iccifort', '2020.1.217')]),
         ('FFTW', 'ANY', ""): ('3.3.10', COMPILERS_2023a),
         ('FFTW.MPI', 'ANY', ''): ('3.3.10', cOMPI_2023a),
