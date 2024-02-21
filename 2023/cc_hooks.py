@@ -897,6 +897,13 @@ def post_prepare_hook(self, *args, **kwargs):
         if to_check in os.environ:
             setvar(to_set, os.environ[to_check])
 
+def module_write_hook(self, filepath, module_txt, *args, **kwargs):
+    # Only keep one path in FSL to avoid it overriding regular non-FSL commands
+    if self.cfg['name'] == 'FSL':
+        lines = module_txt.split('\n')
+        lines = [l for l in lines if not l.startswith('prepend_path(') or '/share/fsl/' in l]
+        return '\n'.join(lines)
+
 def end_hook():
     user = os.getenv("USER")
     # only do this if we are "ebuser"
