@@ -901,7 +901,7 @@ def module_write_hook(self, filepath, module_txt, *args, **kwargs):
     # Only keep one path in FSL to avoid it overriding regular non-FSL commands
     if self.cfg['name'] == 'FSL':
         lines = module_txt.split('\n')
-        lines = [l for l in lines if not l.startswith('prepend_path(') or '/share/fsl/' in l]
+        lines = [l for l in lines if not l.startswith('prepend_path(') or 'share/fsl/' in l]
         return '\n'.join(lines)
 
 def end_hook():
