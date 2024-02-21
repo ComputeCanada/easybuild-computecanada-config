@@ -187,6 +187,18 @@ end
 add_property("type_","tools")
 """
 
+# This will make intel-compiled software invisible to spider on AMD with AVX512
+compiler_modluafooter_intel = """
+if os.getenv("RSNT_CPU_VENDOR_ID") ~= "amd" or os.getenv("RSNT_ARCH") ~= "avx512" or mode() == "load" or mode() == "unload" then
+    prepend_path("MODULEPATH", pathJoin("/cvmfs/soft.computecanada.ca/easybuild/modules/{year}", os.getenv("RSNT_ARCH"), "{sub_path}"))
+    if isDir(pathJoin(os.getenv("HOME"), ".local/easybuild/modules/{year}", os.getenv("RSNT_ARCH"), "{sub_path}")) then
+        prepend_path("MODULEPATH", pathJoin(os.getenv("HOME"), ".local/easybuild/modules/{year}", os.getenv("RSNT_ARCH"), "{sub_path}"))
+    end
+end
+
+add_property("type_","tools")
+"""
+
 mpi_modluafooter = """
 assert(loadfile("/cvmfs/soft.computecanada.ca/config/lmod/%s_custom.lua"))("%%(version_major_minor)s")
 
@@ -864,7 +876,10 @@ def set_modluafooter(ec):
         if name in ['iccifort', 'intel-compilers']:
             name = 'intel'
         comp = os.path.join('Compiler', name + ec['version'][:ec['version'].find('.')])
-        ec['modluafooter'] += (compiler_modluafooter.format(year=year,sub_path=comp) + 'family("compiler")\n')
+        if name == 'intel':
+            ec['modluafooter'] += (compiler_modluafooter_intel.format(year=year,sub_path=comp) + 'family("compiler")\n')
+        else:
+            ec['modluafooter'] += (compiler_modluafooter.format(year=year,sub_path=comp) + 'family("compiler")\n')
     if ec['name'] == 'CUDAcore':
         comp = os.path.join('CUDA', 'cuda' + '.'.join(ec['version'].split('.')[:2]))
         ec['modluafooter'] += compiler_modluafooter.format(year=year, sub_path=comp)
