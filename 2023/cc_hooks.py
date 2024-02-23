@@ -903,6 +903,10 @@ def module_write_hook(self, filepath, module_txt, *args, **kwargs):
         lines = module_txt.split('\n')
         lines = [l for l in lines if not l.startswith('prepend_path(') or 'share/fsl/' in l]
         return '\n'.join(lines)
+    elif self.cfg['name'] == 'forge':
+        lines = module_txt.split('\n')
+        lines = [l for l in lines if 'LIBRARY_PATH' not in l]
+        return '\n'.join(lines)
 
 def end_hook():
     user = os.getenv("USER")
