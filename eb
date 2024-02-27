@@ -13,7 +13,11 @@ if [[ $HOSTNAME =~ archimedes.c3.ca$ ]]; then
 	export PATH=$PATH:/opt/software/slurm/bin
 	export EASYBUILD_JOB_BACKEND='Slurm'
 	export SBATCH_MEM_PER_CPU='3500m'
+	if [[ $CURRENT_USER == "ebuser" ]]; then
+		export SBATCH_OUTPUT="/cvmfs/local/var/log/slurm-%x-%j.out"
+	fi
 	export EASYBUILD_TMP_LOGDIR="/cvmfs/local/var/log"
+	export EASYBUILD_JOB_OUTPUT_DIR="/cvmfs/local/var/log/"
 fi
 EASYBUILD_ROOT=/cvmfs/soft.computecanada.ca/easybuild
 if [ -z "$USE_NIX" ]; then
@@ -86,7 +90,10 @@ if [ -z $USE_GENTOO ]; then
 fi
 
 CURRENT_USER="$(whoami)"
-ORIG_USER="$(logname)"
+# only do this on the login node, not in a job
+if [[ -z "$SLURM_JOB_ID" ]]; then
+	export ORIG_USER="$(logname)"
+fi
 if [ "$CURRENT_USER" != "ebuser" ] ; then
 	export EASYBUILD_PREFIX=$HOME/.local/easybuild
 	export EASYBUILD_SUBDIR_USER_MODULES=''
@@ -127,7 +134,7 @@ export RSNT_EASYBUILD_MAGIC_COOKIE=263ca73bb634185aab1d1b41627fdbba
 NEW_ARGS=()
 for argument in "$@"; do
 	if [[ "$CURRENT_USER" == "ebuser" ]]; then
-		if [[ $argument =~ --inject-checksums* || $argument =~ --robot* || "$argument" == "-r" ]]; then
+		if [[ $argument =~ --inject-checksums* || $argument =~ --robot$ || "$argument" == "-r" ]]; then
 			echo "Please do not use $argument as $CURRENT_USER"
 			exit 1
 		fi
@@ -137,10 +144,18 @@ for argument in "$@"; do
 				exit 1
 			fi
 		fi
+		if [[ $argument =~ ^--job$ ]]; then
+			export SBATCH_OUTPUT="/cvmfs/local/var/log/slurm-%x-%j.out"
+			echo "Output of job will be in $SBATCH_OUTPUT"
+		fi
 		if [[ $argument =~ .*.eb$ ]]; then
 			if [[ $argument =~ ^/cvmfs/soft.computecanada.ca/easybuild/software/.* ]]; then
 				NEW_ARGS+=("$argument")
 				# accept this path, it is used by the auto recompilation
+				continue 
+			elif [[ ! -z "$SLURM_JOB_NAME" && $SLURM_JOB_NAME != "interactive" ]]; then
+				NEW_ARGS+=("$argument")
+				# accept this path, it comes from eb being called by the job feature
 				continue 
 			elif [[ $argument =~ .*/.* ]]; then
 				echo "Please do not use a path to specify the easyconfig."
