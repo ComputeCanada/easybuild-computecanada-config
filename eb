@@ -13,11 +13,7 @@ if [[ $HOSTNAME =~ archimedes.c3.ca$ ]]; then
 	export PATH=$PATH:/opt/software/slurm/bin
 	export EASYBUILD_JOB_BACKEND='Slurm'
 	export SBATCH_MEM_PER_CPU='3500m'
-	if [[ $CURRENT_USER == "ebuser" ]]; then
-		export SBATCH_OUTPUT="/cvmfs/local/var/log/slurm-%x-%j.out"
-	fi
 	export EASYBUILD_TMP_LOGDIR="/cvmfs/local/var/log"
-	export EASYBUILD_JOB_OUTPUT_DIR="/cvmfs/local/var/log/"
 fi
 EASYBUILD_ROOT=/cvmfs/soft.computecanada.ca/easybuild
 if [ -z "$USE_NIX" ]; then
@@ -145,8 +141,7 @@ for argument in "$@"; do
 			fi
 		fi
 		if [[ $argument =~ ^--job$ ]]; then
-			export SBATCH_OUTPUT="/cvmfs/local/var/log/slurm-%x-%j.out"
-			echo "Output of job will be in $SBATCH_OUTPUT"
+			echo "Output of job will be in /cvmfs/local/var/log/%x-%j.out"
 		fi
 		if [[ $argument =~ .*.eb$ ]]; then
 			if [[ $argument =~ ^/cvmfs/soft.computecanada.ca/easybuild/software/.* ]]; then
@@ -156,6 +151,8 @@ for argument in "$@"; do
 			elif [[ ! -z "$SLURM_JOB_NAME" && $SLURM_JOB_NAME != "interactive" ]]; then
 				NEW_ARGS+=("$argument")
 				# accept this path, it comes from eb being called by the job feature
+				# then change here to get Slurm output files in this directory
+				cd /cvmfs/local/var/log
 				continue 
 			elif [[ $argument =~ .*/.* ]]; then
 				echo "Please do not use a path to specify the easyconfig."
