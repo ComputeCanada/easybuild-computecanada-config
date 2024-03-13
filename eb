@@ -86,10 +86,7 @@ if [ -z $USE_GENTOO ]; then
 fi
 
 CURRENT_USER="$(whoami)"
-# only do this on the login node, not in a job
-if [[ -z "$SLURM_JOB_ID" ]]; then
-	export ORIG_USER="$(logname)"
-fi
+ORIG_USER="$(logname)"
 if [ "$CURRENT_USER" != "ebuser" ] ; then
 	export EASYBUILD_PREFIX=$HOME/.local/easybuild
 	export EASYBUILD_SUBDIR_USER_MODULES=''
@@ -117,6 +114,7 @@ else
 	export PYTHONPATH=$EASYBUILD_ROOT/site-packages
 	EB=$EASYBUILD_ROOT/framework/eb
 fi
+export EASYBUILD_JOB_EB_CMD=$EB
 export EASYBUILD_HOOKS=$EASYBUILD_CONFIG_ROOT/cc_hooks.py
 export EASYBUILD_BUILDPATH=$EASYBUILD_BUILDPATH/$RSNT_ARCH
 export LANG=en_US.UTF-8
@@ -130,7 +128,7 @@ export RSNT_EASYBUILD_MAGIC_COOKIE=263ca73bb634185aab1d1b41627fdbba
 NEW_ARGS=()
 for argument in "$@"; do
 	if [[ "$CURRENT_USER" == "ebuser" ]]; then
-		if [[ $argument =~ --inject-checksums* || $argument =~ --robot$ || "$argument" == "-r" ]]; then
+		if [[ $argument =~ --inject-checksums* || $argument =~ --robot* || "$argument" == "-r" ]]; then
 			echo "Please do not use $argument as $CURRENT_USER"
 			exit 1
 		fi
@@ -142,17 +140,12 @@ for argument in "$@"; do
 		fi
 		if [[ $argument =~ ^--job$ ]]; then
 			echo "Output of job will be in /cvmfs/local/var/log/%x-%j.out"
+			cd /cvmfs/local/var/log
 		fi
 		if [[ $argument =~ .*.eb$ ]]; then
 			if [[ $argument =~ ^/cvmfs/soft.computecanada.ca/easybuild/software/.* ]]; then
 				NEW_ARGS+=("$argument")
 				# accept this path, it is used by the auto recompilation
-				continue 
-			elif [[ ! -z "$SLURM_JOB_NAME" && $SLURM_JOB_NAME != "interactive" ]]; then
-				NEW_ARGS+=("$argument")
-				# accept this path, it comes from eb being called by the job feature
-				# then change here to get Slurm output files in this directory
-				cd /cvmfs/local/var/log
 				continue 
 			elif [[ $argument =~ .*/.* ]]; then
 				echo "Please do not use a path to specify the easyconfig."
