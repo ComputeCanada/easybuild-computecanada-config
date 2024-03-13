@@ -114,6 +114,7 @@ else
 	export PYTHONPATH=$EASYBUILD_ROOT/site-packages
 	EB=$EASYBUILD_ROOT/framework/eb
 fi
+export EASYBUILD_JOB_EB_CMD=$EB
 export EASYBUILD_HOOKS=$EASYBUILD_CONFIG_ROOT/cc_hooks.py
 export EASYBUILD_BUILDPATH=$EASYBUILD_BUILDPATH/$RSNT_ARCH
 export LANG=en_US.UTF-8
@@ -136,6 +137,10 @@ for argument in "$@"; do
 				echo "When installing datasets, the install path should be /cvmfs/data.rsnt.computecanada.ca/content/easybuild/data/2020 instead of $argument"
 				exit 1
 			fi
+		fi
+		if [[ $argument =~ ^--job$ ]]; then
+			echo "Output of job will be in /cvmfs/local/var/log/%x-%j.out"
+			cd /cvmfs/local/var/log
 		fi
 		if [[ $argument =~ .*.eb$ ]]; then
 			if [[ $argument =~ ^/cvmfs/soft.computecanada.ca/easybuild/software/.* ]]; then
