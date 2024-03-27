@@ -9,7 +9,7 @@ unset CPATH
 unset LIBRARY_PATH
 unset LD_LIBRARY_PATH
 export PATH=/usr/bin
-if [[ $HOSTNAME =~ archimedes.c3.ca$ ]]; then
+if [[ $(hostname) =~ ^login..int.archimedes.c3.ca$ ]]; then
 	export PATH=$PATH:/opt/software/slurm/bin
 	export EASYBUILD_JOB_BACKEND='Slurm'
 	export SBATCH_MEM_PER_CPU='3500m'
@@ -126,9 +126,14 @@ export RSNT_EASYBUILD_MAGIC_COOKIE=263ca73bb634185aab1d1b41627fdbba
 
 # argument validation
 NEW_ARGS=()
-for argument in "$@"; do
-	if [[ "$CURRENT_USER" == "ebuser" ]]; then
-		if [[ $argument =~ --inject-checksums* || $argument =~ --robot* || "$argument" == "-r" ]]; then
+if [[ "$CURRENT_USER" == "ebuser" ]]; then
+	if ! [[ $(hostname) =~ ^login..archimedes.c3.ca$ ]]; then
+		echo "Please only submit as ebuser on login nodes"
+		exit 1
+	fi
+	ec=""
+	for argument in "$@"; do
+		if [[ $argument =~ --inject-checksums* || $argument =~ --robot* || "$argument" == "-r" || "$argument" == "--job" ]]; then
 			echo "Please do not use $argument as $CURRENT_USER"
 			exit 1
 		fi
@@ -137,10 +142,6 @@ for argument in "$@"; do
 				echo "When installing datasets, the install path should be /cvmfs/data.rsnt.computecanada.ca/content/easybuild/data/2020 instead of $argument"
 				exit 1
 			fi
-		fi
-		if [[ $argument =~ ^--job$ ]]; then
-			echo "Output of job will be in /cvmfs/local/var/log/%x-%j.out"
-			cd /cvmfs/local/var/log
 		fi
 		if [[ $argument =~ .*.eb$ ]]; then
 			if [[ $argument =~ ^/cvmfs/soft.computecanada.ca/easybuild/software/.* ]]; then
@@ -159,22 +160,45 @@ for argument in "$@"; do
 				letter=${letter,} # lowercase first letter
 				name=${argument%%-*}
 				# some names contain - (e.g. HOOMD-blue) so we need pathname expansion
-				ec=$(find $EASYBUILD_ROOT/easyconfigs/$letter/$name* -name $argument 2>/dev/null)
 				custom_ec=$(find $EASYBUILD_ROOT/site-packages/custom-easyconfigs/easybuild/easyconfigs/$letter/$name* -name $argument 2>/dev/null)
-				if [[ -n "$ec" && -f $ec && -z "$custom_ec" ]]; then
-					NEW_ARGS+=("$ec")
-				else    # if no corresponding easyconfig was found in easyconfigs folder, we get it found normally
-					NEW_ARGS+=("$argument")
+				if [[ -n "$custom_ec" && -f "$custom_ec" ]]; then
+					# custom easyconfigs have priority
+					ec="$custom_ec"
+				else
+					ec=$(find $EASYBUILD_ROOT/easyconfigs/$letter/$name* -name $argument 2>/dev/null)
+					if [[ -z "$ec" || ! -f "$ec" ]]; then
+						echo "Easyconfig $argument not found"
+						exit 1
+					fi
 				fi
+				NEW_ARGS+=("$ec")
 			fi
 		else
 			NEW_ARGS+=("$argument")
 		fi
+	done
+	if [[ -z "$ec" ]]; then
+		echo "No easyconfig specified, exiting"
+		exit 1
 	fi
-done
-
-if [[ "$CURRENT_USER" == "ebuser" ]]; then
-	exec $EB --configfiles=$LOCAL_EASYBUILD_CONFIGFILES "${NEW_ARGS[@]}"
+	cd /cvmfs/local/var/log
+	$EB --fetch --configfiles=$LOCAL_EASYBUILD_CONFIGFILES "${NEW_ARGS[@]}"
+	export RSNT_ARCH=avx2
+	$EB --job --configfiles=$LOCAL_EASYBUILD_CONFIGFILES "${NEW_ARGS[@]}"
+python <<EOF
+import sys
+from easybuild.framework.easyconfig.parser import EasyConfigParser
+ecp = EasyConfigParser("$ec")
+name = ecp.get_config_dict()['toolchain']['name']
+sys.exit(name == 'system' or name == 'dummy')
+EOF
+        if [[ $? == 0 ]]; then
+		export RSNT_ARCH=avx512
+		$EB --job --configfiles=$LOCAL_EASYBUILD_CONFIGFILES "${NEW_ARGS[@]}"
+	else
+		echo "Not building for x86-64 (SYSTEM toolchain)"
+	fi
+	echo "Output of job(s) will be in /cvmfs/local/var/log/%x-%j.out"
 else
 	exec $EB --configfiles=$LOCAL_EASYBUILD_CONFIGFILES ${1+"$@"}
 fi
