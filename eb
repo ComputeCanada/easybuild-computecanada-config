@@ -191,13 +191,18 @@ for argument in "$@"; do
 				letter=${letter,} # lowercase first letter
 				name=${argument%%-*}
 				# some names contain - (e.g. HOOMD-blue) so we need pathname expansion
-				ec=$(find $EASYBUILD_ROOT/easyconfigs/$letter/$name* -name $argument 2>/dev/null)
 				custom_ec=$(find $EASYBUILD_ROOT/site-packages/custom-easyconfigs/easybuild/easyconfigs/$letter/$name* -name $argument 2>/dev/null)
-				if [[ -n "$ec" && -f $ec && -z "$custom_ec" ]]; then
-					NEW_ARGS+=("$ec")
-				else    # if no corresponding easyconfig was found in easyconfigs folder, we get it found normally
-					NEW_ARGS+=("$argument")
+				if [[ -n "$custom_ec" && -f "$custom_ec" ]]; then
+					# custom easyconfigs have priority
+					ec="$custom_ec"
+				else
+					ec=$(find $EASYBUILD_ROOT/easyconfigs/$letter/$name* -name $argument 2>/dev/null)
+					if [[ -z "$ec" || ! -f "$ec" ]]; then
+						echo "Easyconfig $argument not found"
+						exit 1
+					fi
 				fi
+				NEW_ARGS+=("$ec")
 			fi
 		else
 			NEW_ARGS+=("$argument")
@@ -219,6 +224,23 @@ if [[ -n "$SLURM_CPUS_ON_NODE" ]]; then
 fi
 
 if [[ "$CURRENT_USER" == "ebuser" ]]; then
+	if [[ "$RSNT_ARCH" == "avx2" ]]; then
+python <<EOF
+import sys
+from easybuild.framework.easyconfig.parser import EasyConfigParser
+ecp = EasyConfigParser("$ec")
+name = ecp.get_config_dict()['toolchain']['name']
+sys.exit(name == 'system' or name == 'dummy')
+EOF
+		if [[ $? == 0 ]]; then
+			echo "Automatically building for x86-64-v4 as well via job"
+			if [[ -z "$job" ]]; then # prevent double output
+				echo "Output of job will be in /shared_tmp/logs/%x-%j.out"
+				cd /shared_tmp/logs
+			fi
+			RSNT_ARCH=avx512 $EB --job --configfiles=$LOCAL_EASYBUILD_CONFIGFILES "${NEW_ARGS[@]}"
+		fi
+	fi
 	exec $EB --configfiles=$LOCAL_EASYBUILD_CONFIGFILES "${NEW_ARGS[@]}"
 else
 	exec $EB --configfiles=$LOCAL_EASYBUILD_CONFIGFILES ${1+"$@"}
