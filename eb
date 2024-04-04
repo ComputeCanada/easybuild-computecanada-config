@@ -172,6 +172,9 @@ for argument in "$@"; do
 		fi
 	fi
 done
+if [[ -n "$SLURM_CPUS_ON_NODE" ]]; then
+	export EASYBUILD_PARALLEL=$SLURM_CPUS_ON_NODE
+fi
 
 if [[ "$CURRENT_USER" == "ebuser" ]]; then
 	exec $EB --configfiles=$LOCAL_EASYBUILD_CONFIGFILES "${NEW_ARGS[@]}"
