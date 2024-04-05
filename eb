@@ -127,6 +127,12 @@ export RSNT_EASYBUILD_MAGIC_COOKIE=263ca73bb634185aab1d1b41627fdbba
 # argument validation
 NEW_ARGS=()
 for argument in "$@"; do
+	if [[ $argument =~ ^--job-cores=[0-9]*$ ]]; then
+		kv=(${argument//=/ })
+		echo "Job-cores specified to ${kv[1]}, setting EASYBUILD_PARALLEL=${kv[1]}"
+		export EASYBUILD_PARALLEL=${kv[1]}
+		NEW_ARGS+=("$argument")
+	fi
 	if [[ "$CURRENT_USER" == "ebuser" ]]; then
 		if [[ $argument =~ --inject-checksums* || $argument =~ --robot* || "$argument" == "-r" ]]; then
 			echo "Please do not use $argument as $CURRENT_USER"
