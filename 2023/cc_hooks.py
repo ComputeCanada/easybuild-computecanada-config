@@ -755,6 +755,7 @@ end""".format(lowest=lowest, highest_plus=highest_plus)
                     print("%s: Adding to modluafooter: %s" % (ec.filename(), footer_str))
                     ec['modluafooter'] += "\n" + footer_str + "\n"
 
+
             # add sanity_checks if there are not already there
             sanity_check_paths = ec.get('sanity_check_paths', {})
             if ec.name not in ['Boost']:
@@ -774,6 +775,11 @@ end""".format(lowest=lowest, highest_plus=highest_plus)
                 if not ec.get('easyblock', None):
                     ec['enhance_sanity_check'] = True
 
+    if 'Python' in ec.get('multi_deps', []) or 'Python' in [x[0] for x in ec.get('builddependencies',[])] or 'Python' in [x[0] for x in ec.get('dependencies',[])]:
+            # add sanity_check_commands to avoid .egg files
+            sanity_check_commands = ec.get('sanity_check_commands', [])
+            sanity_check_commands += ["""if [ -n "$(find %(installdir)s/lib*/python*/site-packages -name '*.egg*')" ] ; then echo 'Found .egg file, please use pip. See https://github.com/ComputeCanada/software-stack/issues/137' ; exit 1; else  exit 0; fi"""]
+            ec['sanity_check_commands'] = sanity_check_commands
 
     # hide toolchains
     if ec.get('moduleclass','') == 'toolchain' or ec['name'] == 'GCCcore' or ec['name'] == 'CUDAcore':
