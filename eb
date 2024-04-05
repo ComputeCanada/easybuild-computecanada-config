@@ -131,9 +131,6 @@ for argument in "$@"; do
 		kv=(${argument//=/ })
 		echo "Job-cores specified to ${kv[1]}, setting EASYBUILD_PARALLEL=${kv[1]}"
 		export EASYBUILD_PARALLEL=${kv[1]}
-		if [[ "$CURRENT_USER" != "ebuser" ]]; then
-			NEW_ARGS+=("$argument")
-		fi
 	fi
 	if [[ "$CURRENT_USER" == "ebuser" ]]; then
 		if [[ $argument =~ --inject-checksums* || $argument =~ --robot* || "$argument" == "-r" ]]; then
