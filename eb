@@ -134,6 +134,10 @@ for argument in "$@"; do
 		echo "Job-cores specified to ${kv[1]}, setting EASYBUILD_PARALLEL=${kv[1]}"
 		export EASYBUILD_PARALLEL=${kv[1]}
 	fi
+	if [[ $argument =~ ^--job$ ]]; then
+		# so we can follow the job output with e.g. tail -f
+		export PYTHONUNBUFFERED=1
+	fi
 	if [[ "$CURRENT_USER" == "ebuser" ]]; then
 		if [[ $argument =~ --inject-checksums* || $argument =~ --robot* || "$argument" == "-r" ]]; then
 			echo "Please do not use $argument as $CURRENT_USER"
