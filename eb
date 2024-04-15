@@ -14,6 +14,8 @@ if [[ $HOSTNAME =~ archimedes.c3.ca$ ]]; then
 	export EASYBUILD_JOB_BACKEND='Slurm'
 	export SBATCH_MEM_PER_CPU='3500m'
 	export EASYBUILD_TMP_LOGDIR="/cvmfs/local/var/log"
+	export EASYBUILD_TMPDIR="/cvmfs/local/tmp"
+	export EASYBUILD_DISABLE_CLEANUP_TMPDIR=1
 fi
 EASYBUILD_ROOT=/cvmfs/soft.computecanada.ca/easybuild
 if [ -z "$USE_NIX" ]; then
