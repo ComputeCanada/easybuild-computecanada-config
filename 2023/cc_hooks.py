@@ -476,6 +476,12 @@ end""".format(version="11"), REPLACE),
 end""".format(version="v2306"), REPLACE),
         'prebuildopts': ('MPFR_ARCH_PATH=$EBROOTGENTOO ', APPEND),
     },
+    ("OpenFOAM", "v2312"): {
+        'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
+        source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
+end""".format(version="v2312"), REPLACE),
+        'prebuildopts': ('MPFR_ARCH_PATH=$EBROOTGENTOO ', APPEND),
+    },
     "OpenMPI": {
         # local customizations for OpenMPI
         'builddependencies': ([('opa-psm2', '12.0.1')], REPLACE),
