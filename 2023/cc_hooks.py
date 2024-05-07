@@ -78,8 +78,8 @@ new_version_mapping_2023a = {
         'Perl': ('5.36.1', SYSTEM),
         ('PLUMED', '2.6.0'): ('2.6.2', cOMKL_2023a, None),
         'UDUNITS': ('2.2.28', SYSTEM),
-        **dict.fromkeys([('Python', '3.10.%s' % str(x)) for x in range(0,14)], ('3.10', GCCCORE123)),
-        **dict.fromkeys([('Python', '3.11.%s' % str(x)) for x in range(0,6)], ('3.11', GCCCORE123)),
+        **dict.fromkeys([('Python', '3.10.%s' % str(x)) for x in range(0,14)], ('3.10', GCCCORE123 + SYSTEM)),
+        **dict.fromkeys([('Python', '3.11.%s' % str(x)) for x in range(0,6)], ('3.11', GCCCORE123 + SYSTEM)),
         'Qt5': ('5.15.11', GCCCORE123 + SYSTEM),
         'SCOTCH': ('7.0.3', cOMPI_2023a, None),
 }
