@@ -27,6 +27,8 @@ PARSE_OPTS = ['multi_deps', 'dependencies', 'builddependencies', 'license_file',
 SYSTEM = [('system', 'system')]
 GCCCORE123 = [('GCCcore', '12.3.0'), ('GCCcore', '12.3-gentoo')]
 GCC123 = [('GCC', '12.3.0')]
+GCCCORE133 = [('GCCcore', '13.3.0'), ('GCCcore', '13.3-gentoo')]
+GCC133 = [('GCC', '13.3.0')]
 ICC2023a = [('intel-compilers', '2023.2.1')]
 COMPILERS_2023a = [ICC2023a[0], GCC123[0]]
 cOMPI_2023a = [('iompi', '2023a'),('gompi', '2023a')]
@@ -55,6 +57,7 @@ new_version_mapping_2023a = {
         ('FFTW.MPI', 'ANY', ''): ('3.3.10', cOMPI_2023a),
         'Eigen': ('3.4.0', SYSTEM),
         ('GCCcore', '12.3.0'): ('12.3', SYSTEM, '-gentoo'),
+        ('GCCcore', '13.3.0'): ('13.3', SYSTEM, '-gentoo'),
         'GSL': ('2.7', COMPILERS_2023a),
         ('Java', '11'): ('17', SYSTEM),
         ('HDF5','ANY',''): ('1.14.2', COMPILERS_2023a),
@@ -285,6 +288,9 @@ end
     },
     ('GCC', '12.3.0'): {
         'version': ('12.3', REPLACE),
+    },
+    ('GCC', '13.3.0'): {
+        'version': ('13.3', REPLACE),
     },
     'GObject-Introspection': {
         'multi_deps': ({'Python': ['3.6', '3.7', '3.8']}, REPLACE),
