@@ -698,6 +698,12 @@ def parse_hook(ec, *args, **kwargs):
             ec['versionsuffix'] = ''
         else:
             ec['toolchain'] = {'name': 'GCCcore', 'version': '12.3-gentoo'}
+    elif ec['toolchain'] == {'name': 'GCCcore', 'version': '13.3.0'}:
+        if ec['versionsuffix'] == '-CUDA-%(cudaver)s':
+            ec['toolchain'] = {'name': 'gcccorecuda', 'version': '2024a'}
+            ec['versionsuffix'] = ''
+        else:
+            ec['toolchain'] = {'name': 'GCCcore', 'version': '13.3-gentoo'}
     elif ec['toolchain'] == {'name': 'intel-compilers', 'version': '2023.1.0'}:
         ec['toolchain']['version'] = '2023.2.1'
 
