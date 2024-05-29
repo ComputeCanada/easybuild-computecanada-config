@@ -394,7 +394,7 @@ end
     },
     ('libfabric', '1.21.0'): {
         'builddependencies': ([('opa-psm2', '12.0.1'), ('GDRCopy', '2.4.1'), ('CUDAcore', '12.5.0')], REPLACE),
-        'dependencies': ([], REPLACE),
+        'dependencies': ([('hwloc', '2.10.0')], REPLACE),
         'configopts': ('--enable-cuda-dlopen --enable-gdrcopy-dlopen ', PREPEND),
         'patches': (['libfabric-1.21.0_eliminate-cudart-use.patch'], APPEND_LIST),
         'checksums': ('f6a1b7d62c546c5786ec85d19998258d644dd2aba0773f0151ea6d47b87aa181', APPEND_LIST),
