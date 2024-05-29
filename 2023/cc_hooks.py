@@ -495,7 +495,7 @@ end""".format(version="v2306"), REPLACE),
 end""".format(version="v2312"), REPLACE),
         'prebuildopts': ('MPFR_ARCH_PATH=$EBROOTGENTOO ', APPEND),
     },
-    "OpenMPI": {
+    ("OpenMPI", "4.1.5"): {
         # local customizations for OpenMPI
         'builddependencies': ([('opa-psm2', '12.0.1')], REPLACE),
         'configopts': ('--enable-shared --with-verbs ' +
@@ -523,6 +523,25 @@ end""".format(version="v2312"), REPLACE),
                              'do patchelf --set-rpath '
                              '$(patchelf --print-rpath $i):/opt/software/slurm/lib:/opt/software/slurm/lib64:/opt/slurm/lib64 $i;'
                              'done'], REPLACE),
+        'modluafooter': (mpi_modluafooter % 'openmpi', REPLACE),
+    },
+    ("OpenMPI", "5.0.3"): {
+        # local customizations for OpenMPI
+        'builddependencies': ([('opa-psm2', '12.0.1')], REPLACE),
+        'configopts': (
+                    # rpath is already done by ld wrapper
+                    '--disable-wrapper-runpath --disable-wrapper-rpath ' +
+                    '--with-show-load-errors=no ' +
+                    '--enable-mpi1-compatibility ' +
+                    # enumerate all mca's that should be compiled as plugins
+                    # (only those that link to system-specific
+                    # libraries (lustre, fabric, and scheduler)
+                    '--enable-mca-dso=common-ofi,common-ucx,' +
+                    'accelerator-cuda,atomic-ucx,btl-ofi,btl-smcuda,btl-uct,' +
+                    'coll-ucc,fs-lustre,mtl-ofi,mtl-psm2,osc-ucx,' +
+                    'pml-ucx,rcache-gpusm,rcache-rgpusm,scoll-ucc,spml-ucx,sshmem-ucx ',
+                    PREPEND),
+        'postinstallcmds': (['rm %(installdir)s/lib/*.la %(installdir)s/lib/*/*.la'], REPLACE),
         'modluafooter': (mpi_modluafooter % 'openmpi', REPLACE),
     },
     "PMIx": {
