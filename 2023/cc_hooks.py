@@ -528,6 +528,7 @@ end""".format(version="v2312"), REPLACE),
     ("OpenMPI", "5.0.3"): {
         # local customizations for OpenMPI
         'builddependencies': ([('opa-psm2', '12.0.1')], REPLACE),
+        'preconfigopts': ('ac_cv_header_level_zero_ze_api_h=no ', APPEND),
         'configopts': (
                     # rpath is already done by ld wrapper
                     '--disable-wrapper-runpath --disable-wrapper-rpath ' +
