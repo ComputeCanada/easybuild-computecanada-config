@@ -83,6 +83,7 @@ new_version_mapping_2023a = {
         'UDUNITS': ('2.2.28', SYSTEM),
         **dict.fromkeys([('Python', '3.10.%s' % str(x)) for x in range(0,14)], ('3.10', GCCCORE123 + SYSTEM)),
         **dict.fromkeys([('Python', '3.11.%s' % str(x)) for x in range(0,6)], ('3.11', GCCCORE123 + SYSTEM)),
+        **dict.fromkeys([('Python', '3.12.%s' % str(x)) for x in range(0,5)], ('3.12', GCCCORE133 + SYSTEM)),
         'Qt5': ('5.15.11', GCCCORE123 + SYSTEM),
         'SCOTCH': ('7.0.3', cOMPI_2023a, None),
 }
@@ -838,9 +839,9 @@ def python_fetchhook(ec):
     python_extensions_to_keep = ['setuptools', 'pip', 'wheel', 'virtualenv', 'appdirs', 'distlib', 'filelock',
                                  'six', 'setuptools_scm']
     ver = LooseVersion(ec['version'])
-    # python 3.10, 3.11
-    if ver >= LooseVersion('3.10') and ver <= LooseVersion('3.12'):
-        python_extensions_to_keep += ['tomli', "flit-core", "flit_core", "packaging", "pyparsing", "platformdirs", "hatchling", "pathspec", "pluggy", "hatch_vcs", "typing_extensions", "editables", "trove-classifiers"]
+    # python 3.10, 3.11, 3.12
+    if ver >= LooseVersion('3.10') and ver <= LooseVersion('3.13'):
+        python_extensions_to_keep += ['tomli', "flit-core", "flit_core", "packaging", "pyparsing", "platformdirs", "hatchling", "pathspec", "pluggy", "hatch_vcs", "typing_extensions", "editables", "trove-classifiers", "setuptools-scm"]
 
     new_ext_list = [ext for ext in ec['exts_list'] if ext[0] in python_extensions_to_keep]
     ec['exts_list'] = new_ext_list
