@@ -49,6 +49,7 @@ cOMKL_2023a = [('iomkl', '2023a'),('gomkl', '2023a')]
 new_version_mapping_2023a = {
         ('Boost', 'ANY', ''): ('1.82.0', COMPILERS_2023a),
         ('Boost.MPI','ANY', ''): ('1.82.0', cOMPI_2023a),
+        ('Boost', '1.85.0', ''): ('1.85.0', COMPILERS_2023a),
         ('CUDA', '12.2.2'): ('12.2', COMPILERS_2023a),
         'CGAL': ('5.5.2', SYSTEM),
         'CMake': ('3.27.7', SYSTEM),
