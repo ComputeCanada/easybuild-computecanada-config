@@ -183,6 +183,17 @@ add_property("type_","mpi")
 family("mpi")
 """
 
+# for e.g. CUDA-12.2-gompi-2023a.eb we need to add e.g. 2023/x86-64-v3/CUDA/gcc12/cuda12.2 to MODULEPATH
+# but not for spider as that shadows the non-MPI cuda module
+cuda_mpi_modluafooter = """
+if (mode() ~= "spider") then
+    prepend_path("MODULEPATH", pathJoin("/cvmfs/soft.computecanada.ca/easybuild/modules/{year}/{sub_path}")
+    if isDir(pathJoin(os.getenv("HOME"), ".local/easybuild/modules/{year}/{sub_path}")) then
+        prepend_path("MODULEPATH", pathJoin(os.getenv("HOME"), ".local/easybuild/modules/{year}/{sub_path}"))
+    end
+end
+"""
+
 intelmpi2021_dict = {
     'accept_eula': (True, REPLACE),
     'set_mpi_wrappers_all': (True, REPLACE),
@@ -662,6 +673,10 @@ def set_modluafooter(ec):
     if ec['name'] == 'CUDAcore':
         comp = os.path.join('CUDA', 'gcccore', 'cuda' + '.'.join(ec['version'].split('.')[:2]))
         ec['modluafooter'] += compiler_modluafooter.format(year=year, sub_path=comp)
+    elif ec['name'] == 'CUDA' and 'mpi' in ec['toolchain']['name']:
+        mod_subdir = ec.mod_subdir.split('/') # e.g. x86-64-v3/MPI/gcc12/openmpi4 -> x86-64-v3/CUDA/gcc12/cuda12.2
+        comp = os.path.join(mod_subdir[0], 'CUDA', mod_subdir[2], 'cuda' + '.'.join(ec['version'].split('.')[:2]))
+        ec['modluafooter'] += cuda_mpi_modluafooter.format(year=year, sub_path=comp)
 
 
 def add_dependencies(ec, keyword):
