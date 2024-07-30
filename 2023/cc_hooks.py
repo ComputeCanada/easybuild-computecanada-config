@@ -187,7 +187,7 @@ family("mpi")
 # but not for spider as that shadows the non-MPI cuda module
 cuda_mpi_modluafooter = """
 if (mode() ~= "spider") then
-    prepend_path("MODULEPATH", pathJoin("/cvmfs/soft.computecanada.ca/easybuild/modules/{year}/{sub_path}")
+    prepend_path("MODULEPATH", pathJoin("/cvmfs/soft.computecanada.ca/easybuild/modules/{year}/{sub_path}"))
     if isDir(pathJoin(os.getenv("HOME"), ".local/easybuild/modules/{year}/{sub_path}")) then
         prepend_path("MODULEPATH", pathJoin(os.getenv("HOME"), ".local/easybuild/modules/{year}/{sub_path}"))
     end
