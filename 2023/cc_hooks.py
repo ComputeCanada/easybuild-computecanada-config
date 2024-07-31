@@ -322,7 +322,7 @@ end
         'name': ('HDF5', REPLACE),
     },
     'impi': intelmpi2021_dict,
-    'intel-compilers': {
+    ('intel-compilers', '2023.2.1'): {
         'accept_eula': (True, REPLACE),
         #See compiler/2021.2.0/licensing/credist.txt
         'postinstallcmds': (['''
@@ -375,6 +375,60 @@ end
         "modluafooter": ("""
 if isloaded("imkl") then
     always_load("imkl/%(version_major_minor)s")
+end
+""", APPEND),
+    },
+    ('intel-compilers', '2024.2.0'): {
+        'accept_eula': (True, REPLACE),
+        #See compiler/2024.2/share/doc/compiler/credist.txt
+        'postinstallcmds': (['''
+    shortver='2024.2'
+    for compname in ifort; do
+       echo "--sysroot=$EPREFIX" > %(installdir)s/compiler/$shortver/bin/$compname.cfg
+    done
+    for compname in icx icpx ifx; do
+       echo "--sysroot=$EPREFIX" > %(installdir)s/compiler/$shortver/bin/$compname.cfg
+       echo "-L$EBROOTGCCCORE/lib64" >> %(installdir)s/compiler/$shortver/bin/$compname.cfg
+       echo "-Wl,-dynamic-linker=$EPREFIX/lib64/ld-linux-x86-64.so.2" >> %(installdir)s/compiler/$shortver/bin/$compname.cfg
+    done
+    mv %(installdir)s/compiler/$shortver/bin/{dpcpp,dpcpp.orig}
+    echo "#!$EPREFIX/bin/sh" > %(installdir)s/compiler/$shortver/bin/dpcpp
+    echo "exec %(installdir)s/compiler/$shortver/bin/dpcpp.orig --sysroot=$EPREFIX -Wl,-dynamic-linker=$EPREFIX/lib64/ld-linux-x86-64.so.2 -L$EBROOTGCCCORE/lib64 \${1+\\"\$@\\"}" >> %(installdir)s/compiler/$shortver/bin/dpcpp
+    chmod +x %(installdir)s/compiler/$shortver/bin/dpcpp
+    /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s
+    /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/compiler/$shortver/lib --add_origin
+    patchelf --set-rpath '$ORIGIN:$ORIGIN/../../../tbb/2021.13/lib' %(installdir)s/compiler/$shortver/lib/libintelocl.so
+    installdir=%(installdir)s
+    publicdir=${installdir/restricted.computecanada.ca/soft.computecanada.ca}
+    rm -rf $publicdir
+    for i in $(grep -h "installdir.*" $installdir/compiler/$shortver/share/doc/compiler/[cf]redist.txt | cut -c 13-); do
+       if [ -f $installdir/compiler/$shortver/$i ]; then
+         mkdir -p $(dirname $publicdir/compiler/$shortver/$i)
+         cp -p $installdir/compiler/$shortver/$i $publicdir/compiler/$shortver/$i
+       fi
+    done
+    for i in $(cd $installdir && find tbb); do
+       if [ -f $installdir/$i ]; then
+         mkdir -p $(dirname $publicdir/$i)
+         cp -p $installdir/$i $publicdir/$i
+       fi
+    done
+    cd $installdir
+    for i in $(find . -type l); do
+       if [ -f $publicdir/$i ]; then
+         cp -a $i $publicdir/$i
+       fi
+    done
+    for i in tbb/2021.13/lib/*; do
+       if [ -L $i ]; then
+         cp -a $i $publicdir/$i
+       fi
+    done
+    ln -s $shortver $publicdir/compiler/latest
+'''], REPLACE),
+        "modluafooter": ("""
+if isloaded("imkl") then
+    always_load("imkl/%(version)s")
 end
 """, APPEND),
     },
