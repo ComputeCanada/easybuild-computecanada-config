@@ -13,8 +13,8 @@ if [[ $HOSTNAME =~ archimedes.c3.ca$ ]]; then
 	export PATH=$PATH:/opt/software/slurm/bin
 	export EASYBUILD_JOB_BACKEND='Slurm'
 	export SBATCH_MEM_PER_CPU='3500m'
-	export EASYBUILD_TMP_LOGDIR="/cvmfs/local/var/log"
-	export EASYBUILD_TMPDIR="/cvmfs/local/tmp"
+	export EASYBUILD_TMP_LOGDIR="/shared_tmp/logs"
+	export EASYBUILD_TMPDIR="/shared_tmp"
 	export EASYBUILD_DISABLE_CLEANUP_TMPDIR=1
 fi
 EASYBUILD_ROOT=/cvmfs/soft.computecanada.ca/easybuild
@@ -150,8 +150,8 @@ for argument in "$@"; do
 			fi
 		fi
 		if [[ $argument =~ ^--job$ ]]; then
-			echo "Output of job will be in /cvmfs/local/var/log/%x-%j.out"
-			cd /cvmfs/local/var/log
+			echo "Output of job will be in /shared_tmp/logs/%x-%j.out"
+			cd /shared_tmp/logs
 		fi
 		if [[ $argument =~ .*.eb$ ]]; then
 			if [[ $argument =~ ^/cvmfs/soft.computecanada.ca/easybuild/software/.* ]]; then
