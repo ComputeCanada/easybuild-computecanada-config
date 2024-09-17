@@ -134,7 +134,19 @@ fi
 
 SAVEIFS=$IFS
 IFS=$(echo -en "\n\b")
-for filename in $(find $ARG_PATH -type f); do
+for filename in $(find $ARG_PATH -type f -print0 | python -c '
+# quick pre-filter to cut down on "file -b" overhead
+import sys
+sys.stdout.reconfigure(line_buffering=True)
+
+for f in sys.stdin.buffer.read()[:-1].split(b"\0"):
+    header = b"\x7fELF"
+    if f[-4:] not in {".whl", ".jar"}:
+        with open(f, "rb") as myfile:
+            header = myfile.read(4)
+    if header == b"\x7fELF":
+        sys.stdout.buffer.write(f+b"\n")
+'); do
 	if [[ -z "$filename" ]]; then
 		continue
 	fi
