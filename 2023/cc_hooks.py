@@ -148,7 +148,7 @@ def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
         else:
             new_dep = None
         if new_dep is not None and str(new_dep) != str(dep):
-            ec[param][n] = new_dep
+            list_of_deps[n] = new_dep
             print("%s: Replacing %s with %s" % (ec.filename(), str(dep), str(new_dep)))
 
 
