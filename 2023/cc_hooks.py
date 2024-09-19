@@ -142,6 +142,9 @@ def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
         elif dep_name == 'libfabric' and new_dep is not None and new_dep[0] == 'libfabric':
             dep = new_dep
             new_dep = dep[:2]
+        elif dep_name == 'oldest-supported-numpy':
+            print(f"Dependency on oldest-supported-numpy is now deprecated. Replacing with ('numpy', '2.1.1')")
+            new_dep = ('numpy', '2.1.1')
         else:
             new_dep = None
         if new_dep is not None and str(new_dep) != str(dep):
