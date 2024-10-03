@@ -116,7 +116,7 @@ else
 	export PYTHONPATH=$EASYBUILD_ROOT/site-packages
 	EB=$EASYBUILD_ROOT/framework/eb
 fi
-export EASYBUILD_JOB_EB_CMD="srun --ntasks=1 $EB"
+export EASYBUILD_JOB_EB_CMD="srun --mpi=none --ntasks=1 $EB"
 export EASYBUILD_HOOKS=$EASYBUILD_CONFIG_ROOT/cc_hooks.py
 export EASYBUILD_BUILDPATH=$EASYBUILD_BUILDPATH/$RSNT_ARCH
 export LANG=en_US.UTF-8
