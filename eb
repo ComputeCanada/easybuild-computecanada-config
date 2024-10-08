@@ -14,8 +14,6 @@ if [[ $HOSTNAME =~ archimedes.c3.ca$ ]]; then
 	export EASYBUILD_JOB_BACKEND='Slurm'
 	export SBATCH_MEM_PER_CPU='3500m'
 	export EASYBUILD_TMP_LOGDIR="/shared_tmp/logs"
-	export EASYBUILD_TMPDIR="/shared_tmp"
-	export EASYBUILD_DISABLE_CLEANUP_TMPDIR=1
 fi
 EASYBUILD_ROOT=/cvmfs/soft.computecanada.ca/easybuild
 if [ -z "$USE_NIX" ]; then
@@ -137,6 +135,14 @@ for argument in "$@"; do
 	if [[ $argument =~ ^--job$ ]]; then
 		# so we can follow the job output with e.g. tail -f
 		export PYTHONUNBUFFERED=1
+		if [[ $HOSTNAME =~ archimedes.c3.ca$ ]]; then
+			# Needed for --try-* --job and --from-pr --job so
+			# on-the-fly easyconfigs are passed to the job from shared_tmp.
+			# Setting TMPDIR (unlike EASYBUILD_TMPDIR) here the job itself
+			# (unlike the submitter) will use a private TMPDIR
+			export TMPDIR="/shared_tmp"
+			export EASYBUILD_DISABLE_CLEANUP_TMPDIR=1
+		fi
 	fi
 	if [[ "$CURRENT_USER" == "ebuser" ]]; then
 		if [[ $argument =~ --inject-checksums* || $argument =~ --robot* || "$argument" == "-r" ]]; then
