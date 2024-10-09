@@ -198,6 +198,7 @@ end
 """
 
 intelmpi2021_dict = {
+    'builddependencies': ([('opa-psm2', '12.0.1')], REPLACE),
     'accept_eula': (True, REPLACE),
     'set_mpi_wrappers_all': (True, REPLACE),
     # Fix mpirun from IntelMPI to explicitly unset I_MPI_PMI_LIBRARY
@@ -208,7 +209,8 @@ intelmpi2021_dict = {
         "for i in %(installdir)s/mpi/%(version)s/bin/I*; do patchelf --set-rpath '$ORIGIN/../lib/release' --force-rpath $i; done",
         "patchelf --set-rpath '$ORIGIN/../lib/release:$ORIGIN/../libfabric/lib' --force-rpath %(installdir)s/mpi/%(version)s/bin/impi_info",
         "for dir in release debug; do /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/mpi/%(version)s/lib/$dir --add_path='$ORIGIN/../../libfabric/lib'; done",
-        "patchelf --set-rpath $EBROOTUCX/lib --force-rpath %(installdir)s/mpi/%(version)s/libfabric/lib/prov/libmlx-fi.so"
+        "patchelf --set-rpath $EBROOTUCX/lib --force-rpath %(installdir)s/mpi/%(version)s/libfabric/lib/prov/libmlx-fi.so",
+        "patchelf --set-rpath $EBROOTOPAMINPSM2/lib64 --force-rpath %(installdir)s/mpi/%(version)s/libfabric/lib/prov/libpsmx2-fi.so",
     ], REPLACE),
     'modluafooter': (mpi_modluafooter % 'intelmpi', REPLACE),
 }
