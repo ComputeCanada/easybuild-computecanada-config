@@ -280,7 +280,10 @@ opts_changes = {
         'version': ('12.2', REPLACE),
     },
     'CUDAcore': {
+        'patches': (('cuda-installer-wrapper.sh', '.'), APPEND_LIST),
+        'checksums': ('bc06ddb2363190e96f3a68daaf089690036759832e0a717816a84ad1ad85984a', APPEND_LIST),
         'accept_eula': (True, REPLACE),
+        'preinstallopts': ("mv cuda-installer cuda-installer.orig && mv cuda-installer-wrapper.sh cuda-installer && ", PREPEND),
         'modluafooter': ('''
 if cuda_driver_library_available("%(version_major_minor)s") == "compat" then
         depends_on("cudacompat/.%(version_major_minor)s")
@@ -972,26 +975,6 @@ def pre_fetch_hook(self, *args, **kwargs):
     if self.cfg['name'].lower() == 'python':
         python_fetchhook(self.cfg)
     self.cfg.enable_templating = orig_enable_templating
-
-def pre_run_shell_cmd_hook(cmd, *args, **kwargs):
-    "Modify shell cmd, used with bwrap for more efficient installations"
-    if "./cuda-installer " in cmd and ' --defaultroot=' in cmd:
-        instdir = None
-        for s in cmd.split(' '):
-            if s.startswith('--defaultroot='):
-                instdir = s.split('=')[1]
-                break
-        instdir_parent = os.path.dirname(instdir)
-        instdir_orig = os.path.join(instdir_parent, "orig")
-        cmd = ' && '.join([
-            f'rmdir {instdir}',
-            f'bwrap --dev-bind / / --tmpfs {instdir_parent} --bind {instdir_parent} {instdir_orig} bash -c "{cmd}',
-            f'for dir in {instdir}/{{bin,nvvm}}; do setrpaths.sh --path \\$dir; done ',
-            f'for dir in {instdir}/{{c,e,g,nsight,t}}*; do setrpaths.sh --path \\$dir --add_origin; done',
-            f'mv {instdir} {instdir_orig}"',
-            ])
-        print(f"Changed by hook to :\n{cmd}")
-    return cmd
 
 def pre_postproc_hook(self, *args, **kwargs):
     "Modify postinstallcmds (here is more efficient than parse_hook since only called once)"
