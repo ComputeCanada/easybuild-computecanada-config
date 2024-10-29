@@ -810,6 +810,7 @@ def parse_hook(ec, *args, **kwargs):
         if ec['versionsuffix'] == '-CUDA-%(cudaver)s':
             ec['toolchain'] = {'name': 'gcccorecuda', 'version': '2024a'}
             ec['versionsuffix'] = ''
+            ec['builddependencies'].append(('CUDAcore', '%(cudaver)s'))
         else:
             ec['toolchain'] = {'name': 'GCCcore', 'version': '13.3-gentoo'}
     elif ec['toolchain'] == {'name': 'intel-compilers', 'version': '2023.1.0'}:
