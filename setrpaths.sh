@@ -141,7 +141,7 @@ sys.stdout.reconfigure(line_buffering=True)
 
 for f in sys.stdin.buffer.read()[:-1].split(b"\0"):
     header = b"\x7fELF"
-    if f[-4:] not in {".whl", ".jar"}:
+    if f[-4:] not in {b".whl", b".jar"}:
         with open(f, "rb") as myfile:
             header = myfile.read(4)
     if header == b"\x7fELF":
