@@ -10,6 +10,9 @@ import sys, os
 parentdir = os.path.dirname(os.path.dirname(__file__))
 if parentdir not in sys.path:
     sys.path.append(parentdir)
+if not os.path.exists(os.path.join(parentdir, 'cc_hooks_common.py')):
+    # needed when taking hooks from reprod dir
+    sys.path.append('/cvmfs/soft.computecanada.ca/easybuild/easybuild-computecanada-config')
 from cc_hooks_common import modify_all_opts, update_opts, PREPEND, APPEND, REPLACE, APPEND_LIST, DROP, DROP_FROM_LIST, REPLACE_IN_LIST
 from cc_hooks_common import get_matching_keys, get_matching_keys_from_ec
 from easybuild.tools.config import build_option
