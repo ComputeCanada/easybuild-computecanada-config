@@ -127,6 +127,10 @@ export RSNT_EASYBUILD_MAGIC_COOKIE=263ca73bb634185aab1d1b41627fdbba
 # argument validation
 NEW_ARGS=()
 for argument in "$@"; do
+	if [[ $argument =~ ^--disable-enforce-checksums$ ]]; then
+		# workaround for non-propagation of this argument
+		export EASYBUILD_JOB_EB_CMD="$EASYBUILD_JOB_EB_CMD $argument"
+	fi
 	if [[ $argument =~ ^--job-cores=[0-9]*$ ]]; then
 		kv=(${argument//=/ })
 		echo "Job-cores specified to ${kv[1]}, setting EASYBUILD_PARALLEL=${kv[1]}"
