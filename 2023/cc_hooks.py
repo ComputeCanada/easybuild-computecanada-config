@@ -816,6 +816,9 @@ def parse_hook(ec, *args, **kwargs):
     disable_use_mpi_for_non_mpi_toolchains(ec)
 
     # automatic --try-toolchain for common cases:
+    builddeps = ec['builddependencies']
+    if builddeps and builddeps[0] and isinstance(builddeps[0], list):
+        builddeps = builddeps[0]
     if ec['toolchain'] == {'name': 'GCCcore', 'version': '12.3.0'}:
         if ec['versionsuffix'] == '-CUDA-%(cudaver)s':
             ec['toolchain'] = {'name': 'gcccorecuda', 'version': '2023a'}
@@ -826,11 +829,11 @@ def parse_hook(ec, *args, **kwargs):
         if ec['versionsuffix'] == '-CUDA-%(cudaver)s':
             ec['toolchain'] = {'name': 'gcccorecuda', 'version': '2024a'}
             ec['versionsuffix'] = ''
-            ec['builddependencies'].append(('CUDAcore', '%(cudaver)s'))
+            builddeps.append(('CUDAcore', '%(cudaver)s'))
         else:
             ec['toolchain'] = {'name': 'GCCcore', 'version': '13.3-gentoo'}
     elif ec['toolchain']['name'] == 'gcccorecuda':
-        ec['builddependencies'].append(('CUDAcore', '%(cudaver)s'))
+        builddeps.append(('CUDAcore', '%(cudaver)s'))
     elif ec['toolchain'] == {'name': 'intel-compilers', 'version': '2023.1.0'}:
         ec['toolchain']['version'] = '2023.2.1'
 
