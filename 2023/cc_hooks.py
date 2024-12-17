@@ -939,11 +939,10 @@ def python_fetchhook(ec):
         return
     # keep only specific extensions
     python_extensions_to_keep = ['setuptools', 'pip', 'wheel', 'virtualenv', 'appdirs', 'distlib', 'filelock',
-                                 'six', 'setuptools_scm']
-    ver = LooseVersion(ec['version'])
-    # python 3.10, 3.11, 3.12
-    if ver >= LooseVersion('3.10') and ver <= LooseVersion('3.13'):
-        python_extensions_to_keep += ['tomli', "flit-core", "flit_core", "packaging", "pyparsing", "platformdirs", "hatchling", "pathspec", "pluggy", "hatch_vcs", "typing_extensions", "editables", "trove-classifiers", "setuptools-scm"]
+                                 'six', 'setuptools_scm',
+                                 'tomli', 'flit-core', 'flit_core', 'packaging', 'pyparsing', 'platformdirs',
+                                 'hatchling', 'pathspec', 'pluggy', 'hatch_vcs', 'typing_extensions', 'editables',
+                                 'trove-classifiers', 'setuptools-scm']
 
     new_ext_list = [ext for ext in ec['exts_list'] if ext[0] in python_extensions_to_keep]
     ec['exts_list'] = new_ext_list
