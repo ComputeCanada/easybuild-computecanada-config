@@ -32,11 +32,10 @@ Authors:
 """
 
 from easybuild.toolchains.gofbc import Gofbc
-from easybuild.toolchains.fft.fftw import Fftw
-from easybuild.toolchains.linalg.scalapack import ScaLAPACK
+from easybuild.toolchains.foss import Foss
 
 
-class Fosscuda(Gofbc, ScaLAPACK, Fftw):
+class Fosscuda(Gofbc, Foss):
     """Compiler toolchain with GCC+CUDA, OpenMPI, FlexiBLAS, ScaLAPACK and FFTW."""
     NAME = 'fosscuda'
-    SUBTOOLCHAIN = Gofbc.NAME
+    SUBTOOLCHAIN = [Gofbc.NAME, Foss.NAME]
