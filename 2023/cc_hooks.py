@@ -520,9 +520,9 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
         'modextrapaths': ({'EBPYTHONPREFIXES': ['extern/engines/python']}, REPLACE),
     },
     'mpi4py': {
-        'builddependencies': ([[('Python', v), ('Cython', '3.0.10')] for v in ['3.10', '3.11', '3.12'] ], REPLACE),
+        'builddependencies': ([[('Python', v), ('Cython', '3.0.11')] for v in ['3.10', '3.11', '3.12','3.13'] ], REPLACE),
         'dependencies': ([], REPLACE),
-        'multi_deps': ({'Python': ['3.10', '3.11', '3.12'] }, REPLACE),
+        'multi_deps': ({'Python': ['3.10', '3.11', '3.12','3.13'] }, REPLACE),
     },
     'Nextflow': {
         'postinstallcmds': (['sed -i -e "s/cli=(\$(/cli=(\$(export NFX_OPTS=\$JAVA_TOOL_OPTIONS; unset JAVA_TOOL_OPTIONS; /g" %(installdir)s/bin/nextflow'], APPEND_LIST),
