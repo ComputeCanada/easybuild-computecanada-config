@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function print_usage {
-	echo "Usage: $0 --path <path to search> [--add_origin] [--add_path=<path>]"
+	echo "Usage: $0 --path <path to search> [--add_origin] [--add_path=<path>] [--any_interpreter]"
 }
 
 function patch_rpath {
@@ -37,7 +37,7 @@ function patch_rpath {
 			patchelf --set-interpreter "$INTERPRETER" "$filename"
 			rpath='set'
 		elif [[ $ARG_ANY_INTERPRETER -eq 1 && ( $filetype =~ $REX_LINUX_INTERPRETER || $filetype =~ $REX_LSB_INTERPRETER ) ]]; then
-			patchelf --set-interpreter "$INTEPRETER" "$filename"
+			patchelf --set-interpreter "$INTERPRETER" "$filename"
 			rpath='set'
 		fi
 	fi
