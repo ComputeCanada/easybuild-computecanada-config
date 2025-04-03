@@ -951,69 +951,60 @@ def python_fetchhook(ec):
 
 def pre_configure_hook(self, *args, **kwargs):
     "Modify configopts (here is more efficient than parse_hook since only called once)"
-    orig_enable_templating = self.cfg.enable_templating
-    self.cfg.enable_templating = False
+    with self.cfg.disable_templating:
 
-    modify_all_opts(self.cfg, opts_changes, opts_to_skip=PARSE_OPTS + ['exts_list',
-                                                                       'postinstallcmds',
-                                                                       'modluafooter',
-                                                                       'ebpythonprefixes',
-                                                                       'allow_prepend_abs_path',
-                                                                       'modextrapaths'])
+        modify_all_opts(self.cfg, opts_changes, opts_to_skip=PARSE_OPTS + ['exts_list',
+                                                                           'postinstallcmds',
+                                                                           'modluafooter',
+                                                                           'ebpythonprefixes',
+                                                                           'allow_prepend_abs_path',
+                                                                           'modextrapaths'])
 
-    # additional changes for CMakeMake EasyBlocks
-    ec = self.cfg
-    if ec.easyblock is None or isinstance(ec.easyblock, str):
-        c = get_easyblock_class(ec.easyblock, name=ec.name)
-    elif isinstance(ec.easyblock, type):
-        c = ec.easyblock
-    if c == CMakeMake or issubclass(c,CMakeMake):
-        # ensure CMake is in the build dependencies or dependencies
-        if 'CMake' not in str(self.cfg['dependencies']) + str(self.cfg['builddependencies']):
-            print("Error, for CMakeMake recipes, you should have a dependency on CMake")
-            exit(1)
-        # skip for those
-        if (ec['name'],ec['version']) in [('ROOT','5.34.36'), ('mariadb', '10.4.11')]:
-            pass
-        else:
-            update_opts(ec, ' -DCMAKE_SKIP_INSTALL_RPATH=ON ', 'configopts', PREPEND)
-        # disable XHOST
-        update_opts(ec, ' -DENABLE_XHOST=OFF ', 'configopts', PREPEND)
-        # use verbose makefile to get the command lines that are executed
-        update_opts(ec, ' -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ', 'configopts', PREPEND)
+        # additional changes for CMakeMake EasyBlocks
+        ec = self.cfg
+        if ec.easyblock is None or isinstance(ec.easyblock, str):
+            c = get_easyblock_class(ec.easyblock, name=ec.name)
+        elif isinstance(ec.easyblock, type):
+            c = ec.easyblock
+        if c == CMakeMake or issubclass(c,CMakeMake):
+            # ensure CMake is in the build dependencies or dependencies
+            if 'CMake' not in str(self.cfg['dependencies']) + str(self.cfg['builddependencies']):
+                print("Error, for CMakeMake recipes, you should have a dependency on CMake")
+                exit(1)
+            # skip for those
+            if (ec['name'],ec['version']) in [('ROOT','5.34.36'), ('mariadb', '10.4.11')]:
+                pass
+            else:
+                update_opts(ec, ' -DCMAKE_SKIP_INSTALL_RPATH=ON ', 'configopts', PREPEND)
+            # disable XHOST
+            update_opts(ec, ' -DENABLE_XHOST=OFF ', 'configopts', PREPEND)
+            # use verbose makefile to get the command lines that are executed
+            update_opts(ec, ' -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ', 'configopts', PREPEND)
 
-    # additional changes for MesonNinja EasyBlocks
-    if (c == MesonNinja or issubclass(c,MesonNinja)) and c != CMakeNinja:
-        update_opts(ec, False, 'fail_on_missing_ninja_meson_dep', REPLACE)
-
-    self.cfg.enable_templating = orig_enable_templating
+        # additional changes for MesonNinja EasyBlocks
+        if (c == MesonNinja or issubclass(c,MesonNinja)) and c != CMakeNinja:
+            update_opts(ec, False, 'fail_on_missing_ninja_meson_dep', REPLACE)
 
 def pre_fetch_hook(self, *args, **kwargs):
     "Modify extension list (here is more efficient than parse_hook since only called once)"
-    orig_enable_templating = self.cfg.enable_templating
-    self.cfg.enable_templating = False
-    modify_all_opts(self.cfg, opts_changes, opts_to_change=['accept_eula', 'exts_list'])
-    # special extensions hook for Python
-    if self.cfg['name'].lower() == 'python':
-        python_fetchhook(self.cfg)
-    self.cfg.enable_templating = orig_enable_templating
+    with self.cfg.disable_templating:
+        modify_all_opts(self.cfg, opts_changes, opts_to_change=['accept_eula', 'exts_list'])
+        # special extensions hook for Python
+        if self.cfg['name'].lower() == 'python':
+            python_fetchhook(self.cfg)
 
 def pre_postproc_hook(self, *args, **kwargs):
     "Modify postinstallcmds (here is more efficient than parse_hook since only called once)"
-    orig_enable_templating = self.cfg.enable_templating
-    self.cfg.enable_templating = False
-    modify_all_opts(self.cfg, opts_changes, opts_to_change=['postinstallcmds'])
-    self.cfg.enable_templating = orig_enable_templating
+    with self.cfg.disable_templating:
+        modify_all_opts(self.cfg, opts_changes, opts_to_change=['postinstallcmds'])
 
 def pre_module_hook(self, *args, **kwargs):
     "Modify module footer (here is more efficient than parse_hook since only called once)"
-    orig_enable_templating = self.cfg.enable_templating
-    self.cfg.enable_templating = False
-    set_modluafooter(self.cfg)
-    # special extensions hook for Python with --module-only
-    if self.cfg['name'].lower() == 'python':
-        python_fetchhook(self.cfg)
-    self.cfg.enable_templating = orig_enable_templating
+    with self.cfg.disable_templating:
+        set_modluafooter(self.cfg)
+        # special extensions hook for Python with --module-only
+        if self.cfg['name'].lower() == 'python':
+            python_fetchhook(self.cfg)
 
 def post_module_hook(self, *args, **kwargs):
     "Modify GCCcore toolchain to system toolchain for ebfiles_repo only"
