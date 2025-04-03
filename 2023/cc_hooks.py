@@ -850,7 +850,7 @@ def parse_hook(ec, *args, **kwargs):
             # for some reason optarch isn't always parsed yet with --job
             if isinstance(optarch, str):
                 optarch = dict([kv.split(':') for kv in optarch.split(';')])
-            optarch = '-' + optarch['Intel']
+            optarch = optarch['Intel']
             optarch_new = optarch.replace('core-avx2', 'x86-64-v3').replace('skylake-avx512', 'x86-64-v4')
             if (tcopts.get('oneapi') or (tcopts.get('oneapi_c_cxx', True) and tcopts.get('oneapi_fortran'))):
                 tcopts['optarch'] = optarch_new
