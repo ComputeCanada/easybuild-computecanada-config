@@ -951,9 +951,6 @@ def python_fetchhook(ec):
 
 def pre_configure_hook(self, *args, **kwargs):
     "Modify configopts (here is more efficient than parse_hook since only called once)"
-    orig_enable_templating = self.cfg.enable_templating
-    self.cfg.enable_templating = False
-
     modify_all_opts(self.cfg, opts_changes, opts_to_skip=PARSE_OPTS + ['exts_list',
                                                                        'postinstallcmds',
                                                                        'modluafooter',
@@ -986,34 +983,23 @@ def pre_configure_hook(self, *args, **kwargs):
     if (c == MesonNinja or issubclass(c,MesonNinja)) and c != CMakeNinja:
         update_opts(ec, False, 'fail_on_missing_ninja_meson_dep', REPLACE)
 
-    self.cfg.enable_templating = orig_enable_templating
-
 def pre_fetch_hook(self, *args, **kwargs):
     "Modify extension list (here is more efficient than parse_hook since only called once)"
-    orig_enable_templating = self.cfg.enable_templating
-    self.cfg.enable_templating = False
     modify_all_opts(self.cfg, opts_changes, opts_to_change=['accept_eula', 'exts_list'])
     # special extensions hook for Python
     if self.cfg['name'].lower() == 'python':
         python_fetchhook(self.cfg)
-    self.cfg.enable_templating = orig_enable_templating
 
 def pre_postproc_hook(self, *args, **kwargs):
     "Modify postinstallcmds (here is more efficient than parse_hook since only called once)"
-    orig_enable_templating = self.cfg.enable_templating
-    self.cfg.enable_templating = False
     modify_all_opts(self.cfg, opts_changes, opts_to_change=['postinstallcmds'])
-    self.cfg.enable_templating = orig_enable_templating
 
 def pre_module_hook(self, *args, **kwargs):
     "Modify module footer (here is more efficient than parse_hook since only called once)"
-    orig_enable_templating = self.cfg.enable_templating
-    self.cfg.enable_templating = False
     set_modluafooter(self.cfg)
     # special extensions hook for Python with --module-only
     if self.cfg['name'].lower() == 'python':
         python_fetchhook(self.cfg)
-    self.cfg.enable_templating = orig_enable_templating
 
 def post_module_hook(self, *args, **kwargs):
     "Modify GCCcore toolchain to system toolchain for ebfiles_repo only"

@@ -61,14 +61,14 @@ def update_opts(ec,changes,key, update_type):
             changes = [changes]
         for change in changes:
             if update_type == APPEND_LIST:
-                ec[key].append(change)
+                ec[key] = ec[key] + [change]
             elif update_type == DROP_FROM_LIST:
                 ec[key] = [x for x in ec[key] if x not in changes]
             elif update_type == REPLACE_IN_LIST:
                 for swap in changes:
                     ec[key] = [swap[1] if x == swap[0] else x for x in ec[key]]
             else:
-                ec[key].insert(0, change)
+                ec[key] = [change] + ec[key]
     else:
         if isinstance(ec[key], str):
             opts = [ec[key]]
