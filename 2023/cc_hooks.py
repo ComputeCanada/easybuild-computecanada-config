@@ -979,7 +979,7 @@ def pre_configure_hook(self, *args, **kwargs):
         # use verbose makefile to get the command lines that are executed
         update_opts(ec, ' -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ', 'configopts', PREPEND)
         # use correct Python_EXECUTABLE and Python3_EXECUTABLE, can be removed when cmakemake easyblock fixed
-        if os.environ['EBROOTPYTHON']:
+        if os.getenv('EBROOTPYTHON'):
             update_opts(ec, ' -DPython_EXECUTABLE=$EBROOTPYTHON/bin/python ', 'configopts', PREPEND)
             update_opts(ec, ' -DPython3_EXECUTABLE=$EBROOTPYTHON/bin/python ', 'configopts', PREPEND)
 
