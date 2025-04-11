@@ -171,9 +171,6 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
                     tc_mpi_fullver = self.det_twodigit_version(tc_mpi)
                     if '/MPI/' in tc_cuda['full_mod_name']:
                         subdir = os.path.join(tc_mpi_name+tc_mpi_fullver, subdir)
-                if using2023 and tc_comp_name == GCCCORE.lower() and tc_cuda_fullver != '12.2':
-                    # split into versioned gcccore with CUDA 12.6+
-                    tc_comp_ver = self.det_twodigit_version({'name': tc_comp_name, 'version': tc_comp_info[1]})
                 if tc_comp_name != GCCCORE.lower() or using2023:
                     subdir = os.path.join(tc_comp_name+tc_comp_ver, subdir)
                 if tc_mpi is None or '/MPI/' in tc_cuda['full_mod_name']:
