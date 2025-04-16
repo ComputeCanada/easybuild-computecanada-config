@@ -964,7 +964,8 @@ def pre_configure_hook(self, *args, **kwargs):
         c = get_easyblock_class(ec.easyblock, name=ec.name)
     elif isinstance(ec.easyblock, type):
         c = ec.easyblock
-    if c == CMakeMake or issubclass(c,CMakeMake):
+    # need to use a string comparison instead of issubbclass as CMakeMake may be overridden by a custom easyblock
+    if c == CMakeMake or str(CMakeMake) in map(str, c.__mro__):
         # ensure CMake is in the build dependencies or dependencies
         if 'CMake' not in str(self.cfg['dependencies']) + str(self.cfg['builddependencies']):
             print("Error, for CMakeMake recipes, you should have a dependency on CMake")
@@ -980,11 +981,12 @@ def pre_configure_hook(self, *args, **kwargs):
         update_opts(ec, ' -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ', 'configopts', PREPEND)
         # use correct Python_EXECUTABLE and Python3_EXECUTABLE, can be removed when cmakemake easyblock fixed
         if os.getenv('EBROOTPYTHON'):
+            update_opts(ec, ' -DPYTHON_EXECUTABLE=$EBROOTPYTHON/bin/python ', 'configopts', PREPEND)
             update_opts(ec, ' -DPython_EXECUTABLE=$EBROOTPYTHON/bin/python ', 'configopts', PREPEND)
             update_opts(ec, ' -DPython3_EXECUTABLE=$EBROOTPYTHON/bin/python ', 'configopts', PREPEND)
 
     # additional changes for MesonNinja EasyBlocks
-    if (c == MesonNinja or issubclass(c,MesonNinja)) and c != CMakeNinja:
+    if (c == MesonNinja or str(MesonNinja) in map(str, c.__mro__)) and c != CMakeNinja:
         update_opts(ec, False, 'fail_on_missing_ninja_meson_dep', REPLACE)
 
 def pre_fetch_hook(self, *args, **kwargs):
