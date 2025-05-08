@@ -91,6 +91,7 @@ new_version_mapping_2023a = {
         **dict.fromkeys([('Python', '3.10.%s' % str(x)) for x in range(0,14)], ('3.10', GCCCORE123 + SYSTEM)),
         **dict.fromkeys([('Python', '3.11.%s' % str(x)) for x in range(0,6)], ('3.11', GCCCORE123 + SYSTEM)),
         **dict.fromkeys([('Python', '3.12.%s' % str(x)) for x in range(0,5)], ('3.12', GCCCORE133 + SYSTEM)),
+        **dict.fromkeys([('Python', '3.13.%s' % str(x)) for x in range(0,5)], ('3.13', GCCCORE133 + SYSTEM)),
         'Qt5': ('5.15.11', GCCCORE123 + SYSTEM),
         'SCOTCH': ('7.0.3', cOMPI_2023a, None),
 }
