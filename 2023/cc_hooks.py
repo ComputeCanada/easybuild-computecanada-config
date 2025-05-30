@@ -1053,6 +1053,9 @@ def post_prepare_hook(self, *args, **kwargs):
         to_set = "EBROOT" + pkg + "SERIAL"
         if to_check in os.environ:
             setvar(to_set, os.environ[to_check])
+    # also define EBROOTCUDA if EBROOTCUDACORE is set for compatibility with upstream easyblocks
+    if "EBROOTCUDACORE" in os.environ and "EBROOTCUDA" not in os.environ:
+        setvar("EBROOTCUDA", os.environ["EBROOTCUDACORE"])
 
 def module_write_hook(self, filepath, module_txt, *args, **kwargs):
     # Only keep one path in FSL to avoid it overriding regular non-FSL commands
