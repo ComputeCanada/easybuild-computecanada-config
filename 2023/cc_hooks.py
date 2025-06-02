@@ -18,7 +18,7 @@ from cc_hooks_common import get_matching_keys, get_matching_keys_from_ec
 from easybuild.tools.config import build_option
 from easybuild.tools.toolchain.utilities import search_toolchain
 from easybuild.tools.environment import setvar
-from easybuild.tools.run import run_cmd
+from easybuild.tools.run import run_cmd, run_shell_cmd
 import uuid
 import shutil
 
@@ -1020,6 +1020,9 @@ def post_module_hook(self, *args, **kwargs):
     toolchain = self.cfg.get('toolchain')
     if toolchain and toolchain['name'] == 'GCCcore':
         self.cfg['toolchain'] = EASYCONFIG_CONSTANTS['SYSTEM'][0]
+    # Generate Lmod cache, only as "ebuser"
+    if os.getenv("USER") == "ebuser":
+        run_shell_cmd("/etc/rsnt/generate_lmod_cache.py --arch sse3 avx avx2 avx512")
 
 def pre_prepare_hook(self, *args, **kwargs):
     packages_in_gentoo = ["EBROOTLIBXML2", "EBROOTLIBJPEGMINTURBO", "EBROOTLIBPNG", "EBROOTLIBTIFF",
