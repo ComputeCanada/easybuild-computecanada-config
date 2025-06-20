@@ -195,10 +195,14 @@ family("mpi")
 # but not for spider as that shadows the non-MPI cuda module
 cuda_mpi_modluafooter = """
 if (mode() ~= "spider") then
-    prepend_path("MODULEPATH", pathJoin("/cvmfs/soft.computecanada.ca/easybuild/modules/{year}/{sub_path}"))
+    prepend_path("MODULEPATH", "/cvmfs/soft.computecanada.ca/easybuild/modules/{year}/{sub_path}")
     if isDir(pathJoin(os.getenv("HOME"), ".local/easybuild/modules/{year}/{sub_path}")) then
         prepend_path("MODULEPATH", pathJoin(os.getenv("HOME"), ".local/easybuild/modules/{year}/{sub_path}"))
     end
+end
+prepend_path("MODULEPATH", "/cvmfs/soft.computecanada.ca/easybuild/modules/{year}/{sub_mpi_path}")
+if isDir(pathJoin(os.getenv("HOME"), ".local/easybuild/modules/2023/{sub_mpi_path}")) then
+    prepend_path("MODULEPATH", pathJoin(os.getenv("HOME"), ".local/easybuild/modules/{year}/{sub_mpi_path}"))
 end
 """
 
@@ -762,7 +766,8 @@ def set_modluafooter(ec):
     elif ec['name'] == 'CUDA' and 'mpi' in ec['toolchain']['name']:
         mod_subdir = ec.mod_subdir.split('/') # e.g. x86-64-v3/MPI/gcc12/openmpi4 -> x86-64-v3/CUDA/gcc12/cuda12.2
         comp = os.path.join(mod_subdir[0], 'CUDA', mod_subdir[2], 'cuda' + '.'.join(ec['version'].split('.')[:2]))
-        ec['modluafooter'] += cuda_mpi_modluafooter.format(year=year, sub_path=comp)
+        mpi_comp = os.path.join(mod_subdir[0], 'CUDA', mod_subdir[2], mod_subdir[3], 'cuda' + '.'.join(ec['version'].split('.')[:2]))
+        ec['modluafooter'] += cuda_mpi_modluafooter.format(year=year, sub_path=comp, sub_mpi_path=mpi_comp)
 
 
 def add_dependencies(ec, keyword):
