@@ -763,7 +763,7 @@ def set_modluafooter(ec):
     if ec['name'] == 'CUDAcore':
         comp = os.path.join('CUDA', 'gcccore', 'cuda' + '.'.join(ec['version'].split('.')[:2]))
         ec['modluafooter'] += compiler_modluafooter.format(year=year, sub_path=comp)
-    elif ec['name'] == 'CUDA' and 'mpi' in ec['toolchain']['name']:
+    elif ec['name'] == 'CUDA' and 'mpi' in ec['toolchain']['name'] and 'compiler' not in ec['toolchain']['name']:
         mod_subdir = ec.mod_subdir.split('/') # e.g. x86-64-v3/MPI/gcc12/openmpi4 -> x86-64-v3/CUDA/gcc12/cuda12.2
         comp = os.path.join(mod_subdir[0], 'CUDA', mod_subdir[2], 'cuda' + '.'.join(ec['version'].split('.')[:2]))
         mpi_comp = os.path.join(mod_subdir[0], 'CUDA', mod_subdir[2], mod_subdir[3], 'cuda' + '.'.join(ec['version'].split('.')[:2]))
