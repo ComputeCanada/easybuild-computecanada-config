@@ -2,6 +2,7 @@ from easybuild.framework.easyconfig.easyconfig import get_easyblock_class, get_t
 from easybuild.easyblocks.generic.cmakemake import CMakeMake
 from easybuild.easyblocks.generic.cmakeninja import CMakeNinja
 from easybuild.easyblocks.generic.mesonninja import MesonNinja
+from easybuild.easyblocks.llvm import EB_LLVM
 from easybuild.toolchains.system import SystemToolchain
 from easybuild.toolchains.gcccore import GCCcore
 from easybuild.framework.easyconfig.constants import EASYCONFIG_CONSTANTS
@@ -1000,6 +1001,11 @@ def pre_configure_hook(self, *args, **kwargs):
     # additional changes for MesonNinja EasyBlocks
     if (c == MesonNinja or str(MesonNinja) in map(str, c.__mro__)) and c != CMakeNinja:
         update_opts(ec, False, 'fail_on_missing_ninja_meson_dep', REPLACE)
+    if c == EB_LLVM:
+        setvar("EBROOTZLIB", os.environ["EBROOTGENTOO"])
+        setvar("EBROOTGCCCORE", os.environ["EBROOTGENTOO"])
+        setvar("EBROOTLIBFFI", os.path.join(os.environ["EBROOTGENTOO"], "lib64", "libffi"))
+        setvar("EBVERSIONGCCCORE", os.environ["EBVERSIONGCCCORE"].split('.')[0])
 
 def pre_fetch_hook(self, *args, **kwargs):
     "Modify extension list (here is more efficient than parse_hook since only called once)"
