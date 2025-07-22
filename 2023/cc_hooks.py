@@ -526,6 +526,11 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
 ], REPLACE),
         'modextrapaths': ({'EBPYTHONPREFIXES': ['extern/engines/python']}, REPLACE),
     },
+    ('mpi4py', '4.0.0'): {
+        'builddependencies': ([[('Python', v), ('Cython', '3.0.11')] for v in ['3.10', '3.11', '3.12'] ], REPLACE),
+        'dependencies': ([], REPLACE),
+        'multi_deps': ({'Python': ['3.10', '3.11', '3.12'] }, REPLACE),
+    },
     'mpi4py': {
         'builddependencies': ([[('Python', v), ('Cython', '3.0.11')] for v in ['3.10', '3.11', '3.12','3.13'] ], REPLACE),
         'dependencies': ([], REPLACE),
