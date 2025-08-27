@@ -66,6 +66,7 @@ new_version_mapping_2023a = {
         'Eigen': ('3.4.0', SYSTEM),
         ('GCCcore', '12.3.0'): ('12.3', SYSTEM, '-gentoo'),
         ('GCCcore', '13.3.0'): ('13.3', SYSTEM, '-gentoo'),
+        ('GCCcore', '14.3.0'): ('14.3', SYSTEM, '-gentoo'),
         'GSL': ('2.7', COMPILERS_2023a),
         ('Java', '11'): ('17', SYSTEM),
         ('HDF5','ANY',''): ('1.14.2', COMPILERS_2023a),
