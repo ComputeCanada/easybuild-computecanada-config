@@ -33,6 +33,8 @@ GCCCORE123 = [('GCCcore', '12.3.0'), ('GCCcore', '12.3-gentoo')]
 GCC123 = [('GCC', '12.3.0')]
 GCCCORE133 = [('GCCcore', '13.3.0'), ('GCCcore', '13.3-gentoo')]
 GCC133 = [('GCC', '13.3.0')]
+GCCCORE143 = [('GCCcore', '14.3.0'), ('GCCcore', '14.3-gentoo')]
+GCC143 = [('GCC', '14.3.0')]
 ICC2023a = [('intel-compilers', '2023.2.1')]
 COMPILERS_2023a = [ICC2023a[0], GCC123[0]]
 cOMPI_2023a = [('iompi', '2023a'),('gompi', '2023a')]
@@ -322,6 +324,9 @@ end
     },
     ('GCC', '13.3.0'): {
         'version': ('13.3', REPLACE),
+    },
+    ('GCC', '14.3.0'): {
+        'version': ('14.3', REPLACE),
     },
     'GObject-Introspection': {
         'multi_deps': ({'Python': ['3.6', '3.7', '3.8']}, REPLACE),
@@ -851,6 +856,13 @@ def parse_hook(ec, *args, **kwargs):
             builddeps.append(('CUDAcore', '%(cudaver)s'))
         else:
             ec['toolchain'] = {'name': 'GCCcore', 'version': '13.3-gentoo'}
+    elif ec['toolchain'] == {'name': 'GCCcore', 'version': '14.3.0'}:
+        if ec['versionsuffix'] == '-CUDA-%(cudaver)s':
+            ec['toolchain'] = {'name': 'gcccorecuda', 'version': '2025b'}
+            ec['versionsuffix'] = ''
+            builddeps.append(('CUDAcore', '%(cudaver)s'))
+        else:
+            ec['toolchain'] = {'name': 'GCCcore', 'version': '14.3-gentoo'}
     elif ec['toolchain']['name'] == 'gcccorecuda':
         builddeps.append(('CUDAcore', '%(cudaver)s'))
     elif ec['toolchain'] == {'name': 'intel-compilers', 'version': '2023.1.0'}:
