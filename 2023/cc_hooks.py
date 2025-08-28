@@ -665,7 +665,6 @@ end""".format(version="v2412"), REPLACE),
     "PMIx": {
         # local customizations for PMIx
         'configopts': ('--with-munge ' + #enable Munge in PMIx
-                    '--disable-show-load-errors-by-default ' +
                     # enumerate all mca's that should be compiled as plugins
                     '--enable-mca-dso=psec-munge',
                     PREPEND),
