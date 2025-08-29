@@ -492,6 +492,13 @@ end
         'patches': (['libfabric-1.21.0_eliminate-cudart-use.patch'], APPEND_LIST),
         'checksums': ('f6a1b7d62c546c5786ec85d19998258d644dd2aba0773f0151ea6d47b87aa181', APPEND_LIST),
     },
+    ('libfabric', '2.1.0'): {
+        'builddependencies': ([('opa-psm2', '12.0.1'), ('GDRCopy', '2.5'), ('CUDAcore', '12.9.1')], REPLACE),
+        'dependencies': ([('hwloc', '2.12.1')], REPLACE),
+        'configopts': ('--enable-cuda-dlopen --enable-gdrcopy-dlopen --enable-psm2=dl ', PREPEND),
+        'patches': (['libfabric-2.1.0_eliminate-cudart-use.patch'], APPEND_LIST),
+        'checksums': ('f6615a08b4cc1a3ed68fe753ee555806f7a1b5b8054e824b2c620dd75383e284', APPEND_LIST),
+    },
     'libgeotiff': {
         'configopts': (' --with-libtiff=$EBROOTGENTOO --with-zlib=$EBROOTGENTOO --with-jpeg=$EBROOTGENTOO', APPEND),
     },
