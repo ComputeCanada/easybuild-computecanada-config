@@ -669,6 +669,24 @@ end""".format(version="v2412"), REPLACE),
         'postinstallcmds': (['rm %(installdir)s/lib/*.la %(installdir)s/lib/*/*.la'], REPLACE),
         'modluafooter': (mpi_modluafooter % 'openmpi', REPLACE),
     },
+    ("OpenMPI", "5.0.8"): {
+        # local customizations for OpenMPI
+        'builddependencies': ([('opa-psm2', '12.0.1')], REPLACE),
+        'configopts': (
+                    # rpath is already done by ld wrapper
+                    '--disable-wrapper-runpath --disable-wrapper-rpath ' +
+                    '--enable-mpi1-compatibility ' +
+                    # enumerate all mca's that should be compiled as plugins
+                    # (only those that link to system-specific
+                    # libraries (lustre, fabric, and scheduler)
+                    '--enable-mca-dso=common-ofi,common-ucx,' +
+                    'accelerator-cuda,atomic-ucx,btl-ofi,btl-smcuda,btl-uct,' +
+                    'coll-ucc,fs-lustre,mtl-ofi,mtl-psm2,osc-ucx,' +
+                    'pml-ucx,rcache-gpusm,rcache-rgpusm,scoll-ucc,spml-ucx,sshmem-ucx ',
+                    PREPEND),
+        'postinstallcmds': (['rm %(installdir)s/lib/*.la %(installdir)s/lib/*/*.la'], REPLACE),
+        'modluafooter': (mpi_modluafooter % 'openmpi', REPLACE),
+    },
     "PMIx": {
         # local customizations for PMIx
         'configopts': ('--with-munge ' + #enable Munge in PMIx
