@@ -5,6 +5,8 @@ USE_GENTOO_VERSION="$EBVERSIONGENTOO"
 USE_NIX="$NIXUSER_PROFILE"
 # clean environment incl. user variables
 module --force purge
+# use smaller arch-specific directory to avoid large spider cache rebuilds
+export MODULEPATH=/cvmfs/soft.computecanada.ca/custom/modules-$RSNT_ARCH
 unset CPATH
 unset LIBRARY_PATH
 unset LD_LIBRARY_PATH
@@ -34,7 +36,7 @@ export EASYBUILD_SUBDIR_MODULES=modules/$YEAR
 export EASYBUILD_SUBDIR_SOFTWARE=software/$YEAR
 export EASYBUILD_SUBDIR_USER_MODULES=.local/easybuild/$EASYBUILD_SUBDIR_MODULES
 export PATH=${PATH%%:/usr/bin}
-module use $EASYBUILD_ROOT/$EASYBUILD_SUBDIR_MODULES
+export MODULEPATH=$EASYBUILD_ROOT/$EASYBUILD_SUBDIR_MODULES:$MODULEPATH
 export EASYBUILD_ROBOT_PATHS=$EASYBUILD_ROOT/ebfiles_repo/$YEAR
 export EASYBUILD_REPOSITORY='GitRepository'
 if [ "$RSNT_ARCH" == avx2 ]; then
