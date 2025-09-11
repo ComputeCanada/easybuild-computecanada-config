@@ -626,6 +626,13 @@ end""".format(version="12"), REPLACE),
         'patches': (['OpenFOAM-11-cleanup-cc.patch'], APPEND_LIST),
         'checksums': ('56a98703a1022d5e75f7b1f7cd4592bc79ba93c1dd53d3e52316726797430c33', APPEND_LIST),
     },
+    ("OpenFOAM", "13"): {
+        'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
+        source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
+end""".format(version="13"), REPLACE),
+        'patches': (['OpenFOAM-11-cleanup-cc.patch'], APPEND_LIST),
+        'checksums': ('56a98703a1022d5e75f7b1f7cd4592bc79ba93c1dd53d3e52316726797430c33', APPEND_LIST),
+    },
     ("OpenFOAM", "v2306"): {
         'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
         source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
