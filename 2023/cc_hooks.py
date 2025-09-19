@@ -256,10 +256,10 @@ intel_common_postinstallcmds = '''
          cp -p $installdir/$i $publicdir/$i
        fi
     done
-    for i in compiler/$shortver/lib/libur_adapter_cuda.so.*; do
-       cp -a  $installdir/$i $publicdir/$i
-    done
     cd $installdir
+    for i in compiler/$shortver/lib/libur_adapter_cuda.so.*; do
+       cp -a $i $publicdir/$i
+    done
     for i in $(find . -type l); do
        if [ -f $publicdir/$i ]; then
          cp -a $i $publicdir/$i
@@ -426,10 +426,10 @@ end
          cp -p $installdir/$i $publicdir/$i
        fi
     done
-    for i in compiler/$shortver/lib/libur_adapter_cuda.so.*; do
-       cp -a  $installdir/$i $publicdir/$i
-    done
     cd $installdir
+    for i in compiler/$shortver/lib/libur_adapter_cuda.so.*; do
+       cp -a $i $publicdir/$i
+    done
     for i in $(find . -type l); do
        if [ -f $publicdir/$i ]; then
          cp -a $i $publicdir/$i
