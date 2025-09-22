@@ -427,7 +427,7 @@ end
        fi
     done
     cd $installdir
-    for i in compiler/$shortver/lib/libur_adapter_cuda.so.*; do
+    for i in compiler/%(version)s/linux/lib/libpi_cuda.so; do
        cp -a $i $publicdir/$i
     done
     for i in $(find . -type l); do
