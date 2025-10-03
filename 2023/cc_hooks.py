@@ -339,8 +339,10 @@ opts_changes = {
         'version': ('12.2', REPLACE),
     },
     'CUDAcore': {
+        'sources': ('cuda-postinstall.sh', APPEND_LIST),
         'patches': (('cuda-installer-wrapper.sh', '.'), APPEND_LIST),
-        'checksums': ('bc06ddb2363190e96f3a68daaf089690036759832e0a717816a84ad1ad85984a', APPEND_LIST),
+        'checksums': (['20ca9ff9b5130e48ef2df4e3e1378bd0734beec13520a204f613afae6254bc97',
+                       '8bea045a50b8217dc2850adc59d3f000e9448031898afb82b9adca40e4bc670a'], APPEND_LIST),
         'accept_eula': (True, REPLACE),
         'preinstallopts': ("mv cuda-installer cuda-installer.orig && mv cuda-installer-wrapper.sh cuda-installer && ", PREPEND),
         'modluafooter': ('''
