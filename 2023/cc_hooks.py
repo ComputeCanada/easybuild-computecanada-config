@@ -347,7 +347,7 @@ opts_changes = {
         'preinstallopts': ("mv cuda-installer cuda-installer.orig && mv cuda-installer-wrapper.sh cuda-installer && ", PREPEND),
         'modluafooter': ('''
 if cuda_driver_library_available("%(version_major_minor)s") == "compat" then
-        depends_on("cudacompat/.%(version_major_minor)s")
+        depends_on("cudacompat")
 end
 ''', REPLACE)
     },
