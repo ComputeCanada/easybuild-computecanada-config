@@ -79,6 +79,7 @@ new_version_mapping_2023a = {
         ('intel-compilers', '2023.1.0'): ('2023.2.1', SYSTEM),
         ('libbeef', '0.1.2'): ('0.1.2', COMPILERS_2023a),
         'libcerf': ('2.4', GCCCORE123),
+        ('METIS', '5.1.0', ""): ('5.1.0', SYSTEM, '-64idx'),
         ('netCDF','ANY',""): ('4.9.2', COMPILERS_2023a),
         ('netCDF','ANY',""): ('4.9.2', cOMPI_2023a, '-mpi'),
         ('netCDF','ANY','-mpi'): ('4.9.2', cOMPI_2023a, '-mpi'),
