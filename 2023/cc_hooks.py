@@ -764,7 +764,7 @@ end""".format(version="v2412"), REPLACE),
         'configopts': ("-DDEFAULT_SYSROOT=$EPREFIX", PREPEND),
     },
     'Rust': {
-        'prebuildopts': ("sed -i 's/\\(ninja.*=.*\\)false/\\1true/' config.toml && export EASYBUILD_SYSROOT=$EPREFIX && ", PREPEND),
+        'prebuildopts': ("for f in config.toml bootstrap.toml; do [ -f \"$f\" ] && sed -i 's/\\(ninja.*=.*\\)false/\\1true/' \"$f\"; done; export EASYBUILD_SYSROOT=$EPREFIX && ", PREPEND),
     },
     ('SCOTCH', '6.1.2', '-no-thread'): {
         'modaltsoftname': ('scotch-no-thread', REPLACE),
