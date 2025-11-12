@@ -804,6 +804,7 @@ modaltsoftnames = {
     "iccifort": "intel",
     "intel-compilers": "intel",
     "impi": "intelmpi",
+    "llvm-compilers": "llvm",
 }
 def set_modaltsoftname(ec):
     if ec['name'] in modaltsoftnames:
@@ -841,6 +842,8 @@ def set_modluafooter(ec):
     if moduleclass == 'compiler' and not name in ('gcccore', 'llvm', 'clang', 'fpc', 'dpc++', 'ispc'):
         if name in ['iccifort', 'intel-compilers']:
             name = 'intel'
+        elif name == 'llvm-compilers':
+            name = 'llvm'
         comp = os.path.join('Compiler', name + ec['version'][:ec['version'].find('.')])
         ec['modluafooter'] += (compiler_modluafooter.format(year=year,sub_path=comp) + 'family("compiler")\n')
     if ec['name'] == 'CUDAcore':
