@@ -108,6 +108,8 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
         if not res:
             if name in ['iccifort', 'intel-compilers']:
                 modname_regex = re.compile('^%s/\S+$' % re.escape('intel'))
+            elif name == 'llvm-compilers':
+                modname_regex = re.compile('^%s/\S+$' % re.escape('llvm'))
             elif name == 'impi':
                 modname_regex = re.compile('^%s/\S+$' % re.escape('intelmpi'))
             elif name in ['FFTW', 'FFTW.MPI']:
@@ -211,7 +213,7 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
         # use one-digit version for newer compilers and MPIs.
         if ((ec['name'].lower() in ['gcc', 'gcccore'] and major >=8) or
             (ec['name'] in ['intel', 'icc', 'ifort', 'iccifort', 'intel-compilers', 'impi', 'intelmpi'] and major >= 2019) or
-            (ec['name'].lower() == 'nvhpc') or
+            (ec['name'].lower() in ['nvhpc', 'llvm-compilers']) or
             (ec['name'].lower() == 'openmpi' and major >= 4)):
             version = str(major)
         return version
@@ -260,6 +262,8 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
                 # This means icc/ifort are not of the moduleclass compiler but iccifort is
                 if ec['name'] in ['iccifort', 'intel-compilers']:
                     comp_name_ver = ['intel' + self.det_twodigit_version(ec)]
+                elif ec['name'] == 'llvm-compilers':
+                    comp_name_ver = ['llvm' + self.det_twodigit_version(ec)]
             # Exclude extending the path for icc/ifort, the iccifort special case is handled above
             # XXX use custom code for MODULEPATH for compilers via modluafooter
             #if ec['name'] not in ['icc', 'ifort']:
