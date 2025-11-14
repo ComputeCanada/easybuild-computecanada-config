@@ -213,7 +213,7 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
         # use one-digit version for newer compilers and MPIs.
         if ((ec['name'].lower() in ['gcc', 'gcccore'] and major >=8) or
             (ec['name'] in ['intel', 'icc', 'ifort', 'iccifort', 'intel-compilers', 'impi', 'intelmpi'] and major >= 2019) or
-            (ec['name'].lower() in ['nvhpc', 'llvm-compilers']) or
+            (ec['name'].lower() in ['nvhpc', 'llvm-compilers', 'llvm']) or
             (ec['name'].lower() == 'openmpi' and major >= 4)):
             version = str(major)
         return version
