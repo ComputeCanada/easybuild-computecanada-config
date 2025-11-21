@@ -44,7 +44,6 @@ if [ "$RSNT_ARCH" == avx2 ]; then
 else
 	export EASYBUILD_REPOSITORYPATH=$EASYBUILD_ROOT/ebfiles_repo_$RSNT_ARCH.git,$YEAR
 	export EASYBUILD_ROBOT_PATHS=$EASYBUILD_ROOT/ebfiles_repo_$RSNT_ARCH/$YEAR:$EASYBUILD_ROBOT_PATHS
-	export EASYBUILD_USE_CCACHE=''
 fi
 
 if [ "$RSNT_ARCH" == avx2 ]; then
@@ -121,8 +120,16 @@ export EASYBUILD_HOOKS=$EASYBUILD_CONFIG_ROOT/cc_hooks.py
 export EASYBUILD_BUILDPATH=$EASYBUILD_BUILDPATH/$RSNT_ARCH
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
-if [ ! -d /cvmfs/local ]; then
-	export EASYBUILD_USE_CCACHE=''
+if [[ $HOSTNAME =~ archimedes.c3.ca$ && "$RSNT_ARCH" == "avx2" ]]; then
+	EASYBUILD_USE_CCACHE=/tmp/ccache
+	if [ ! -d $EASYBUILD_USE_CCACHE ]; then
+		# create multiuser ccache
+		mkdir -p $EASYBUILD_USE_CCACHE
+		chgrp rsnt_soft $EASYBUILD_USE_CCACHE
+		chmod g+s $EASYBUILD_USE_CCACHE
+		setfacl -m "d:o:rx" $EASYBUILD_USE_CCACHE
+	fi
+	export CCACHE_BASEDIR=/tmp/$USER
 fi
 export RSNT_EASYBUILD_MAGIC_COOKIE=263ca73bb634185aab1d1b41627fdbba
 
