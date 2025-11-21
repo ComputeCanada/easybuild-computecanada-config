@@ -87,7 +87,11 @@ if [ -z $USE_GENTOO ]; then
 fi
 
 CURRENT_USER="$(whoami)"
-ORIG_USER="$(logname)"
+if [ -n "$SUDO_USER" ] ; then
+	ORIG_USER="$SUDO_USER"
+else
+	ORIG_USER="$CURRENT_USER"
+fi
 if [ "$CURRENT_USER" != "ebuser" ] ; then
 	export EASYBUILD_PREFIX=$HOME/.local/easybuild
 	export EASYBUILD_SUBDIR_USER_MODULES=''
