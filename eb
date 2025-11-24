@@ -139,6 +139,8 @@ export RSNT_EASYBUILD_MAGIC_COOKIE=263ca73bb634185aab1d1b41627fdbba
 
 # argument validation
 NEW_ARGS=()
+unset from_pr
+unset job
 for argument in "$@"; do
 	if [[ $argument =~ ^--disable-enforce-checksums$ ]]; then
 		# workaround for non-propagation of this argument
@@ -149,17 +151,13 @@ for argument in "$@"; do
 		echo "Job-cores specified to ${kv[1]}, setting EASYBUILD_PARALLEL=${kv[1]}"
 		export EASYBUILD_PARALLEL=${kv[1]}
 	fi
+	if [[ $argument =~ ^--(include-easyblocks-|)from-pr($|=) ]]; then
+		from_pr=1
+	fi
 	if [[ $argument =~ ^--job$ ]]; then
 		# so we can follow the job output with e.g. tail -f
 		export PYTHONUNBUFFERED=1
-		if [[ $HOSTNAME =~ archimedes.c3.ca$ ]]; then
-			# Needed for --try-* --job and --from-pr --job so
-			# on-the-fly easyconfigs are passed to the job from shared_tmp.
-			# Setting TMPDIR (unlike EASYBUILD_TMPDIR) here the job itself
-			# (unlike the submitter) will use a private TMPDIR
-			export TMPDIR="/shared_tmp"
-			export EASYBUILD_DISABLE_CLEANUP_TMPDIR=1
-		fi
+		job=1
 	fi
 	if [[ "$CURRENT_USER" == "ebuser" ]]; then
 		if [[ $argument =~ --inject-checksums* || $argument =~ --robot* || "$argument" == "-r" ]]; then
@@ -206,6 +204,16 @@ for argument in "$@"; do
 		fi
 	fi
 done
+
+if [[ $HOSTNAME =~ archimedes.c3.ca$ && -n "$job" && -n "$from_pr" ]]; then
+	# Needed for --from-pr --job so
+	# on-the-fly easyconfigs are passed to the job from shared_tmp.
+	# Setting TMPDIR (unlike EASYBUILD_TMPDIR) here the job itself
+	# (unlike the submitter) will use a private TMPDIR
+	export TMPDIR="/shared_tmp"
+	export EASYBUILD_DISABLE_CLEANUP_TMPDIR=1
+fi
+
 if [[ -n "$SLURM_CPUS_ON_NODE" ]]; then
 	export EASYBUILD_PARALLEL=$SLURM_CPUS_ON_NODE
 fi
