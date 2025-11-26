@@ -34,7 +34,7 @@ Authors:
 """
 
 from easybuild.toolchains.gcccore import GCCcore
-from easybuild.toolchains.llvm import LLVMCompilers
+from easybuild.toolchains.compiler.llvm_compilers import LLVMCompilers
 from easybuild.tools.toolchain.toolchain import SYSTEM_TOOLCHAIN_NAME
 
 

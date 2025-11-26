@@ -74,7 +74,7 @@ class LLVMCompilers(Compiler):
         'basic-block-vectorize': (False, "Basic block vectorization"),
 
         # https://github.com/madler/zlib/issues/856
-        'lld_undefined_version': (True, "-Wl,--undefined-version - Allow unused version in version script"),
+        'lld_undefined_version': (False, "-Wl,--undefined-version - Allow unused version in version script"),
         'no_unused_args': (
             True,
             "-Wno-unused-command-line-argument - Avoid some failures in CMake correctly recognizing "
@@ -90,8 +90,6 @@ class LLVMCompilers(Compiler):
         'unroll': '-funroll-loops',
         'loop-vectorize': ['-fvectorize'],
         'basic-block-vectorize': ['-fslp-vectorize'],
-        'optarch': '',
-        # 'optarch': '-march=native',
         # Clang's options do not map well onto these precision modes.  The flags enable and disable certain classes of
         # optimizations.
         #
@@ -166,7 +164,7 @@ class LLVMCompilers(Compiler):
     COMPILER_F90 = 'flang'
     COMPILER_FC = 'flang'
 
-    LINKERS = ['lld', 'ld.lld', 'ld64.lld']
+    LINKERS = ('lld', 'ld.lld', 'ld64.lld')
 
     LIB_MULTITHREAD = ['pthread']
     LIB_MATH = ['m']
