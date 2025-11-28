@@ -232,12 +232,12 @@ intelmpi2021_dict = {
 intel_common_postinstallcmds = '''
     for compname in icx icpx ifx; do
        echo "--sysroot=$EPREFIX" > %(installdir)s/compiler/$shortver/bin/$compname.cfg
-       echo "-L$EBROOTGCCCORE/lib64" >> %(installdir)s/compiler/$shortver/bin/$compname.cfg
+       echo "--gcc-install-dir=$EBROOTGENTOO/lib/gcc/x86_64-pc-linux-gnu/${EBVERSIONGCCCORE:0:2}" >> %(installdir)s/compiler/$shortver/bin/$compname.cfg
        echo "-Wl,-dynamic-linker=$EPREFIX/lib64/ld-linux-x86-64.so.2" >> %(installdir)s/compiler/$shortver/bin/$compname.cfg
     done
     mv %(installdir)s/compiler/$shortver/bin/{dpcpp,dpcpp.orig}
     echo "#!$EPREFIX/bin/sh" > %(installdir)s/compiler/$shortver/bin/dpcpp
-    echo "exec %(installdir)s/compiler/$shortver/bin/dpcpp.orig --sysroot=$EPREFIX -Wl,-dynamic-linker=$EPREFIX/lib64/ld-linux-x86-64.so.2 -L$EBROOTGCCCORE/lib64 \${1+\\"\$@\\"}" >> %(installdir)s/compiler/$shortver/bin/dpcpp
+    echo "exec %(installdir)s/compiler/$shortver/bin/dpcpp.orig --sysroot=$EPREFIX -Wl,-dynamic-linker=$EPREFIX/lib64/ld-linux-x86-64.so.2 --gcc-install-dir=$EBROOTGENTOO/lib/gcc/x86_64-pc-linux-gnu/${EBVERSIONGCCCORE:0:2} \${1+\\"\$@\\"}" >> %(installdir)s/compiler/$shortver/bin/dpcpp
     chmod +x %(installdir)s/compiler/$shortver/bin/dpcpp
     /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s
     /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/compiler/$shortver/lib --add_origin
@@ -402,11 +402,11 @@ end
     done
     for compname in icx icpx ifx; do
        echo "--sysroot=$EPREFIX" > %(installdir)s/compiler/%(version)s/linux/bin/$compname.cfg
-       echo "-L$EBROOTGCCCORE/lib64" >> %(installdir)s/compiler/%(version)s/linux/bin/$compname.cfg
+       echo "--gcc-install-dir=$EBROOTGENTOO/lib/gcc/x86_64-pc-linux-gnu/${EBVERSIONGCCCORE:0:2}" >> %(installdir)s/compiler/%(version)s/linux/bin/$compname.cfg
        echo "-Wl,-dynamic-linker=$EPREFIX/lib64/ld-linux-x86-64.so.2" >> %(installdir)s/compiler/%(version)s/linux/bin/$compname.cfg
     done
     echo "#!$EPREFIX/bin/sh" > %(installdir)s/compiler/%(version)s/linux/bin/intel64/dpcpp
-    echo "exec %(installdir)s/compiler/%(version)s/linux/bin/dpcpp --sysroot=$EPREFIX -Wl,-dynamic-linker=$EPREFIX/lib64/ld-linux-x86-64.so.2 -L$EBROOTGCCCORE/lib64 \${1+\\"\$@\\"}" >> %(installdir)s/compiler/%(version)s/linux/bin/intel64/dpcpp
+    echo "exec %(installdir)s/compiler/%(version)s/linux/bin/dpcpp --sysroot=$EPREFIX -Wl,-dynamic-linker=$EPREFIX/lib64/ld-linux-x86-64.so.2 --gcc-install-dir=$EBROOTGENTOO/lib/gcc/x86_64-pc-linux-gnu/${EBVERSIONGCCCORE:0:2} \${1+\\"\$@\\"}" >> %(installdir)s/compiler/%(version)s/linux/bin/intel64/dpcpp
     chmod +x %(installdir)s/compiler/%(version)s/linux/bin/intel64/dpcpp
     /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s
     /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/compiler/%(version)s/linux/compiler/lib --add_origin
