@@ -42,50 +42,38 @@ export EASYBUILD_SUBDIR_SOFTWARE=software/$YEAR
 export EASYBUILD_SUBDIR_USER_MODULES=.local/easybuild/$EASYBUILD_SUBDIR_MODULES
 export PATH=${PATH%%:/usr/bin}
 export MODULEPATH=$EASYBUILD_ROOT/$EASYBUILD_SUBDIR_MODULES:$MODULEPATH
-export EASYBUILD_ROBOT_PATHS=$EASYBUILD_ROOT/ebfiles_repo/$YEAR
 export EASYBUILD_REPOSITORY='GitRepository'
-if [ "$RSNT_ARCH" == avx2 ]; then
-	export EASYBUILD_REPOSITORYPATH=$EASYBUILD_ROOT/ebfiles_repo.git,$YEAR
-else
-	export EASYBUILD_REPOSITORYPATH=$EASYBUILD_ROOT/ebfiles_repo_$RSNT_ARCH.git,$YEAR
-	export EASYBUILD_ROBOT_PATHS=$EASYBUILD_ROOT/ebfiles_repo_$RSNT_ARCH/$YEAR:$EASYBUILD_ROBOT_PATHS
-fi
 
-if [ "$RSNT_ARCH" == avx2 ]; then
-	if [ -n "$USE_GENTOO" ]; then
-	    if [ "$YEAR" -ge 2023 ]; then
-		export EASYBUILD_OPTARCH='NVHPC:-march=x86-64-v3;Intel:-march=core-avx2 -axCore-AVX512;GCC:-march=x86-64-v3;LLVM:-march=x86-64-v3 -mtune=generic'
-	    else
-		export EASYBUILD_OPTARCH='NVHPC:tp=haswell;Intel:march=core-avx2 -axCore-AVX512;GCC:march=core-avx2'
-	    fi
-	else
-	    export EASYBUILD_OPTARCH='PGI:tp=haswell;Intel:xCore-AVX2;GCC:march=core-avx2'
-	fi
-elif [ "$RSNT_ARCH" == avx512 ]; then
-	if [ -n "$USE_GENTOO" ]; then
-	    if [ "$YEAR" -ge 2023 ]; then
-		export EASYBUILD_OPTARCH='NVHPC:-march=x86-64-v4;Intel:-march=skylake-avx512;GCC:-march=x86-64-v4;LLVM:-march=x86-64-v4 -mtune=znver5'
-	    else
-		export EASYBUILD_OPTARCH='NVHPC:tp=skylake;Intel:xCore-AVX512;GCC:march=skylake-avx512'
-	    fi
-	else
-	    export EASYBUILD_OPTARCH='PGI:tp=skylake;Intel:xCore-AVX512;GCC:march=skylake-avx512'
-	fi
-elif [ "$RSNT_ARCH" == avx ]; then
-	if [ -n "$USE_GENTOO" ]; then
-	    export EASYBUILD_OPTARCH='NVHPC:tp=sandybridge;Intel:xAVX;GCC:march=corei7-avx'
-	else
-	    export EASYBUILD_OPTARCH='PGI:tp=sandybridge;Intel:xAVX;GCC:march=corei7-avx'
-	fi
-elif [ "$RSNT_ARCH" == sse3 ]; then
-	if [ -n "$USE_GENTOO" ]; then
-	    export EASYBUILD_OPTARCH='NVHPC:tp=px;Intel:msse3;GCC:march=nocona -mtune=generic'
-	else
-	    export EASYBUILD_OPTARCH='PGI:tp=px;Intel:msse3;GCC:march=nocona -mtune=generic'
-	fi
-fi
-if [ -z $USE_GENTOO ]; then
-    export EASYBUILD_OPTARCH="$EASYBUILD_OPTARCH;GCCcore:GENERIC"
+# use associative arrays for arch-dependent EB settings
+declare -A repositorypath robot_paths optarch
+
+repositorypath[avx2]=$EASYBUILD_ROOT/ebfiles_repo.git,$YEAR
+robot_paths[avx2]=$EASYBUILD_ROOT/ebfiles_repo/$YEAR
+for rsnt_arch in sse3 avx avx512; do
+	repositorypath[$rsnt_arch]=$EASYBUILD_ROOT/ebfiles_repo_$rsnt_arch.git,$YEAR
+	robot_paths[$rsnt_arch]=$EASYBUILD_ROOT/ebfiles_repo_$rsnt_arch/$YEAR:${robot_paths[avx2]}
+done
+
+declare -A optarch
+if [ "$YEAR" -ge 2023 ]; then
+    optarch=(
+	[avx2]='NVHPC:-march=x86-64-v3;Intel:-march=core-avx2 -axCore-AVX512;GCC:-march=x86-64-v3;LLVM:-march=x86-64-v3 -mtune=generic'
+	[avx512]='NVHPC:-march=x86-64-v4;Intel:-march=skylake-avx512;GCC:-march=x86-64-v4;LLVM:-march=x86-64-v4 -mtune=znver5'
+    )
+elif [ "$YEAR" -ge 2020 ]; then
+    optarch=(
+	[avx2]='NVHPC:tp=haswell;Intel:march=core-avx2 -axCore-AVX512;GCC:march=core-avx2'
+	[avx512]='NVHPC:tp=skylake;Intel:xCore-AVX512;GCC:march=skylake-avx512'
+	[avx]='NVHPC:tp=sandybridge;Intel:xAVX;GCC:march=corei7-avx'
+	[sse3]='NVHPC:tp=px;Intel:msse3;GCC:march=nocona -mtune=generic'
+    )
+else
+    optarch=(
+	[avx2]='PGI:tp=haswell;Intel:xCore-AVX2;GCC:march=core-avx2;GCCcore:GENERIC'
+	[avx512]='PGI:tp=skylake;Intel:xCore-AVX512;GCC:march=skylake-avx512;GCCcore:GENERIC'
+	[avx]='PGI:tp=sandybridge;Intel:xAVX;GCC:march=corei7-avx;GCCcore:GENERIC'
+	[sse3]='PGI:tp=px;Intel:msse3;GCC:march=nocona -mtune=generic;GCCcore:GENERIC'
+    )
 fi
 
 CURRENT_USER="$(whoami)"
@@ -98,11 +86,12 @@ if [ "$CURRENT_USER" != "ebuser" ] ; then
 	export EASYBUILD_PREFIX=$HOME/.local/easybuild
 	export EASYBUILD_SUBDIR_USER_MODULES=''
         export EASYBUILD_REPOSITORY='FileRepository'
-	export EASYBUILD_REPOSITORYPATH=$EASYBUILD_PREFIX/ebfiles_repo,$YEAR
-	export EASYBUILD_ROBOT_PATHS=$EASYBUILD_PREFIX/ebfiles_repo/$YEAR:$EASYBUILD_ROBOT_PATHS
-	if [ "$RSNT_ARCH" != avx2 ]; then
-	    export EASYBUILD_ROBOT_PATHS=$EASYBUILD_PREFIX/ebfiles_repo_$RSNT_ARCH/$YEAR:$EASYBUILD_ROBOT_PATHS
-	fi
+	repositorypath[avx2]=$EASYBUILD_PREFIX/ebfiles_repo,$YEAR
+	robot_paths[avx2]=$EASYBUILD_PREFIX/ebfiles_repo/$YEAR:${robot_paths[avx2]}
+	for rsnt_arch in sse3 avx avx512; do
+	    repositorypath[$rsnt_arch]=$EASYBUILD_PREFIX/ebfiles_repo_$rsnt_arch,$YEAR
+	    robot_paths[$rsnt_arch]=$EASYBUILD_PREFIX/ebfiles_repo_$rsnt_arch/$YEAR:$EASYBUILD_PREFIX/ebfiles_repo/$YEAR:${robot_paths[$rsnt_arch]}
+	done
 else
 	if [[ "$ORIG_USER" != "ebuser" && ( -z "$GIT_AUTHOR_NAME" || $GIT_AUTHOR_NAME == "EasyBuild User" ) ]]; then
 		echo "Failed to read \$HOME/.git_env_vars.sh. Please make sure they are readable and configured as described on https://wiki.computecanada.ca/staff/RSNT_Software_-_Setting_up#Configuring_your_build_node_account"
@@ -115,7 +104,6 @@ else
 	fi
 	cd /shared_tmp/logs # needed for --job
 fi
-export EASYBUILD_ROBOT_PATHS=$EASYBUILD_ROOT/site-packages/custom-easyconfigs/easybuild/easyconfigs:$EASYBUILD_ROBOT_PATHS:
 if [ "$YEAR" -ge "2023" ]; then
 	EB=$EBROOTGENTOO/bin/eb
 else
@@ -144,7 +132,7 @@ export RSNT_EASYBUILD_MAGIC_COOKIE=263ca73bb634185aab1d1b41627fdbba
 NEW_ARGS=()
 unset from_pr
 unset job
-unset arch_job
+unset arch
 for argument in "$@"; do
 	if [[ $argument =~ ^--disable-enforce-checksums$ ]]; then
 		# workaround for non-propagation of this argument
@@ -167,9 +155,9 @@ for argument in "$@"; do
 	if [[ $argument =~ .*.eb$ ]]; then
 		ec="$argument"
 	fi
-	if [[ $argument =~ ^--arch-job=.*$ ]]; then
+	if [[ $argument =~ ^--arch=.*$ ]]; then
 		kv=(${argument//=/ })
-		arch_job=${kv[1]}
+		arch=${kv[1]}
 	elif [[ "$CURRENT_USER" == "ebuser" ]]; then
 		if [[ $argument =~ --inject-checksums* || $argument =~ --robot* || "$argument" == "-r" ]]; then
 			echo "Please do not use $argument as $CURRENT_USER"
@@ -232,14 +220,14 @@ if [[ -n "$SLURM_CPUS_ON_NODE" ]]; then
 	export EASYBUILD_PARALLEL=$SLURM_CPUS_ON_NODE
 fi
 
-if [[ "$CURRENT_USER" == "ebuser" && -z "$arch_job" ]]; then
-	arch_job=avx512
+if [[ "$CURRENT_USER" == "ebuser" && -z "$arch" ]]; then
+	arch="avx2,avx512"
 fi
 
-if [[ -n "$arch_job" && "$arch_job" != "$RSNT_ARCH" ]]; then
+if [[ -n "$arch" ]]; then
 	if [[ ! -f "$ec" ]]; then
 		echo "Easyconfig file "$ec" not found."
-		echo "Please specify an explicit easyconfig with --arch-job"
+		echo "Please specify an explicit easyconfig when using --arch"
 		exit 1
 	fi
 python <<EOF
@@ -249,10 +237,18 @@ ecp = EasyConfigParser("$ec")
 name = ecp.get_config_dict()['toolchain']['name']
 sys.exit(name == 'system' or name == 'dummy')
 EOF
-	if [[ $? == 0 ]]; then
-		echo "Automatically building for $arch_job as well via job"
-		RSNT_ARCH="$arch_job" $0 --job --configfiles=$LOCAL_EASYBUILD_CONFIGFILES "${NEW_ARGS[@]}"
+	if [[ $? != 0 ]]; then
+		arch=avx2
 	fi
+	echo "Building for arch=$arch"
+else
+	arch=$RSNT_ARCH
 fi
 
-exec $EB --configfiles=$LOCAL_EASYBUILD_CONFIGFILES "${NEW_ARGS[@]}"
+custom_robot_path=$EASYBUILD_ROOT/site-packages/custom-easyconfigs/easybuild/easyconfigs
+for rsnt_arch in $(IFS=","; echo $arch); do
+	export EASYBUILD_REPOSITORYPATH=${repositorypath[$rsnt_arch]}
+	export EASYBUILD_ROBOT_PATHS=$custom_robot_path:${robot_paths[$rsnt_arch]}:
+	export EASYBUILD_OPTARCH=${optarch[$rsnt_arch]}
+	RSNT_ARCH="$rsnt_arch" $EB --configfiles=$LOCAL_EASYBUILD_CONFIGFILES "${NEW_ARGS[@]}"
+done
