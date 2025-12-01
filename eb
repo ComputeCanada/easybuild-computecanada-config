@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 # remember NIXUSER_PROFILE before cleaning environment
 USE_GENTOO="$EBROOTGENTOO"
 USE_GENTOO_VERSION="$EBVERSIONGENTOO"
@@ -7,6 +8,10 @@ USE_NIX="$NIXUSER_PROFILE"
 module --force purge
 # use smaller arch-specific directory to avoid large spider cache rebuilds
 export MODULEPATH=/cvmfs/soft.computecanada.ca/custom/modules-$RSNT_ARCH
+if [[ ! -d $MODULEPATH ]]; then
+	echo please set RSNT_ARCH to sse3, avx, avx2, or avx512
+	exit 1
+fi
 unset CPATH
 unset LIBRARY_PATH
 unset LD_LIBRARY_PATH
@@ -78,9 +83,6 @@ elif [ "$RSNT_ARCH" == sse3 ]; then
 	else
 	    export EASYBUILD_OPTARCH='PGI:tp=px;Intel:msse3;GCC:march=nocona -mtune=generic'
 	fi
-else
-	echo please set RSNT_ARCH to sse3, avx, or avx2
-	exit
 fi
 if [ -z $USE_GENTOO ]; then
     export EASYBUILD_OPTARCH="$EASYBUILD_OPTARCH;GCCcore:GENERIC"
@@ -111,6 +113,7 @@ else
 		export EASYBUILD_INSTALLPATH_SOFTWARE=/cvmfs/restricted.computecanada.ca/easybuild/$EASYBUILD_SUBDIR_SOFTWARE
 		export EASYBUILD_SOURCEPATH=/cvmfs/restricted.computecanada.ca/easybuild/sources
 	fi
+	cd /shared_tmp/logs # needed for --job
 fi
 export EASYBUILD_ROBOT_PATHS=$EASYBUILD_ROOT/site-packages/custom-easyconfigs/easybuild/easyconfigs:$EASYBUILD_ROBOT_PATHS:
 if [ "$YEAR" -ge "2023" ]; then
@@ -141,6 +144,7 @@ export RSNT_EASYBUILD_MAGIC_COOKIE=263ca73bb634185aab1d1b41627fdbba
 NEW_ARGS=()
 unset from_pr
 unset job
+unset arch_job
 for argument in "$@"; do
 	if [[ $argument =~ ^--disable-enforce-checksums$ ]]; then
 		# workaround for non-propagation of this argument
@@ -157,9 +161,16 @@ for argument in "$@"; do
 	if [[ $argument =~ ^--job$ ]]; then
 		# so we can follow the job output with e.g. tail -f
 		export PYTHONUNBUFFERED=1
+		echo "Output of job will be in $PWD/%x-%j.out"
 		job=1
 	fi
-	if [[ "$CURRENT_USER" == "ebuser" ]]; then
+	if [[ $argument =~ .*.eb$ ]]; then
+		ec="$argument"
+	fi
+	if [[ $argument =~ ^--arch-job=.*$ ]]; then
+		kv=(${argument//=/ })
+		arch_job=${kv[1]}
+	elif [[ "$CURRENT_USER" == "ebuser" ]]; then
 		if [[ $argument =~ --inject-checksums* || $argument =~ --robot* || "$argument" == "-r" ]]; then
 			echo "Please do not use $argument as $CURRENT_USER"
 			exit 1
@@ -169,10 +180,6 @@ for argument in "$@"; do
 				echo "When installing datasets, the install path should be /cvmfs/data.rsnt.computecanada.ca/content/easybuild/data/2020 instead of $argument"
 				exit 1
 			fi
-		fi
-		if [[ $argument =~ ^--job$ ]]; then
-			echo "Output of job will be in /shared_tmp/logs/%x-%j.out"
-			cd /shared_tmp/logs
 		fi
 		if [[ $argument =~ .*.eb$ ]]; then
 			if [[ $argument =~ ^/cvmfs/soft.computecanada.ca/easybuild/software/.* ]]; then
@@ -207,6 +214,8 @@ for argument in "$@"; do
 		else
 			NEW_ARGS+=("$argument")
 		fi
+	else
+		NEW_ARGS+=("$argument")
 	fi
 done
 
@@ -223,8 +232,16 @@ if [[ -n "$SLURM_CPUS_ON_NODE" ]]; then
 	export EASYBUILD_PARALLEL=$SLURM_CPUS_ON_NODE
 fi
 
-if [[ "$CURRENT_USER" == "ebuser" ]]; then
-	if [[ "$RSNT_ARCH" == "avx2" ]]; then
+if [[ "$CURRENT_USER" == "ebuser" && -z "$arch_job" ]]; then
+	arch_job=avx512
+fi
+
+if [[ -n "$arch_job" && "$arch_job" != "$RSNT_ARCH" ]]; then
+	if [[ ! -f "$ec" ]]; then
+		echo "Easyconfig file "$ec" not found."
+		echo "Please specify an explicit easyconfig with --arch-job"
+		exit 1
+	fi
 python <<EOF
 import sys
 from easybuild.framework.easyconfig.parser import EasyConfigParser
@@ -232,16 +249,10 @@ ecp = EasyConfigParser("$ec")
 name = ecp.get_config_dict()['toolchain']['name']
 sys.exit(name == 'system' or name == 'dummy')
 EOF
-		if [[ $? == 0 ]]; then
-			echo "Automatically building for x86-64-v4 as well via job"
-			if [[ -z "$job" ]]; then # prevent double output
-				echo "Output of job will be in /shared_tmp/logs/%x-%j.out"
-				cd /shared_tmp/logs
-			fi
-			RSNT_ARCH=avx512 $EB --job --configfiles=$LOCAL_EASYBUILD_CONFIGFILES "${NEW_ARGS[@]}"
-		fi
+	if [[ $? == 0 ]]; then
+		echo "Automatically building for $arch_job as well via job"
+		RSNT_ARCH="$arch_job" $0 --job --configfiles=$LOCAL_EASYBUILD_CONFIGFILES "${NEW_ARGS[@]}"
 	fi
-	exec $EB --configfiles=$LOCAL_EASYBUILD_CONFIGFILES "${NEW_ARGS[@]}"
-else
-	exec $EB --configfiles=$LOCAL_EASYBUILD_CONFIGFILES ${1+"$@"}
 fi
+
+exec $EB --configfiles=$LOCAL_EASYBUILD_CONFIGFILES "${NEW_ARGS[@]}"
