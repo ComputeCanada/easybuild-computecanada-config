@@ -230,16 +230,13 @@ if [[ -n "$arch" ]]; then
 		echo "Please specify an explicit easyconfig when using --arch"
 		exit 1
 	fi
-python <<EOF
+python <<EOF || arch=avx2
 import sys
 from easybuild.framework.easyconfig.parser import EasyConfigParser
 ecp = EasyConfigParser("$ec")
 name = ecp.get_config_dict()['toolchain']['name']
 sys.exit(name == 'system' or name == 'dummy')
 EOF
-	if [[ $? != 0 ]]; then
-		arch=avx2
-	fi
 	echo "Building for arch=$arch"
 else
 	arch=$RSNT_ARCH
