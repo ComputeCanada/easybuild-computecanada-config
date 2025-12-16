@@ -1155,6 +1155,10 @@ def pre_prepare_hook(self, *args, **kwargs):
     setvar("EBVERSIONMESON", "1.1.1")
     setvar("EBVERSIONGPERFTOOLS", "2.9.1")
 
+    modulepath = os.environ["MODULEPATH"].split(':')
+    modulepath.extend([p + '-hidden' for p in modulepath if p.endswith('/gcccore')])
+    setvar("MODULEPATH", ':'.join(modulepath))
+
 def post_prepare_hook(self, *args, **kwargs):
     # we need to define variables such as EBROOTHDF5SERIAL even though we don't use this naming scheme
     serial_to_no_qualifier = ["HDF5", "BOOST", "NETCDF"]

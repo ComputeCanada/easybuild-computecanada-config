@@ -48,6 +48,7 @@ CUDA = 'CUDA'
 CUDACORE = 'CUDAcore'
 GCCCORE = 'GCCcore'
 TOOLCHAIN_COMPILER_CUDA = 'COMPILER_CUDA'
+COMPLETELY_HIDDEN_MODULES = {'Cython', 'numpy', 'oldest-supported-numpy'}
 
 def det_toolchain_cuda(ec):
     """
@@ -159,6 +160,8 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
             tc_comp_name = tc_comp_name.lower().split('-')[0]
             if tc_comp_name == GCCCORE.lower():
                 tc_comp_ver = ''
+                if ec['name'] in COMPLETELY_HIDDEN_MODULES:
+                    tc_comp_ver = '-hidden'
             else:
                 tc_comp_ver = self.det_twodigit_version({'name': tc_comp_name, 'version': tc_comp_ver})
             tc_mpi = det_toolchain_mpi(ec)
@@ -199,6 +202,22 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
         elif tc_comp_name == GCCCORE.lower() and 'EBROOTGENTOO' in os.environ:
             subdir = os.path.join(arch_dir, subdir)
         return subdir
+
+    def det_install_subdir(self, ec):
+        """
+        Determine name of software installation subdirectory of install path.
+
+        :param ec: dict-like object with easyconfig parameter values; for now only the 'name',
+                   'version', 'versionsuffix' and 'toolchain' parameters are guaranteed to be available
+
+        :return: string with name of subdirectory, e.g.: '<compiler>/<mpi_lib>/<name>/<version>'
+        """
+        # by default: use full module name as name for install subdir
+        # only use gcccore-hidden for module name, not the install subdir
+        subdir = self.det_module_subdir(ec)
+        if subdir.endswith('/gcccore-hidden'):
+            subdir = subdir[:-7]
+        return os.path.join(subdir, self.det_short_module_name(ec))
 
     def det_twodigit_version(self, ec):
         """Determine two-digit version"""
