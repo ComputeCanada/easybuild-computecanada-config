@@ -41,7 +41,6 @@ export EASYBUILD_SUBDIR_MODULES=modules/$YEAR
 export EASYBUILD_SUBDIR_SOFTWARE=software/$YEAR
 export EASYBUILD_SUBDIR_USER_MODULES=.local/easybuild/$EASYBUILD_SUBDIR_MODULES
 export PATH=${PATH%%:/usr/bin}
-export MODULEPATH=$EASYBUILD_ROOT/$EASYBUILD_SUBDIR_MODULES:$MODULEPATH
 export EASYBUILD_REPOSITORY='GitRepository'
 
 # use associative arrays for arch-dependent EB settings
@@ -112,20 +111,8 @@ else
 fi
 export EASYBUILD_JOB_EB_CMD="srun --mpi=none --ntasks=1 $EB"
 export EASYBUILD_HOOKS=$EASYBUILD_CONFIG_ROOT/cc_hooks.py
-export EASYBUILD_BUILDPATH=$EASYBUILD_BUILDPATH/$RSNT_ARCH
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
-if [[ $HOSTNAME =~ archimedes.c3.ca$ && "$RSNT_ARCH" == "avx2" ]]; then
-	EASYBUILD_USE_CCACHE=/tmp/ccache
-	if [ ! -d $EASYBUILD_USE_CCACHE ]; then
-		# create multiuser ccache
-		mkdir -p $EASYBUILD_USE_CCACHE
-		chgrp rsnt_soft $EASYBUILD_USE_CCACHE
-		chmod g+s $EASYBUILD_USE_CCACHE
-		setfacl -m "d:o:rx" $EASYBUILD_USE_CCACHE
-	fi
-	export CCACHE_BASEDIR=/tmp/$USER
-fi
 export RSNT_EASYBUILD_MAGIC_COOKIE=263ca73bb634185aab1d1b41627fdbba
 
 # argument validation
@@ -243,9 +230,32 @@ else
 fi
 
 custom_robot_path=$EASYBUILD_ROOT/site-packages/custom-easyconfigs/easybuild/easyconfigs
+orig_buildpath=$EASYBUILD_BUILDPATH
 for rsnt_arch in $(IFS=","; echo $arch); do
 	export EASYBUILD_REPOSITORYPATH=${repositorypath[$rsnt_arch]}
 	export EASYBUILD_ROBOT_PATHS=$custom_robot_path:${robot_paths[$rsnt_arch]}:
 	export EASYBUILD_OPTARCH=${optarch[$rsnt_arch]}
-	RSNT_ARCH="$rsnt_arch" $EB --configfiles=$LOCAL_EASYBUILD_CONFIGFILES "${NEW_ARGS[@]}"
+	export EASYBUILD_BUILDPATH=$orig_buildpath/$rsnt_arch
+	unset EASYBUILD_USE_CCACHE
+	if [[ $HOSTNAME =~ archimedes.c3.ca$ && "$rsnt_arch" == "avx2" ]]; then
+		EASYBUILD_USE_CCACHE=/tmp/ccache
+		if [ ! -d $EASYBUILD_USE_CCACHE ]; then
+			# create multiuser ccache
+			mkdir -p $EASYBUILD_USE_CCACHE
+			chgrp rsnt_soft $EASYBUILD_USE_CCACHE
+			chmod g+s $EASYBUILD_USE_CCACHE
+			setfacl -m "d:o:rx" $EASYBUILD_USE_CCACHE
+		fi
+		export CCACHE_BASEDIR=/tmp/$USER
+	fi
+	export RSNT_ARCH=$rsnt_arch
+	module --force purge
+	export MODULEPATH=/cvmfs/soft.computecanada.ca/custom/modules-$RSNT_ARCH
+	if [ -z "$USE_NIX" ]; then
+		module load gentoo/$YEAR
+	else
+		module load nixpkgs/16.09
+	fi
+	export MODULEPATH=$EASYBUILD_ROOT/$EASYBUILD_SUBDIR_MODULES:$MODULEPATH
+	$EB --configfiles=$LOCAL_EASYBUILD_CONFIGFILES "${NEW_ARGS[@]}"
 done
