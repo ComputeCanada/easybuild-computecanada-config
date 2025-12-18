@@ -235,7 +235,6 @@ for rsnt_arch in $(IFS=","; echo $arch); do
 	export EASYBUILD_REPOSITORYPATH=${repositorypath[$rsnt_arch]}
 	export EASYBUILD_ROBOT_PATHS=$custom_robot_path:${robot_paths[$rsnt_arch]}:
 	export EASYBUILD_OPTARCH=${optarch[$rsnt_arch]}
-	export EASYBUILD_BUILDPATH=$orig_buildpath/$rsnt_arch
 	unset EASYBUILD_USE_CCACHE
 	if [[ $HOSTNAME =~ archimedes.c3.ca$ && "$rsnt_arch" == "avx2" ]]; then
 		EASYBUILD_USE_CCACHE=/tmp/ccache
@@ -256,6 +255,7 @@ for rsnt_arch in $(IFS=","; echo $arch); do
 	else
 		module load nixpkgs/16.09
 	fi
+	export EASYBUILD_BUILDPATH=$orig_buildpath/$rsnt_arch
 	export MODULEPATH=$EASYBUILD_ROOT/$EASYBUILD_SUBDIR_MODULES:$MODULEPATH
 	$EB --configfiles=$LOCAL_EASYBUILD_CONFIGFILES "${NEW_ARGS[@]}"
 done
