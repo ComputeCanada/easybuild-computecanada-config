@@ -1129,7 +1129,7 @@ def post_module_hook(self, *args, **kwargs):
         self.cfg['toolchain'] = EASYCONFIG_CONSTANTS['SYSTEM'][0]
     # Generate Lmod cache, only as "ebuser"
     if os.getenv("USER") == "ebuser":
-        run_shell_cmd("/etc/rsnt/generate_lmod_cache.py --arch sse3 avx avx2 avx512")
+        run_shell_cmd("/etc/rsnt/generate_lmod_cache.py --arch avx2 avx512")
 
 def pre_prepare_hook(self, *args, **kwargs):
     packages_in_gentoo = ["EBROOTLIBXML2", "EBROOTLIBJPEGMINTURBO", "EBROOTLIBPNG", "EBROOTLIBTIFF",
