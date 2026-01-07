@@ -173,7 +173,7 @@ for argument in "$@"; do
 				letter=${letter,} # lowercase first letter
 				name=${argument%%-*}
 				# some names contain - (e.g. HOOMD-blue) so we need pathname expansion
-				custom_ec=$(find $EASYBUILD_ROOT/site-packages/custom-easyconfigs/easybuild/easyconfigs/$letter/$name* -name $argument 2>/dev/null)
+				custom_ec=$(find $EASYBUILD_ROOT/site-packages/custom-easyconfigs/easybuild/easyconfigs/$letter/$name* -name $argument 2>/dev/null || true)
 				if [[ -n "$custom_ec" && -f "$custom_ec" ]]; then
 					# custom easyconfigs have priority
 					ec="$custom_ec"
