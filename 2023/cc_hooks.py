@@ -16,7 +16,7 @@ if not os.path.exists(os.path.join(parentdir, 'cc_hooks_common.py')):
     sys.path.append('/cvmfs/soft.computecanada.ca/easybuild/easybuild-computecanada-config')
 from cc_hooks_common import modify_all_opts, update_opts, PREPEND, APPEND, REPLACE, APPEND_LIST, DROP, DROP_FROM_LIST, REPLACE_IN_LIST
 from cc_hooks_common import get_matching_keys, get_matching_keys_from_ec
-from easybuild.tools.config import build_option
+from easybuild.tools.config import build_option, update_build_option
 from easybuild.tools.toolchain.utilities import search_toolchain
 from easybuild.tools.environment import setvar
 from easybuild.tools.run import run_cmd, run_shell_cmd
@@ -942,6 +942,10 @@ def parse_hook(ec, *args, **kwargs):
         builddeps.append(('CUDAcore', '%(cudaver)s'))
     elif ec['toolchain'] == {'name': 'intel-compilers', 'version': '2023.1.0'}:
         ec['toolchain']['version'] = '2023.2.1'
+
+    if (('CUDAcore', '12.9.1') in builddeps or ec['toolchain'] == {'name': 'CUDAcore', 'version': '12.9.1'}):
+        if '10.0' not in build_option('cuda_compute_capabilities'):
+            update_build_option('cuda_compute_capabilities', build_option('cuda_compute_capabilities') + ['10.0'])
 
     # Use ifx by default as Fortran compiler for Intel toolchains.
     # Adapt optarch if oneapi compilers are used.
