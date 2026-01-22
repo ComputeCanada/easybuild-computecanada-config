@@ -120,6 +120,7 @@ NEW_ARGS=()
 unset from_pr
 unset job
 unset arch
+unset use_bwrap
 for argument in "$@"; do
 	if [[ $argument =~ ^--disable-enforce-checksums$ ]]; then
 		# workaround for non-propagation of this argument
@@ -142,7 +143,9 @@ for argument in "$@"; do
 	if [[ $argument =~ .*.eb$ ]]; then
 		ec="$argument"
 	fi
-	if [[ $argument =~ ^--arch=.*$ ]]; then
+	if [[ $argument =~ ^--bwrap$ ]]; then
+		use_bwrap=1
+	elif [[ $argument =~ ^--arch=.*$ ]]; then
 		kv=(${argument//=/ })
 		arch=${kv[1]}
 	elif [[ "$CURRENT_USER" == "ebuser" ]]; then
@@ -257,5 +260,13 @@ for rsnt_arch in $(IFS=","; echo $arch); do
 	fi
 	export EASYBUILD_BUILDPATH=$orig_buildpath/$rsnt_arch
 	export MODULEPATH=$EASYBUILD_ROOT/$EASYBUILD_SUBDIR_MODULES:$MODULEPATH
-	$EB --configfiles=$LOCAL_EASYBUILD_CONFIGFILES "${NEW_ARGS[@]}"
+	if [ -n "use_bwrap" ]; then
+		bwrapdir=$(mktemp -d -p /bwrap)
+		echo "Building via bwrap in $bwrapdir"
+		EASYBUILD_CONFIG_ROOT=$HOME/easybuild-computecanada-config/2023
+		bwrapcmd=$(RSNT_ARCH="$rsnt_arch" python $EASYBUILD_CONFIG_ROOT/../bwrapcmd.py $ec $bwrapdir)
+		$bwrapcmd $EB --configfiles=$LOCAL_EASYBUILD_CONFIGFILES "${NEW_ARGS[@]}" --ignore-locks
+	else
+		$EB --configfiles=$LOCAL_EASYBUILD_CONFIGFILES "${NEW_ARGS[@]}"
+	fi
 done
