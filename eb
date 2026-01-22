@@ -260,7 +260,7 @@ for rsnt_arch in $(IFS=","; echo $arch); do
 	fi
 	export EASYBUILD_BUILDPATH=$orig_buildpath/$rsnt_arch
 	export MODULEPATH=$EASYBUILD_ROOT/$EASYBUILD_SUBDIR_MODULES:$MODULEPATH
-	if [ -n "use_bwrap" ]; then
+	if [ -n "$use_bwrap" ]; then
 		bwrapdir=$(mktemp -d -p /bwrap)
 		echo "Building via bwrap in $bwrapdir"
 		bwrapcmd=$(RSNT_ARCH="$rsnt_arch" python $EASYBUILD_CONFIG_ROOT/../bwrapcmd.py $ec $bwrapdir)
