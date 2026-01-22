@@ -263,7 +263,6 @@ for rsnt_arch in $(IFS=","; echo $arch); do
 	if [ -n "use_bwrap" ]; then
 		bwrapdir=$(mktemp -d -p /bwrap)
 		echo "Building via bwrap in $bwrapdir"
-		EASYBUILD_CONFIG_ROOT=$HOME/easybuild-computecanada-config/2023
 		bwrapcmd=$(RSNT_ARCH="$rsnt_arch" python $EASYBUILD_CONFIG_ROOT/../bwrapcmd.py $ec $bwrapdir)
 		$bwrapcmd $EB --configfiles=$LOCAL_EASYBUILD_CONFIGFILES "${NEW_ARGS[@]}" --ignore-locks
 	else
