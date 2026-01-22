@@ -42,7 +42,7 @@ function patch_rpath {
 		fi
 	fi
 
-	if [[ $filetype =~ $REX_SO ]]; then
+	if [[ $filetype =~ $REX_SO && ("$ARG_ADD_ORIGIN" == "1" || -n "$ARG_ADD_PATH") ]] ; then
 		if ! ldd $filename | grep 'statically linked' > /dev/null; then
 		    rpath='set'
 		fi
