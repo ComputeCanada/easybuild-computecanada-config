@@ -103,9 +103,9 @@ def main():
     parser = argparse.ArgumentParser(
         description='Links Linux binaries to libraries in the current Gentoo Prefix')
     parser.add_argument('-p', '--path', required=True, help="Files or paths to recursively descend",
-                        nargs='*', metavar='<path to search>')
+                        nargs='+', metavar='<path to search>')
     parser.add_argument('--add_origin', action='store_true', help="Add $ORIGIN to RPATH")
-    parser.add_argument('--add_path', help="RPATH(s) to add", nargs='*',
+    parser.add_argument('--add_path', help="RPATH(s) to add", nargs='+',
                         metavar='<path>')
     parser.add_argument('--any_interpreter', action='store_true',
                         help="Patch any interpreter, not only the system one")
