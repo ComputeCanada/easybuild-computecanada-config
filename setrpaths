@@ -95,11 +95,13 @@ def main():
     parser.add_argument('-p', '--path', type=str, required=True, help="Path to recursively descend",
                         metavar='<path to search>')
     parser.add_argument('--add_origin', action='store_true', help="Add $ORIGIN to RPATH")
-    parser.add_argument('--add_path', type=str, help="RPATH to add",
+    parser.add_argument('--add_path', help="RPATH(s) to add", nargs='*',
                         metavar='<path>')
     parser.add_argument('--any_interpreter', action='store_true',
                         help="Patch any interpreter, not only the system one")
     args = parser.parse_args()
+    if args.add_path:
+        args.add_path = os.pathsep.join(args.add_path)
 
     # Avoid failing to set rpaths when a symlink is provided
     if stat.S_ISLNK(os.stat(args.path).st_mode):
