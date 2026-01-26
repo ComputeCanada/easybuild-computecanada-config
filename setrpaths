@@ -89,7 +89,7 @@ def patch_zip(filename, args, interpreter):
         print(oldcwd)
 
 def patch_file(filename, args, interpreter):
-    if filename[-4:] in {".whl", ".jar"}:
+    if str(filename)[-4:] in {".whl", ".jar"}:
         patch_zip(filename, args, interpreter)
     else:
         patch_rpath(filename, args, interpreter)
