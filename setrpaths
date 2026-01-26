@@ -27,8 +27,10 @@ def patch_rpath(filename, args, interpreter):
                 elf = ELFFile(f)
                 if elf.header['e_type'] not in {'ET_DYN', 'ET_EXEC'}:
                     return
-                for seg in elf.iter_segments('PT_INTERP'):
-                    interp_name = seg.get_interp_name()
+                for seg in elf.iter_segments():
+                    if hasattr(seg, 'get_interp_name'):
+                        interp_name = seg.get_interp_name()
+                        break
                 # check if shared libraries have NEEDED entries, if not
                 # we whould not manipulate RPATH
                 if not interp_name and (args.add_origin or args.add_path):
