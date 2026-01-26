@@ -99,11 +99,20 @@ def patch_file(filename, args, interpreter):
     else:
         patch_rpath(filename, args, interpreter)
 
+def file_exists(path):
+    if not os.path.exists(path):
+        raise argparse.ArgumentTypeError(f"File '{path}' does not exist")
+    # Avoid failing to set rpaths when a symlink is provided
+    if stat.S_ISLNK(os.stat(path).st_mode):
+        raise argparse.ArgumentTypeError(
+            f"error: {args.path} is a symlink. Please provide files or paths, not a symlink.")
+    return Path(path)
+
 def main():
     parser = argparse.ArgumentParser(
         description='Links Linux binaries to libraries in the current Gentoo Prefix')
     parser.add_argument('-p', '--path', required=True, help="Files or paths to recursively descend",
-                        nargs='+', metavar='<path to search>')
+                        nargs='+', metavar='<path to search>', type=file_exists)
     parser.add_argument('--add_origin', action='store_true', help="Add $ORIGIN to RPATH")
     parser.add_argument('--add_path', help="RPATH(s) to add", nargs='+',
                         metavar='<path>')
@@ -112,12 +121,6 @@ def main():
     args = parser.parse_args()
     if args.add_path:
         args.add_path = os.pathsep.join(args.add_path)
-
-    # Avoid failing to set rpaths when a symlink is provided
-    for path in args.path:
-        if stat.S_ISLNK(os.stat(path).st_mode):
-            print(f"error: {args.path} is a symlink. Please provide files or paths, not a symlink.")
-            return 1
 
     if "EPREFIX" in os.environ:
         prefix = Path(os.environ["EPREFIX"])
