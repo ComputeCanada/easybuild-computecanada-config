@@ -128,7 +128,7 @@ def main():
             interpreter = prefix / "lib" / "ld-linux-x86-64.so.2"
     else:
         print("Neither nixpkgs nor gentoo modules are loaded. Aborting")
-        sys.exit(1)
+        return 1
 
     for path in args.path:
         if stat.S_ISDIR(os.stat(path).st_mode):
