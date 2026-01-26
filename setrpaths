@@ -88,12 +88,17 @@ def patch_zip(filename, args, interpreter):
         os.chdir(oldcwd)
         print(oldcwd)
 
+def patch_file(filename, args, interpreter):
+    if filename[-4:] in {".whl", ".jar"}:
+        patch_zip(filename, args, interpreter)
+    else:
+        patch_rpath(filename, args, interpreter)
 
 def main():
     parser = argparse.ArgumentParser(
         description='Links Linux binaries to libraries in the current Gentoo Prefix')
-    parser.add_argument('-p', '--path', type=str, required=True, help="Path to recursively descend",
-                        metavar='<path to search>')
+    parser.add_argument('-p', '--path', required=True, help="Files or paths to recursively descend",
+                        nargs='*', metavar='<path to search>')
     parser.add_argument('--add_origin', action='store_true', help="Add $ORIGIN to RPATH")
     parser.add_argument('--add_path', help="RPATH(s) to add", nargs='*',
                         metavar='<path>')
@@ -104,9 +109,10 @@ def main():
         args.add_path = os.pathsep.join(args.add_path)
 
     # Avoid failing to set rpaths when a symlink is provided
-    if stat.S_ISLNK(os.stat(args.path).st_mode):
-        print(f"error: {args.path} is a symlink. Please provide a path not a symlink.")
-        return 1
+    for path in args.path:
+        if stat.S_ISLNK(os.stat(path).st_mode):
+            print(f"error: {args.path} is a symlink. Please provide files or paths, not a symlink.")
+            return 1
 
     if "EPREFIX" in os.environ:
         prefix = Path(os.environ["EPREFIX"])
@@ -119,14 +125,14 @@ def main():
         print("Neither nixpkgs nor gentoo modules are loaded. Aborting")
         sys.exit(1)
 
-    for root, dirs, files in os.walk(args.path):
-        root = Path(root)
-        for name in files:
-            f = root / name
-            if name[-4:] in {".whl", ".jar"}:
-                patch_zip(f, args, interpreter)
-            else:
-                patch_rpath(f, args, interpreter)
+    for path in args.path:
+        if stat.S_ISDIR(os.stat(path).st_mode):
+            for root, dirs, files in os.walk(path):
+                root = Path(root)
+                for name in files:
+                    patch_file(root / name, args, interpreter)
+        else:
+            patch_file(path, args, interpreter)
     return 0
 
 if __name__ == "__main__":
