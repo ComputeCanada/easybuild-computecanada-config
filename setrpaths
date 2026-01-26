@@ -21,24 +21,27 @@ def patch_rpath(filename, args, interpreter):
     set_interp = False
     has_needed = False
     interp_name = ""
-    with open(filename, "rb") as f:
-        try:
-            elf = ELFFile(f)
-            if elf.header['e_type'] not in {'ET_DYN', 'ET_EXEC'}:
+    try:
+        with open(filename, "rb") as f:
+            try:
+                elf = ELFFile(f)
+                if elf.header['e_type'] not in {'ET_DYN', 'ET_EXEC'}:
+                    return
+                for seg in elf.iter_segments('PT_INTERP'):
+                    interp_name = seg.get_interp_name()
+                # check if shared libraries have NEEDED entries, if not
+                # we whould not manipulate RPATH
+                if not interp_name and (args.add_origin or args.add_path):
+                    for section in elf.iter_sections():
+                        if isinstance(section, DynamicSection):
+                            for tag in section.iter_tags():
+                                if tag.entry.d_tag == 'DT_NEEDED':
+                                    has_needed = True
+                                    break
+            except ELFError:
                 return
-            for seg in elf.iter_segments('PT_INTERP'):
-                interp_name = seg.get_interp_name()
-            # check if shared libraries have NEEDED entries, if not
-            # we whould not manipulate RPATH
-            if not interp_name and (args.add_origin or args.add_path):
-                for section in elf.iter_sections():
-                    if isinstance(section, DynamicSection):
-                        for tag in section.iter_tags():
-                            if tag.entry.d_tag == 'DT_NEEDED':
-                                has_needed = True
-                                break
-        except ELFError:
-            return
+    except FileNotFoundError:
+        return
 
     if interp_name:
         if (re.match(REX_OS_INTERPRETER, interp_name) or
