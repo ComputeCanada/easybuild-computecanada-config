@@ -32,7 +32,7 @@ def patch_rpath(filename, args, interpreter):
                         interp_name = seg.get_interp_name()
                         break
                 # check if shared libraries have NEEDED entries, if not
-                # we whould not manipulate RPATH
+                # we should not manipulate RPATH
                 if not interp_name and (args.add_origin or args.add_path):
                     for section in elf.iter_sections():
                         if isinstance(section, DynamicSection):
