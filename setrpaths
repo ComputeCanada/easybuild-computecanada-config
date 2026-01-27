@@ -49,7 +49,10 @@ def patch_rpath(filename, args, interpreter):
         if (re.match(REX_OS_INTERPRETER, interp_name) or
             (args.any_interpreter and (re.match(REX_LINUX_INTERPRETER, interp_name) or
                                        re.match(REX_LSB_INTERPRETER, interp_name)))):
-            subprocess.run(["patchelf", "--set-interpreter", interpreter, filename])
+            command = ["patchelf", "--set-interpreter", interpreter, filename]
+            if args.verbose:
+                print(" ".join(map(str,command)))
+            subprocess.run(command)
             set_interp = True
 
     if (args.add_origin or args.add_path) and (set_interp or has_needed):
@@ -69,7 +72,10 @@ def patch_rpath(filename, args, interpreter):
                 rpath = args.add_path
 
         if rpath != rpath_old:
-            subprocess.run(["patchelf", "--force-rpath", "--set-rpath", rpath, filename])
+            command = ["patchelf", "--force-rpath", "--set-rpath", rpath, filename]
+            if args.verbose:
+                print(" ".join(map(str,command)))
+            subprocess.run(command)
 
 
 def patch_zip(filename, args, interpreter):
@@ -111,13 +117,15 @@ def file_exists(path):
 def main():
     parser = argparse.ArgumentParser(
         description='Links Linux binaries to libraries in the current Gentoo Prefix')
-    parser.add_argument('-p', '--path', required=True, help="Files or paths to recursively descend",
+    parser.add_argument('--path', '-p', required=True, help="Files or paths to recursively descend",
                         nargs='+', metavar='<path to search>', type=file_exists)
     parser.add_argument('--add_origin', action='store_true', help="Add $ORIGIN to RPATH")
     parser.add_argument('--add_path', help="RPATH(s) to add", type=os.fsencode, nargs='+',
                         metavar='<path>')
     parser.add_argument('--any_interpreter', action='store_true',
                         help="Patch any interpreter, not only the system one")
+    parser.add_argument('--verbose', '-v', action='store_true',
+                        help="Print the patchelf commands modifying the binaries")
     args = parser.parse_args()
     if args.add_path:
         args.add_path = os.fsencode(os.pathsep).join(args.add_path)
