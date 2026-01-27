@@ -101,7 +101,7 @@ def patch_file(filename, args, interpreter):
 
 def file_exists(path):
     if not os.path.exists(path):
-        raise argparse.ArgumentTypeError(f"File '{path}' does not exist")
+        raise argparse.ArgumentTypeError(f"Path '{path}' does not exist")
     # Avoid failing to set rpaths when a symlink is provided
     if stat.S_ISLNK(os.stat(path).st_mode):
         raise argparse.ArgumentTypeError(
