@@ -95,6 +95,12 @@ function patch_zip {
 	rm -rf $tmp
 }
 
+if [[ -z "$NIXUSER_PROFILE" ]]; then
+	# use python script setrpaths with Gentoo Prefix
+	# this is just for Nix for compatibility
+	exec ${0%%.sh} ${1+"$@"}
+fi
+
 TEMP=$(getopt -o p: --longoptions path:,add_origin,add_path:,any_interpreter -n $0 -- "$@")
 eval set -- "$TEMP"
 ARG_ADD_ORIGIN=0
