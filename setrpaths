@@ -53,18 +53,18 @@ def patch_rpath(filename, args, interpreter):
             set_interp = True
 
     if (args.add_origin or args.add_path) and (set_interp or has_needed):
-        rpath = subprocess.check_output(["patchelf", "--print-rpath", filename])
+        rpath = subprocess.check_output(["patchelf", "--print-rpath", filename])[:-1]
         rpath_old = rpath
 
         if args.add_origin and not rpath.startswith(b"$ORIGIN"):
-            if rpath.strip():
-                rpath = b'$ORIGIN:' + rpath
+            if rpath:
+                rpath = os.fsencode(os.pathsep).join([b'$ORIGIN', rpath])
             else:
                 rpath = b'$ORIGIN'
 
         if args.add_path:
             if rpath:
-                rpath = args.add_path + b":" + rpath
+                rpath = os.fsencode(os.pathsep).join([args.add_path, rpath])
             else:
                 rpath = args.add_path
 
@@ -114,13 +114,13 @@ def main():
     parser.add_argument('-p', '--path', required=True, help="Files or paths to recursively descend",
                         nargs='+', metavar='<path to search>', type=file_exists)
     parser.add_argument('--add_origin', action='store_true', help="Add $ORIGIN to RPATH")
-    parser.add_argument('--add_path', help="RPATH(s) to add", nargs='+',
+    parser.add_argument('--add_path', help="RPATH(s) to add", type=os.fsencode, nargs='+',
                         metavar='<path>')
     parser.add_argument('--any_interpreter', action='store_true',
                         help="Patch any interpreter, not only the system one")
     args = parser.parse_args()
     if args.add_path:
-        args.add_path = os.pathsep.join(args.add_path)
+        args.add_path = os.fsencode(os.pathsep).join(args.add_path)
 
     if "EPREFIX" in os.environ:
         prefix = Path(os.environ["EPREFIX"])
