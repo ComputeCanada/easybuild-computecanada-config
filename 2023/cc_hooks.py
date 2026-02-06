@@ -1043,12 +1043,18 @@ def python_fetchhook(ec):
     # don't do anything for "default" version
     if ec['version'] == "default":
         return
-    # keep only specific extensions
-    python_extensions_to_keep = ['setuptools', 'pip', 'wheel', 'virtualenv', 'appdirs', 'distlib', 'filelock',
-                                 'six', 'setuptools_scm',
-                                 'tomli', 'flit-core', 'flit_core', 'packaging', 'pyparsing', 'platformdirs',
-                                 'hatchling', 'pathspec', 'pluggy', 'hatch_vcs', 'typing_extensions', 'editables',
-                                 'trove-classifiers', 'setuptools-scm']
+
+    # keep only specific extensions, generate variant (flit-core, flit_core)
+    python_extensions_to_keep = {
+        variant
+        for name in {
+            'setuptools', 'pip', 'wheel', 'virtualenv', 'appdirs', 'distlib', 'filelock',
+            'six', 'setuptools_scm', 'tomli', 'flit-core', 'packaging', 'pyparsing',
+            'platformdirs', 'hatchling', 'pathspec', 'pluggy', 'hatch_vcs',
+            'typing_extensions', 'editables', 'trove-classifiers', 'setuptools-scm'
+        }
+        for variant in (name, name.replace('-', '_'), name.replace('_', '-'))
+    }
 
     new_ext_list = [ext for ext in ec['exts_list'] if ext[0] in python_extensions_to_keep]
     ec['exts_list'] = new_ext_list
