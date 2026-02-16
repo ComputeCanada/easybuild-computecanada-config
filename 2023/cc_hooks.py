@@ -1035,6 +1035,10 @@ end""".format(lowest=lowest, highest_plus=highest_plus)
             sanity_check_commands += ["""if [ -n "$(find %(installdir)s/lib*/python*/site-packages -name '*.egg*')" ] ; then echo 'Found .egg file, please use pip. See https://github.com/ComputeCanada/software-stack/issues/137' ; exit 1; else  exit 0; fi"""]
             ec['sanity_check_commands'] = sanity_check_commands
 
+            # ensure pip is verbose
+            if ec.get('use_pip'):
+                ec['installopts'] += ' --verbose '
+
     # hide toolchains
     if ec.get('moduleclass','') == 'toolchain' or ec['name'] == 'GCCcore' or ec['name'] == 'CUDAcore':
         ec['hidden'] = True
