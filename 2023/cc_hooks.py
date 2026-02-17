@@ -585,7 +585,7 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
         'dependencies': ([], REPLACE),
         'multi_deps': ({'Python': ['3.10', '3.11', '3.12'] }, REPLACE),
     },
-    'mpi4py', '4.1.0': {
+    ('mpi4py', '4.1.0'): {
         'builddependencies': ([[('Python', v), ('Cython', '3.2.4')] for v in ['3.10', '3.11', '3.12','3.13', '3.14'] ], REPLACE),
         'dependencies': ([], REPLACE),
         'multi_deps': ({'Python': ['3.10', '3.11', '3.12','3.13', '3.14'] }, REPLACE),
