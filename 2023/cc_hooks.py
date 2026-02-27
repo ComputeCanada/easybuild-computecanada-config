@@ -1147,6 +1147,11 @@ def post_module_hook(self, *args, **kwargs):
     if os.getenv("USER") == "ebuser":
         run_shell_cmd("/etc/rsnt/generate_lmod_cache.py --arch avx2 avx512")
 
+def start_hook():
+    modulepath = os.environ["MODULEPATH"].split(':')
+    modulepath.extend([p + '-hidden' for p in modulepath if p.endswith('/gcccore')])
+    setvar("MODULEPATH", ':'.join(modulepath))
+
 def pre_prepare_hook(self, *args, **kwargs):
     packages_in_gentoo = ["EBROOTLIBXML2", "EBROOTLIBJPEGMINTURBO", "EBROOTLIBPNG", "EBROOTLIBTIFF",
                           "EBROOTLIBGLU", "EBROOTMESA", "EBROOTFLTK", "EBROOTTCL", "EBROOTTK", "EBROOTBZIP2",
@@ -1170,10 +1175,6 @@ def pre_prepare_hook(self, *args, **kwargs):
     setvar("EBVERSIONTK", "8.6")
     setvar("EBVERSIONMESON", "1.1.1")
     setvar("EBVERSIONGPERFTOOLS", "2.9.1")
-
-    modulepath = os.environ["MODULEPATH"].split(':')
-    modulepath.extend([p + '-hidden' for p in modulepath if p.endswith('/gcccore')])
-    setvar("MODULEPATH", ':'.join(modulepath))
 
 def post_prepare_hook(self, *args, **kwargs):
     # we need to define variables such as EBROOTHDF5SERIAL even though we don't use this naming scheme
