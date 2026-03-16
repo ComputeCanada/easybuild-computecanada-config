@@ -219,13 +219,13 @@ intelmpi2021_dict = {
     # Fix mpirun from IntelMPI to explicitly unset I_MPI_PMI_LIBRARY
     # it can only be used with srun.
     'postinstallcmds': ([
-        "sed -i 's@\\(#!/bin/sh.*\\)$@\\1\\nunset I_MPI_PMI_LIBRARY@' %(installdir)s/mpi/%(version)s/bin/mpirun",
-        "/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/mpi/%(version)s/bin",
-        "for i in %(installdir)s/mpi/%(version)s/bin/I*; do patchelf --set-rpath '$ORIGIN/../lib/release' --force-rpath $i; done",
-        "patchelf --set-rpath '$ORIGIN/../lib/release:$ORIGIN/../libfabric/lib' --force-rpath %(installdir)s/mpi/%(version)s/bin/impi_info",
-        "for dir in release debug; do /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/mpi/%(version)s/lib/$dir --add_path='$ORIGIN/../../libfabric/lib'; done",
-        "patchelf --set-rpath $EBROOTUCX/lib --force-rpath %(installdir)s/mpi/%(version)s/libfabric/lib/prov/libmlx-fi.so",
-        "patchelf --set-rpath $EBROOTOPAMINPSM2/lib64 --force-rpath %(installdir)s/mpi/%(version)s/libfabric/lib/prov/libpsmx2-fi.so",
+        "sed -i 's@\\(#!/bin/sh.*\\)$@\\1\\nunset I_MPI_PMI_LIBRARY@' %(installdir)s/mpi/latest/bin/mpirun",
+        "/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/mpi/latest/bin",
+        "for i in %(installdir)s/mpi/latest/bin/I*; do patchelf --set-rpath '$ORIGIN/../lib/release' --force-rpath $i; done",
+        "patchelf --set-rpath '$ORIGIN/../lib/release:$ORIGIN/../libfabric/lib' --force-rpath %(installdir)s/mpi/latest/bin/impi_info",
+        "for dir in release debug; do /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/mpi/latest/lib/$dir --add_path='$ORIGIN/../../libfabric/lib'; done",
+        "patchelf --set-rpath $EBROOTUCX/lib --force-rpath %(installdir)s/mpi/latest/libfabric/lib/prov/libmlx-fi.so",
+        "patchelf --set-rpath $EBROOTOPAMINPSM2/lib64 --force-rpath %(installdir)s/mpi/latest/libfabric/lib/prov/libpsmx2-fi.so",
     ], REPLACE),
     'modluafooter': (mpi_modluafooter % 'intelmpi', REPLACE),
 }
