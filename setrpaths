@@ -146,7 +146,8 @@ def main():
             for root, dirs, files in os.walk(path):
                 root = Path(root)
                 for name in files:
-                    patch_file(root / name, args, interpreter)
+                    if stat.S_ISREG(os.lstat(root / name).st_mode):
+                        patch_file(root / name, args, interpreter)
         else:
             patch_file(path, args, interpreter)
     return 0
