@@ -109,7 +109,7 @@ def file_exists(path):
     if not os.path.exists(path):
         raise argparse.ArgumentTypeError(f"Path '{path}' does not exist")
     # Avoid failing to set rpaths when a symlink is provided
-    if stat.S_ISLNK(os.stat(path).st_mode):
+    if stat.S_ISLNK(os.lstat(path).st_mode):
         raise argparse.ArgumentTypeError(
             f"error: {args.path} is a symlink. Please provide files or paths, not a symlink.")
     return Path(path)
