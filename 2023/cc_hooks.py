@@ -944,17 +944,18 @@ def parse_hook(ec, *args, **kwargs):
         ec['toolchain']['version'] = '2023.2.1'
 
     ccc = build_option('cuda_compute_capabilities')
-    if (('CUDAcore', '12.9.1') in builddeps or ec['toolchain'] == {'name': 'CUDAcore', 'version': '12.9.1'}):
+    # For CUDA and CUDAcore, 12.9 or higher, add cuda compute 10.0
+    if (ec['toolchain'].get('name', '').startswith('CUDA') and ec['toolchain'].get('version', '').startswith(('12.9', '13.'))) or \
+        any(dep[0].startswith('CUDA') and dep[1].startswith(('12.9', '13.')) for dep in builddeps):
         if '10.0' not in ccc:
             print(f"Changing cuda compute capabilities from: {ccc} to {ccc + ['10.0']}")
             update_build_option('cuda_compute_capabilities', ccc + ['10.0'])
 
     # If it was added but the TC is not 12.9, remove it, like with --try-toolchain
-    elif ec['toolchain'] != {'name': 'CUDAcore', 'version': '12.9.1'} and ('CUDAcore', '12.9.1') not in builddeps:
-        if '10.0' in ccc:
-            print(f"Removing cuda compute capabilities 10.0")
-            ccc.remove('10.0')
-            update_build_option('cuda_compute_capabilities', ccc)
+    elif '10.0' in ccc:
+        print(f"Removing cuda compute capabilities 10.0")
+        ccc.remove('10.0')
+        update_build_option('cuda_compute_capabilities', ccc)
 
     # Use ifx by default as Fortran compiler for Intel toolchains.
     # Adapt optarch if oneapi compilers are used.
