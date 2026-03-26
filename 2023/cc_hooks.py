@@ -944,9 +944,10 @@ def parse_hook(ec, *args, **kwargs):
         ec['toolchain']['version'] = '2023.2.1'
 
     ccc = build_option('cuda_compute_capabilities')
+    lower_bound_cudaver = LooseVersion('12.9.1')
     # For CUDA and CUDAcore, 12.9 or higher, add cuda compute 10.0
-    if (ec['toolchain'].get('name', '').startswith('CUDA') and ec['toolchain'].get('version', '').startswith(('12.9', '13.'))) or \
-        any(dep[0].startswith('CUDA') and dep[1].startswith(('12.9', '13.')) for dep in builddeps):
+    if (ec['toolchain'].get('name', '').startswith('CUDA') and LooseVersion(ec['toolchain'].get('version', -1)) >= lower_bound_cudaver) or \
+        any(dep[0].startswith('CUDA') and LooseVersion(dep[1]) >= lower_bound_cudaver for dep in builddeps):
         if '10.0' not in ccc:
             print(f"Changing cuda compute capabilities from: {ccc} to {ccc + ['10.0']}")
             update_build_option('cuda_compute_capabilities', ccc + ['10.0'])
