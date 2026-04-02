@@ -16,7 +16,7 @@ if not os.path.exists(os.path.join(parentdir, 'cc_hooks_common.py')):
     sys.path.append('/cvmfs/soft.computecanada.ca/easybuild/easybuild-computecanada-config')
 from cc_hooks_common import modify_all_opts, update_opts, PREPEND, APPEND, REPLACE, APPEND_LIST, DROP, DROP_FROM_LIST, REPLACE_IN_LIST
 from cc_hooks_common import get_matching_keys, get_matching_keys_from_ec
-from easybuild.tools.config import build_option
+from easybuild.tools.config import build_option, update_build_option
 from easybuild.tools.toolchain.utilities import search_toolchain
 from easybuild.tools.environment import setvar
 from easybuild.tools.run import run_cmd, run_shell_cmd
@@ -951,6 +951,21 @@ def parse_hook(ec, *args, **kwargs):
         builddeps.append(('CUDAcore', '%(cudaver)s'))
     elif ec['toolchain'] == {'name': 'intel-compilers', 'version': '2023.1.0'}:
         ec['toolchain']['version'] = '2023.2.1'
+
+    ccc = build_option('cuda_compute_capabilities')
+    lower_bound_cudaver = LooseVersion('12.9.1')
+    # For CUDA and CUDAcore, 12.9 or higher, add cuda compute 10.0
+    if (ec['toolchain'].get('name', '').startswith('CUDA') and LooseVersion(ec['toolchain'].get('version', -1)) >= lower_bound_cudaver) or \
+        any(dep[0].startswith('CUDA') and LooseVersion(dep[1]) >= lower_bound_cudaver for dep in builddeps):
+        if '10.0' not in ccc:
+            print(f"Changing cuda compute capabilities from: {ccc} to {ccc + ['10.0']}")
+            update_build_option('cuda_compute_capabilities', ccc + ['10.0'])
+
+    # If it was added but the TC is not 12.9, remove it, like with --try-toolchain
+    elif '10.0' in ccc:
+        print(f"Removing cuda compute capabilities 10.0")
+        ccc.remove('10.0')
+        update_build_option('cuda_compute_capabilities', ccc)
 
     # Use ifx by default as Fortran compiler for Intel toolchains.
     # Adapt optarch if oneapi compilers are used.
