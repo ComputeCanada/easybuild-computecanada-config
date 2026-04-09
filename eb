@@ -264,7 +264,14 @@ for rsnt_arch in $(IFS=","; echo $arch); do
 		bwrapdir=$(mktemp -d -p /bwrap)
 		echo "Building via bwrap in $bwrapdir"
 		bwrapcmd=$(RSNT_ARCH="$rsnt_arch" python $EASYBUILD_CONFIG_ROOT/../bwrapcmd.py $ec $bwrapdir)
-		$bwrapcmd $EB --installpath-modules=$bwrapdir/modules --configfiles=$LOCAL_EASYBUILD_CONFIGFILES "${NEW_ARGS[@]}" --ignore-locks
+		if $bwrapcmd $EB --installpath-modules=$bwrapdir/modules --configfiles=$LOCAL_EASYBUILD_CONFIGFILES "${NEW_ARGS[@]}" --ignore-locks; then
+		    tarcmd=$(RSNT_ARCH="$rsnt_arch" YEAR=$YEAR python $EASYBUILD_CONFIG_ROOT/../tarcmd.py $ec $bwrapdir)
+		    echo "Running $tarcmd"
+		    if $tarcmd; then
+			echo "removing $bwrapdir"
+			rm -rf $bwrapdir
+		    fi
+		fi
 	else
 		$EB --configfiles=$LOCAL_EASYBUILD_CONFIGFILES "${NEW_ARGS[@]}"
 	fi
