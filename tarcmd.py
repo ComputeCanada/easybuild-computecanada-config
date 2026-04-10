@@ -21,7 +21,7 @@ if __name__ == "__main__":
 
     mod = bwrap_modules[0].split('/')
     mod = mod[-2:] + mod[1:-2] + mod[:1]
-    tarball = os.path.join('/shared_tmp', f"{'_'.join(mod)}_{os.environ['YEAR']}_{os.environ['USER']}.tar")
+    tarball = os.path.join('/shared_tmp', f"{'-'.join(mod)}-{os.environ['YEAR']}-{os.environ['USER']}.tar")
     tar_cmd.extend([tarball, '--owner=libuser'] +
                    [os.path.join(bwrap_installpath, d) for d in ['modules', 'software']])
 
