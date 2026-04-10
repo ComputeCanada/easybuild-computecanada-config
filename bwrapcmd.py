@@ -21,12 +21,11 @@ if __name__ == "__main__":
     installpath_software = os.environ.get("EASYBUILD_INSTALLPATH_SOFTWARE",
                                           os.path.join(prefix, os.environ["EASYBUILD_SUBDIR_SOFTWARE"]))
     bwrap_installpath = sys.argv[2]
-    bwrap_mpath = os.path.join(bwrap_installpath, 'modules')
     bwrap_cmd = ['bwrap', '--dev-bind', '/', '/']
 
     for mod in bwrap_modules:
         spath = os.path.join(os.path.realpath(installpath_software), mod)
-        bwrap_spath = os.path.join(bwrap_installpath, 'software', mod)
+        bwrap_spath = os.path.join(bwrap_installpath, os.environ["EASYBUILD_SUBDIR_SOFTWARE"], mod)
         if os.path.exists(spath):
             bwrap_cmd.extend(['--bind', bwrap_spath, spath])
         else:
