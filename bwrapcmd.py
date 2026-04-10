@@ -28,7 +28,7 @@ if __name__ == "__main__":
         spath = os.path.join(os.path.realpath(installpath_software), mod)
         bwrap_spath = os.path.join(bwrap_installpath, 'software', mod)
         if os.path.exists(spath):
-            bwrap_cmd.extend(['--dev', bwrap_spath, spath])
+            bwrap_cmd.extend(['--bind', bwrap_spath, spath])
         else:
             bwrap_workdir = os.path.join(bwrap_installpath, 'workdir', mod)
             while not os.path.exists(spath):
