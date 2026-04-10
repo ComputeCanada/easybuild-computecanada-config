@@ -27,14 +27,17 @@ if __name__ == "__main__":
     for mod in bwrap_modules:
         spath = os.path.join(os.path.realpath(installpath_software), mod)
         bwrap_spath = os.path.join(bwrap_installpath, 'software', mod)
-        bwrap_workdir = os.path.join(bwrap_installpath, 'workdir', mod)
-        while not os.path.exists(spath):
-            spath = os.path.dirname(spath)
-            bwrap_spath = os.path.dirname(bwrap_spath)
-            bwrap_workdir = os.path.dirname(bwrap_workdir)
+        if os.path.exists(spath):
+            bwrap_cmd.extend(['--dev', bwrap_spath, spath])
+        else:
+            bwrap_workdir = os.path.join(bwrap_installpath, 'workdir', mod)
+            while not os.path.exists(spath):
+                spath = os.path.dirname(spath)
+                bwrap_spath = os.path.dirname(bwrap_spath)
+                bwrap_workdir = os.path.dirname(bwrap_workdir)
+            mkdir(bwrap_workdir, parents=True)
+            bwrap_cmd.extend(['--overlay-src', spath, '--overlay', bwrap_spath, bwrap_workdir, spath])
         mkdir(bwrap_spath, parents=True)
-        mkdir(bwrap_workdir, parents=True)
-        bwrap_cmd.extend(['--overlay-src', spath, '--overlay', bwrap_spath, bwrap_workdir, spath])
 
     sys.stdout.close()
     old_stdout.write(f'{" ".join(bwrap_cmd)}\n')
