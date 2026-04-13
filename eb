@@ -81,6 +81,8 @@ if [ -n "$SUDO_USER" ] ; then
 else
 	ORIG_USER="$CURRENT_USER"
 fi
+
+unset use_bwrap
 if [ "$CURRENT_USER" != "ebuser" ] ; then
 	export EASYBUILD_PREFIX=$HOME/.local/easybuild
 	export EASYBUILD_SUBDIR_USER_MODULES=''
@@ -100,6 +102,7 @@ else
 		# using ebuser with different group ID
 		export EASYBUILD_INSTALLPATH_SOFTWARE=/cvmfs/restricted.computecanada.ca/easybuild/$EASYBUILD_SUBDIR_SOFTWARE
 		export EASYBUILD_SOURCEPATH=/cvmfs/restricted.computecanada.ca/easybuild/sources
+		use_bwrap=1
 	fi
 	cd /shared_tmp/logs # needed for --job
 fi
@@ -120,7 +123,6 @@ NEW_ARGS=()
 unset from_pr
 unset job
 unset arch
-unset use_bwrap
 for argument in "$@"; do
 	if [[ $argument =~ ^--disable-enforce-checksums$ ]]; then
 		# workaround for non-propagation of this argument
