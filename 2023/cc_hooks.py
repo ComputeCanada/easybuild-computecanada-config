@@ -3,6 +3,7 @@ from easybuild.easyblocks.generic.cmakemake import CMakeMake
 from easybuild.easyblocks.generic.cmakeninja import CMakeNinja
 from easybuild.easyblocks.generic.mesonninja import MesonNinja
 from easybuild.easyblocks.llvm import EB_LLVM
+from easybuild.easyblocks.rocm_llvm import EB_ROCm_minus_LLVM
 from easybuild.toolchains.system import SystemToolchain
 from easybuild.toolchains.gcccore import GCCcore
 from easybuild.framework.easyconfig.constants import EASYCONFIG_CONSTANTS
@@ -76,6 +77,7 @@ new_version_mapping_2023a = {
         ('HDF5','1.14.4','-mpi'): ('1.14.4', cOMPI_2023a, '-mpi'),
         ('HDF5','1.14.6'): ('1.14.6', COMPILERS_2023a),
         ('HDF5','1.14.6','-mpi'): ('1.14.6', cOMPI_2023a, '-mpi'),
+        ('hwloc', '2.11.2'): ('2.12.1', GCCCORE143),
         ('imkl','2023.1.0'): ('2023.2.0', SYSTEM),
         ('imkl','2023.2.0'): ('2023.2.0', SYSTEM),
         ('intel-compilers', '2023.1.0'): ('2023.2.1', SYSTEM),
@@ -1051,7 +1053,7 @@ end""".format(lowest=lowest, highest_plus=highest_plus)
                 ec['installopts'] += ' --verbose '
 
     # hide toolchains
-    if ec.get('moduleclass','') == 'toolchain' or ec['name'] == 'GCCcore' or ec['name'] == 'CUDAcore':
+    if ec.get('moduleclass','') == 'toolchain' or ec['name'] == 'GCCcore' or ec['name'] == 'CUDAcore' or ec['name'] == 'ROCm-LLVM':
         ec['hidden'] = True
 
 def python_fetchhook(ec):
@@ -1114,7 +1116,7 @@ def pre_configure_hook(self, *args, **kwargs):
     # additional changes for MesonNinja EasyBlocks
     if (c == MesonNinja or str(MesonNinja) in map(str, c.__mro__)) and c != CMakeNinja:
         update_opts(ec, False, 'fail_on_missing_ninja_meson_dep', REPLACE)
-    if c == EB_LLVM:
+    if c == EB_LLVM or c == EB_ROCm_minus_LLVM:
         setvar("EBROOTZLIB", os.environ["EBROOTGENTOO"])
         setvar("EBROOTGCCCORE", os.environ["EBROOTGENTOO"])
         setvar("EBROOTLIBFFI", os.path.join(os.environ["EBROOTGENTOO"], "lib64", "libffi"))
