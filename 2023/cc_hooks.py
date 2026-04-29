@@ -1124,7 +1124,9 @@ def pre_configure_hook(self, *args, **kwargs):
         setvar("EBROOTLIT", os.environ["EBROOTGENTOO"])
         setvar("EBROOTPSUTIL", os.environ["EBROOTGENTOO"])
         # the easyblock uses this to keep track of dependencies that we have in filter-deps
-        self.deps.extend(['zlib', 'zstd', 'gdb', 'z3', 'libffi', 'libxml2'])
+        self.deps.extend(['zlib', 'zstd', 'z3', 'libffi', 'libxml2'])
+        if c == EB_LLVM:
+            self.deps.append('gdb')
 
 def pre_fetch_hook(self, *args, **kwargs):
     "Modify extension list (here is more efficient than parse_hook since only called once)"
