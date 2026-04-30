@@ -281,8 +281,8 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
                 # This means icc/ifort are not of the moduleclass compiler but iccifort is
                 if ec['name'] in ['iccifort', 'intel-compilers']:
                     comp_name_ver = ['intel' + self.det_twodigit_version(ec)]
-                elif ec['name'] == 'llvm-compilers':
-                    comp_name_ver = ['llvm' + self.det_twodigit_version(ec)]
+                elif ec['name'] in {'llvm-compilers', 'rocm-compilers'}:
+                    comp_name_ver = [ec['name'][:4] + self.det_twodigit_version(ec)]
             # Exclude extending the path for icc/ifort, the iccifort special case is handled above
             # XXX use custom code for MODULEPATH for compilers via modluafooter
             #if ec['name'] not in ['icc', 'ifort']:
