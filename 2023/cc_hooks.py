@@ -1123,6 +1123,7 @@ def pre_configure_hook(self, *args, **kwargs):
         setvar("EBVERSIONGCCCORE", os.environ["EBVERSIONGCCCORE"].split('.')[0])
         setvar("EBROOTLIT", os.environ["EBROOTGENTOO"])
         setvar("EBROOTPSUTIL", os.environ["EBROOTGENTOO"])
+        setvar("CPATH", os.environ["CPATH"] + ':' + os.path.join(os.environ["EBROOTLIBFFI"], "include"))
         # the easyblock uses this to keep track of dependencies that we have in filter-deps
         self.deps.extend(['zlib', 'zstd', 'z3', 'libffi', 'libxml2'])
         if c == EB_LLVM:
