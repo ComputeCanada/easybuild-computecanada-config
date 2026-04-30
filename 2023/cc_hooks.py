@@ -77,7 +77,7 @@ new_version_mapping_2023a = {
         ('HDF5','1.14.4','-mpi'): ('1.14.4', cOMPI_2023a, '-mpi'),
         ('HDF5','1.14.6'): ('1.14.6', COMPILERS_2023a),
         ('HDF5','1.14.6','-mpi'): ('1.14.6', cOMPI_2023a, '-mpi'),
-        ('hwloc', '2.11.2'): ('2.12.1', GCCCORE143),
+        ('hwloc', '2.11.2'): ('2.12.1', SYSTEM),
         ('imkl','2023.1.0'): ('2023.2.0', SYSTEM),
         ('imkl','2023.2.0'): ('2023.2.0', SYSTEM),
         ('intel-compilers', '2023.1.0'): ('2023.2.1', SYSTEM),
