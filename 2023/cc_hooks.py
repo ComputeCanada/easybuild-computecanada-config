@@ -855,8 +855,8 @@ def set_modluafooter(ec):
     if moduleclass == 'compiler' and not name in ('gcccore', 'llvm', 'clang', 'fpc', 'dpc++', 'ispc'):
         if name in ['iccifort', 'intel-compilers']:
             name = 'intel'
-        elif name == 'llvm-compilers':
-            name = 'llvm'
+        elif name in {'llvm-compilers', 'rocm-compilers'}:
+            name = name[:4]
         comp = os.path.join('Compiler', name + ec['version'][:ec['version'].find('.')])
         ec['modluafooter'] += (compiler_modluafooter.format(year=year,sub_path=comp) + 'family("compiler")\n')
     if ec['name'] == 'CUDAcore':
