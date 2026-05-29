@@ -792,6 +792,12 @@ end""".format(version="v2412"), REPLACE),
     'tbb': {
         'postinstallcmds': (['chmod -R u-w %(installdir)s/cmake || chmod -R u-w %(installdir)s/lib64/cmake'], REPLACE),
     },
+    ('UCX', '1.14.1'): {
+        # local customizations for UCX
+        'configopts': ("--with-rdmacm=$EBROOTGENTOO --with-verbs=$EBROOTGENTOO --with-knem=$EBROOTGENTOO " +
+                       {'sse3': '--without-avx --without-sse41 --without-sse42 '}.get(os.getenv('RSNT_ARCH'), ''),
+                       PREPEND)
+    },
     'UCX': {
         # local customizations for UCX
         'configopts': ("--with-rdmacm=$EBROOTGENTOO --with-verbs=$EBROOTGENTOO --with-knem=$EBROOTGENTOO --without-ze " +
