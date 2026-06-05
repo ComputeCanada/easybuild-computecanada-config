@@ -98,7 +98,11 @@ else
 		echo "Failed to read \$HOME/.git_env_vars.sh. Please make sure they are readable and configured as described on https://wiki.alliancecan.ca/wiki/RSNT_Software_-_Setting_up#Configuring_your_build_node_account"
 		exit 1
 	fi
-	if [ "$(id -ng)" != "ebuser" ] ; then
+	if [ "$(id -ng)" == "rsnt_containers" ] ; then
+		export EASYBUILD_INSTALLPATH_SOFTWARE=/cvmfs/containers.computecanada.ca/content
+		export EASYBUILD_SUBDIR_SOFTWARE=''
+		use_bwrap=1
+	elif [ "$(id -ng)" != "ebuser" ] ; then
 		# using ebuser with different group ID
 		export EASYBUILD_INSTALLPATH_SOFTWARE=/cvmfs/restricted.computecanada.ca/easybuild/$EASYBUILD_SUBDIR_SOFTWARE
 		export EASYBUILD_SOURCEPATH=/cvmfs/restricted.computecanada.ca/easybuild/sources

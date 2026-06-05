@@ -30,6 +30,7 @@ Implementation of an example hierarchical module naming scheme.
 @author: Bart Oldeman  (Compute Canada)
 """
 
+import grp
 import os
 import re
 try:
@@ -212,6 +213,10 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
 
         :return: string with name of subdirectory, e.g.: '<compiler>/<mpi_lib>/<name>/<version>'
         """
+        # special handling for containers
+        if grp.getgrgid(os.getegid()).gr_name == 'rsnt_containers':
+            subdir = os.path.join("containers", f"{ec['name']}-{ec['version']}".lower())
+            return subdir
         # by default: use full module name as name for install subdir
         # only use gcccore-hidden for module name, not the install subdir
         subdir = self.det_module_subdir(ec)
