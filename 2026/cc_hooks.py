@@ -238,7 +238,7 @@ intel_common_postinstallcmds = '''
     done
     mv %(installdir)s/compiler/$shortver/bin/{dpcpp,dpcpp.orig}
     echo "#!$EPREFIX/bin/sh" > %(installdir)s/compiler/$shortver/bin/dpcpp
-    echo "exec %(installdir)s/compiler/$shortver/bin/dpcpp.orig --sysroot=$EPREFIX -Wl,-dynamic-linker=$EPREFIX/lib64/ld-linux-x86-64.so.2 --gcc-install-dir=$EBROOTGENTOO/lib/gcc/x86_64-pc-linux-gnu/${EBVERSIONGCCCORE:0:2} \${1+\\"\$@\\"}" >> %(installdir)s/compiler/$shortver/bin/dpcpp
+    echo "exec %(installdir)s/compiler/$shortver/bin/dpcpp.orig --sysroot=$EPREFIX -Wl,-dynamic-linker=$EPREFIX/lib64/ld-linux-x86-64.so.2 --gcc-install-dir=$EBROOTGENTOO/lib/gcc/x86_64-pc-linux-gnu/${EBVERSIONGCCCORE:0:2} \\${1+\\"\\$@\\"}" >> %(installdir)s/compiler/$shortver/bin/dpcpp
     chmod +x %(installdir)s/compiler/$shortver/bin/dpcpp
     /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s
     /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/compiler/$shortver/lib --add_origin
@@ -315,7 +315,7 @@ opts_changes = {
     'Clang': {
         'preconfigopts': (
                  # Use dynamic linker from ${EPREFIX}
-                 """sed -i -e "/LibDir.*Loader/s@return \\"\/\\"@return \\"${EPREFIX%/}/\\"@" """ +
+                 """sed -i -e "/LibDir.*Loader/s@return \\"\\/\\"@return \\"${EPREFIX%/}/\\"@" """ +
                  """%(builddir)s/llvm-project-%(version)s.src/clang/lib/Driver/ToolChains/Linux.cpp &&""",
             PREPEND),
         'configopts': ('-DDEFAULT_SYSROOT=${EPREFIX} ', PREPEND),
@@ -494,10 +494,10 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
         'module load python/2.7 && pushd %(installdir)s/extern/engines/python && python setup.py install --prefix=%(installdir)s/extern/engines/python && popd ',
         'module load python/3.6 && pushd %(installdir)s/extern/engines/python && python setup.py install --prefix=%(installdir)s/extern/engines/python && popd ',
         'module load python/3.7 && pushd %(installdir)s/extern/engines/python && python setup.py install --prefix=%(installdir)s/extern/engines/python && popd ',
-        "find %(installdir)s/sys/os/glnxa64 -name 'libstdc++.so*' -exec mv {} {}.bak \;",
-        "find %(installdir)s/sys/os/glnxa64 -name 'libgcc_s.so*' -exec mv {} {}.bak \;",
-        "find %(installdir)s/sys/os/glnxa64 -name 'libgfortran.so*' -exec mv {} {}.bak \;",
-        "find %(installdir)s/sys/os/glnxa64 -name 'libquadmath.so*' -exec mv {} {}.bak \;",
+        "find %(installdir)s/sys/os/glnxa64 -name 'libstdc++.so*' -exec mv {} {}.bak \\;",
+        "find %(installdir)s/sys/os/glnxa64 -name 'libgcc_s.so*' -exec mv {} {}.bak \\;",
+        "find %(installdir)s/sys/os/glnxa64 -name 'libgfortran.so*' -exec mv {} {}.bak \\;",
+        "find %(installdir)s/sys/os/glnxa64 -name 'libquadmath.so*' -exec mv {} {}.bak \\;",
         '/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_origin',
         '/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/extern/engines/python --add_path %(installdir)s/bin/glnxa64 --add_origin --any_interpreter '
 ], REPLACE),
@@ -509,7 +509,7 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
         'multi_deps': ({'Python': ['3.13', '3.14'] }, REPLACE),
     },
     'Nextflow': {
-        'postinstallcmds': (['sed -i -e "s/cli=(\$(/cli=(\$(export NFX_OPTS=\$JAVA_TOOL_OPTIONS; unset JAVA_TOOL_OPTIONS; /g" %(installdir)s/bin/nextflow'], APPEND_LIST),
+        'postinstallcmds': (['sed -i -e "s/cli=(\\$(/cli=(\\$(export NFX_OPTS=\\$JAVA_TOOL_OPTIONS; unset JAVA_TOOL_OPTIONS; /g" %(installdir)s/bin/nextflow'], APPEND_LIST),
     },
     'NextGenMap': {
         'preconfigopts': (" sed -i '/include_directories(.*zlib/d' ../NextGenMap-%(version)s/CMakeLists.txt && ", APPEND),
@@ -524,7 +524,7 @@ setenv("MATLAB_LOG_DIR","/tmp")""", REPLACE),
         'postinstallcmds': (['''
         installdir=%(installdir)s/Linux_x86_64/%(version)s
         /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path $installdir
-        sed -i "s@\(set LDSO=.*\);@\\1 --sysroot=$EPREFIX;@" $installdir/compilers/bin/localrc
+        sed -i "s@\\(set LDSO=.*\\);@\\1 --sysroot=$EPREFIX;@" $installdir/compilers/bin/localrc
         echo "set DEFLIBDIR=$EBROOTGENTOO/lib64;" >> $installdir/compilers/bin/localrc
         echo "set DEFSTDOBJDIR=$EBROOTGENTOO/lib64;" >> $installdir/compilers/bin/localrc
         echo "set NORPATH=YES;" >> $installdir/compilers/bin/localrc
