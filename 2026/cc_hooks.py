@@ -1041,12 +1041,7 @@ def pre_module_hook(self, *args, **kwargs):
         python_fetchhook(self.cfg)
 
 def post_module_hook(self, *args, **kwargs):
-    "Modify GCCcore toolchain to system toolchain for ebfiles_repo only"
-    # So we get name-version.eb there, but the toolchain inside does not change
-    toolchain = self.cfg.get('toolchain')
-    if toolchain and toolchain['name'] == 'GCCcore':
-        self.cfg['toolchain'] = EASYCONFIG_CONSTANTS['SYSTEM'][0]
-    # Generate Lmod cache, only as "ebuser"
+    "Generate Lmod cache, only as 'ebuser'"
     if os.getenv("USER") == "ebuser":
         run_shell_cmd("/etc/rsnt/generate_lmod_cache.py --arch avx2 avx512")
 
