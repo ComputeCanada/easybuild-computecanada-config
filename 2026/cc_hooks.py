@@ -30,7 +30,7 @@ PARSE_OPTS = ['multi_deps', 'dependencies', 'builddependencies', 'license_file',
               'skip_license_file_in_module', 'withnvptx', 'skipsteps']
 
 SYSTEM = [('system', 'system')]
-GCCCORE153 = [('GCCcore', '15.3.0'), ('GCCcore', '15.3-gentoo')]
+GCCCORE153 = [('GCCcore', '15.3.0')]
 GCC153 = [('GCC', '15.3.0')]
 ICC2026 = [('intel-compilers', '2026.1.0')]
 COMPILERS_2026 = [ICC2026[0], GCC153[0]]
@@ -61,9 +61,6 @@ new_version_mapping_2026 = {
         ('FFTW', 'ANY', ""): ('3.3.10', COMPILERS_2026),
         ('FFTW.MPI', 'ANY', ''): ('3.3.10', cOMPI_2026),
         'Eigen': ('3.4.0', SYSTEM),
-        ('GCCcore', '12.3.0'): ('12.3', SYSTEM, '-gentoo'),
-        ('GCCcore', '13.3.0'): ('13.3', SYSTEM, '-gentoo'),
-        ('GCCcore', '14.3.0'): ('14.3', SYSTEM, '-gentoo'),
         'GSL': ('2.7', COMPILERS_2026),
         ('Java', '11'): ('17', SYSTEM),
         ('HDF5','ANY',''): ('1.14.2', COMPILERS_2026),
@@ -843,12 +840,12 @@ def parse_hook(ec, *args, **kwargs):
     builddeps = ec['builddependencies']
     if builddeps and builddeps[0] and isinstance(builddeps[0], list):
         builddeps = builddeps[0]
-    if ec['toolchain'] == {'name': 'GCCcore', 'version': '15.3.0'}:
+    if ec['toolchain']['name'] == 'GCCcore':
         if ec['versionsuffix'] == '-CUDA-%(cudaver)s':
             ec['toolchain'] = {'name': 'gcccorecuda', 'version': '2026'}
             ec['versionsuffix'] = ''
         else:
-            ec['toolchain'] = {'name': 'GCCcore', 'version': '15.3-gentoo'}
+            ec['toolchain'] = {'name': 'GCCcore', 'version': '15.3.0'}
     elif ec['toolchain']['name'] == 'gcccorecuda':
         builddeps.append(('CUDAcore', '%(cudaver)s'))
 
