@@ -560,59 +560,9 @@ end""".format(version="v2406"), REPLACE),
 end""".format(version="v2412"), REPLACE),
         'prebuildopts': ('MPFR_ARCH_PATH=$EBROOTGENTOO ', APPEND),
     },
-    ("OpenMPI", "4.1.5"): {
+    ("OpenMPI", "5.0.10"): {
         # local customizations for OpenMPI
-        'builddependencies': ([('opa-psm2', '12.0.1')], REPLACE),
-        'configopts': ('--enable-shared --with-verbs ' +
-                    '--with-hwloc=external '  + # hwloc support
-                    '--with-libevent=external ' + # libevent from Gentoo
-                    '--without-usnic ' + # No usnic-via-libfabric
-                    # rpath is already done by ld wrapper
-                    '--disable-wrapper-runpath --disable-wrapper-rpath ' +
-                    '--with-munge ' + #enable Munge in PMIx
-                    '--with-slurm --with-pmi=/opt/software/slurm ' +
-                    '--enable-mpi-cxx ' +
-                    '--disable-show-load-errors-by-default ' +
-                    '--enable-mpi1-compatibility ' +
-                    # enumerate all mca's that should be compiled as plugins
-                    # (only those that link to system-specific
-                    # libraries (lustre, fabric, and scheduler)
-                    '--enable-mca-dso=common-ofi,common-ucx,common-verbs,event-external,' +
-                    'atomic-ucx,btl-ofi,btl-openib,btl-uct,' +
-                    'coll-ucc,ess-tm,fs-lustre,mtl-ofi,mtl-psm,mtl-psm2,osc-ucx,' +
-                    'plm-tm,pmix-ext3x,pmix-s1,pmix-s2,pml-ucx,pnet-opa,psec-munge,' +
-                    'ras-tm,scoll-ucc,spml-ucx,sshmem-ucx,hwloc-external ',
-                    PREPEND),
-        'postinstallcmds': (['rm %(installdir)s/lib/*.la %(installdir)s/lib/*/*.la',
-                             'for i in %(installdir)s/lib/openmpi/mca_pmix_s[12].so; '
-                             'do patchelf --set-rpath '
-                             '$(patchelf --print-rpath $i):/opt/software/slurm/lib:/opt/software/slurm/lib64:/opt/slurm/lib64 $i;'
-                             'done'], REPLACE),
-        'modluafooter': (mpi_modluafooter % 'openmpi', REPLACE),
-    },
-    ("OpenMPI", "5.0.3"): {
-        # local customizations for OpenMPI
-        'builddependencies': ([('opa-psm2', '12.0.1')], REPLACE),
-        'preconfigopts': ('ac_cv_header_level_zero_ze_api_h=no ', APPEND),
-        'configopts': (
-                    # rpath is already done by ld wrapper
-                    '--disable-wrapper-runpath --disable-wrapper-rpath ' +
-                    '--with-show-load-errors=no ' +
-                    '--enable-mpi1-compatibility ' +
-                    # enumerate all mca's that should be compiled as plugins
-                    # (only those that link to system-specific
-                    # libraries (lustre, fabric, and scheduler)
-                    '--enable-mca-dso=common-ofi,common-ucx,' +
-                    'accelerator-cuda,atomic-ucx,btl-ofi,btl-smcuda,btl-uct,' +
-                    'coll-ucc,fs-lustre,mtl-ofi,mtl-psm2,osc-ucx,' +
-                    'pml-ucx,rcache-gpusm,rcache-rgpusm,scoll-ucc,spml-ucx,sshmem-ucx ',
-                    PREPEND),
-        'postinstallcmds': (['rm %(installdir)s/lib/*.la %(installdir)s/lib/*/*.la'], REPLACE),
-        'modluafooter': (mpi_modluafooter % 'openmpi', REPLACE),
-    },
-    ("OpenMPI", "5.0.8"): {
-        # local customizations for OpenMPI
-        'builddependencies': ([('opa-psm2', '12.0.1')], REPLACE),
+        'builddependencies': ([('PSM2', '12.0.1')], REPLACE),
         'configopts': (
                     # rpath is already done by ld wrapper
                     '--disable-wrapper-runpath --disable-wrapper-rpath ' +
