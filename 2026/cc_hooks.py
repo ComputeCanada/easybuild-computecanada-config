@@ -358,15 +358,6 @@ end
             'upx -d %(installdir)s/bin/*; true',
             '/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s '], APPEND_LIST),
     },
-    ('GCC', '12.3.0'): {
-        'version': ('12.3', REPLACE),
-    },
-    ('GCC', '13.3.0'): {
-        'version': ('13.3', REPLACE),
-    },
-    ('GCC', '14.3.0'): {
-        'version': ('14.3', REPLACE),
-    },
     'GObject-Introspection': {
         'multi_deps': ({'Python': ['3.6', '3.7', '3.8']}, REPLACE),
         'builddependencies': ([[('Python', v)] for v in ['2.7', '3.6', '3.7', '3.8'] ], REPLACE),
