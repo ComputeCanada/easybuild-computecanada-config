@@ -431,22 +431,9 @@ end
         'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s'], REPLACE),
         'modluafooter': ('setenv("JAVA_TOOL_OPTIONS", "-Xmx2g")', REPLACE),
     },
-    ('libfabric', '1.18.0'): {
-        'builddependencies': ([('opa-psm2', '12.0.1'), ('GDRCopy', '2.3.1'), ('CUDAcore', '12.2.2')], REPLACE),
-        'configopts': ('--enable-cuda-dlopen --enable-gdrcopy-dlopen --enable-psm2=dl ', PREPEND),
-        'patches': (['libfabric-1.18.0_eliminate-cudart-use.patch'], APPEND_LIST),
-        'checksums': ('71e2e1bbbbcebae20d1ffc3255598949e06fb1bc1d3e5c040244df3f69db00fa', APPEND_LIST),
-    },
-    ('libfabric', '1.21.0'): {
-        'builddependencies': ([('opa-psm2', '12.0.1'), ('GDRCopy', '2.4.1'), ('CUDAcore', '12.5.0')], REPLACE),
-        'dependencies': ([('hwloc', '2.10.0')], REPLACE),
-        'configopts': ('--enable-cuda-dlopen --enable-gdrcopy-dlopen --enable-psm2=dl ', PREPEND),
-        'patches': (['libfabric-1.21.0_eliminate-cudart-use.patch'], APPEND_LIST),
-        'checksums': ('f6a1b7d62c546c5786ec85d19998258d644dd2aba0773f0151ea6d47b87aa181', APPEND_LIST),
-    },
-    ('libfabric', '2.1.0'): {
-        'builddependencies': ([('opa-psm2', '12.0.1'), ('GDRCopy', '2.5'), ('CUDAcore', '12.9.1')], REPLACE),
-        'dependencies': ([('hwloc', '2.12.1')], REPLACE),
+    ('libfabric', '2.6.0'): {
+        'builddependencies': ([('PSM2', '12.0.1'), ('GDRCopy', '2.6'), ('CUDAcore', '13.3.1')], REPLACE),
+        'dependencies': ([('hwloc', '2.14.0')], REPLACE),
         'configopts': ('--enable-cuda-dlopen --enable-gdrcopy-dlopen --enable-psm2=dl ', PREPEND),
         'patches': (['libfabric-2.1.0_eliminate-cudart-use.patch'], APPEND_LIST),
         'checksums': ('f6615a08b4cc1a3ed68fe753ee555806f7a1b5b8054e824b2c620dd75383e284', APPEND_LIST),
