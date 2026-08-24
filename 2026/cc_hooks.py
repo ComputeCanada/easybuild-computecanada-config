@@ -322,11 +322,8 @@ opts_changes = {
         'multi_deps': ({'Python': ['2.7', '3.6', '3.7', '3.8']}, REPLACE),
         'modluafooter': ('depends_on("python")', REPLACE),
     },
-    ('CUDA', '11.8.0'): {
-        'version': ('11.8', REPLACE),
-    },
-    ('CUDA', '12.2.2'): {
-        'version': ('12.2', REPLACE),
+    ('CUDA', '13.3.1'): {
+        'version': ('13.3', REPLACE),
     },
     'CUDAcore': {
         'sources': ('cuda-postinstall.sh', APPEND_LIST),
