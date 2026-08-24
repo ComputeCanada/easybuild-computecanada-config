@@ -27,7 +27,7 @@ import shutil
 # options to change in parse_hook, others are changed in other hooks
 PARSE_OPTS = ['multi_deps', 'dependencies', 'builddependencies', 'license_file', 'version', 'name',
               'source_urls', 'sources', 'patches', 'checksums', 'versionsuffix', 'modaltsoftname',
-              'skip_license_file_in_module', 'withnvptx', 'skipsteps']
+              'skip_license_file_in_module', 'withnvptx', 'skipsteps', 'accept_eula']
 
 SYSTEM = [('system', 'system')]
 GCCCORE153 = [('GCCcore', '15.3.0')]
