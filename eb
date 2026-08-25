@@ -54,7 +54,12 @@ for rsnt_arch in sse3 avx avx512; do
 done
 
 declare -A optarch
-if [ "$YEAR" -ge 2023 ]; then
+if [ "$YEAR" -ge 2026 ]; then
+    optarch=(
+	[avx2]='NVHPC:-march=x86-64-v3;Intel:-march=x86-64-v3 -axCore-AVX512;GCC:-march=x86-64-v3;LLVM:-march=x86-64-v3 -mtune=generic;ROCm:-march=x86-64-v3 -mtune=generic'
+	[avx512]='NVHPC:-march=x86-64-v4;Intel:-march=x86-64-v4;GCC:-march=x86-64-v4;LLVM:-march=x86-64-v4 -mtune=znver5;ROCm:-march=x86-64-v4 -mtune=znver4'
+    )
+elif [ "$YEAR" -ge 2023 ]; then
     optarch=(
 	[avx2]='NVHPC:-march=x86-64-v3;Intel:-march=core-avx2 -axCore-AVX512;GCC:-march=x86-64-v3;LLVM:-march=x86-64-v3 -mtune=generic;ROCm:-march=x86-64-v3 -mtune=generic'
 	[avx512]='NVHPC:-march=x86-64-v4;Intel:-march=skylake-avx512;GCC:-march=x86-64-v4;LLVM:-march=x86-64-v4 -mtune=znver5;ROCm:-march=x86-64-v4 -mtune=znver4'

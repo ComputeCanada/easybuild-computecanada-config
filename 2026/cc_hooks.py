@@ -1,0 +1,1016 @@
+from easybuild.framework.easyconfig.easyconfig import get_easyblock_class, get_toolchain_hierarchy
+from easybuild.easyblocks.generic.cmakemake import CMakeMake
+from easybuild.easyblocks.generic.cmakeninja import CMakeNinja
+from easybuild.easyblocks.generic.mesonninja import MesonNinja
+from easybuild.easyblocks.llvm import EB_LLVM
+from easybuild.easyblocks.rocm_llvm import EB_ROCm_minus_LLVM
+from easybuild.toolchains.system import SystemToolchain
+from easybuild.toolchains.gcccore import GCCcore
+from easybuild.framework.easyconfig.constants import EASYCONFIG_CONSTANTS
+from distutils.version import LooseVersion
+import sys, os
+parentdir = os.path.dirname(os.path.dirname(__file__))
+if parentdir not in sys.path:
+    sys.path.append(parentdir)
+if not os.path.exists(os.path.join(parentdir, 'cc_hooks_common.py')):
+    # needed when taking hooks from reprod dir
+    sys.path.append('/cvmfs/soft.computecanada.ca/easybuild/easybuild-computecanada-config')
+from cc_hooks_common import modify_all_opts, update_opts, PREPEND, APPEND, REPLACE, APPEND_LIST, DROP, DROP_FROM_LIST, REPLACE_IN_LIST
+from cc_hooks_common import get_matching_keys, get_matching_keys_from_ec
+from easybuild.tools.config import build_option
+from easybuild.tools.toolchain.utilities import search_toolchain
+from easybuild.tools.environment import setvar
+from easybuild.tools.run import run_cmd, run_shell_cmd
+import uuid
+import shutil
+
+# options to change in parse_hook, others are changed in other hooks
+PARSE_OPTS = ['multi_deps', 'dependencies', 'builddependencies', 'license_file', 'version', 'name',
+              'source_urls', 'sources', 'patches', 'checksums', 'versionsuffix', 'modaltsoftname',
+              'skip_license_file_in_module', 'withnvptx', 'skipsteps', 'accept_eula']
+
+SYSTEM = [('system', 'system')]
+GCCCORE153 = [('GCCcore', '15.3.0')]
+GCC153 = [('GCC', '15.3.0')]
+ICC2026 = [('intel-compilers', '2026.1.0')]
+COMPILERS_2026 = [ICC2026[0], GCC153[0]]
+cOMPI_2026 = [('iompi', '2026'),('gompi', '2026')]
+
+# Dictionary containing version mapping
+# Keys can be one of :
+# - software name
+# - (software name, software version)
+# - (software name, 'ANY', version suffix)
+# - (software name, software version, version suffix)
+#
+# The most specific key match will be used
+#
+# Values can be one of :
+# - (new software version, list of compatible toolchains)
+# - (new software version, list of compatible toolchains, None)
+new_version_mapping_2026 = {
+        ('Boost', 'ANY', ''): ('1.92.0', COMPILERS_2026),
+        ('Boost.MPI','ANY', ''): ('1.92.0', cOMPI_2026),
+        ('CUDA', '13.3.1'): ('13.3', COMPILERS_2026),
+        'CGAL': ('6.2', SYSTEM),
+        'CMake': ('4.4.1', GCCCORE153),
+        'ETSF_IO': ('1.0.4', [('iompi', '2026'), ('intel-compilers', '2026.1.0')]),
+        ('FFTW', 'ANY', ""): ('3.3.11', COMPILERS_2026),
+        ('FFTW.MPI', 'ANY', ''): ('3.3.11', cOMPI_2026),
+        'Eigen': ('5.0.0', SYSTEM),
+        ('Java', '11'): ('25', SYSTEM),
+        ('HDF5','ANY',''): ('2.1.1', COMPILERS_2026),
+        ('HDF5','ANY',''): ('2.1.1', cOMPI_2026, '-mpi'),
+        ('HDF5','ANY','-mpi'): ('2.1.1', cOMPI_2026, '-mpi'),
+        ('hwloc', '2.13.0'): ('2.14.0', GCCCORE153),
+        ('imkl','2025.3.1'): ('2026.1.0', SYSTEM),
+        ('intel-compilers', '2025.3.3'): ('2026.1.0', SYSTEM),
+        ('libbeef', '0.1.2'): ('0.1.2', COMPILERS_2026),
+        'libcerf': ('3.3', GCCCORE153),
+        ('METIS', '5.1.0', ""): ('5.1.0', GCCCORE153, '-64idx'),
+        ('netCDF','ANY',""): ('4.10.1', COMPILERS_2026),
+        ('netCDF','ANY',""): ('4.10.1', cOMPI_2026, '-mpi'),
+        ('netCDF','ANY','-mpi'): ('4.10.1', cOMPI_2026, '-mpi'),
+        ('netCDF-C++4','ANY', ""): ('4.3.1', COMPILERS_2026),
+        ('netCDF-C++4','ANY', ""): ('4.3.1', cOMPI_2026, '-mpi'),
+        ('netCDF-C++4','ANY','-mpi'): ('4.3.1', cOMPI_2026, '-mpi'),
+        ('netCDF-Fortran','ANY', ""): ('4.6.4', COMPILERS_2026),
+        ('netCDF-Fortran','ANY', ""): ('4.6.4', cOMPI_2026, '-mpi'),
+        ('netCDF-Fortran','ANY','-mpi'): ('4.6.4', cOMPI_2026, '-mpi'),
+        ('ParaView', '6.0.1'): ('6.1.1', [('gompi', '2026')], None),
+        'Perl': ('5.44.0', GCCCORE153),
+        'UDUNITS': ('2.2.28', GCCCORE153),
+        **dict.fromkeys([('Python', '3.13.%s' % str(x)) for x in range(0,16)], ('3.13', GCCCORE153)),
+        **dict.fromkeys([('Python', '3.14.%s' % str(x)) for x in range(0,7)], ('3.14', GCCCORE153)),
+        'Qt5': ('5.15.19', GCCCORE153),
+        'Qt6': ('6.8.4', GCCCORE153),
+        'SCOTCH': ('7.0.13', cOMPI_2026, None),
+}
+
+def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
+    name = ec["name"]
+    version = ec["version"]
+    toolchain_name = ec.toolchain.name
+    new_dep = None
+    if not list_of_deps or not isinstance(list_of_deps[0], tuple): 
+        print("Error, modify_list_of_dependencies did not receive a list of tuples")
+        return
+
+    for n, dep in enumerate(list_of_deps):
+        if isinstance(dep,list): dep = dep[0]
+        dep_name, dep_version, *rest = tuple(dep)
+        dep_version_suffix = rest[0] if len(rest) > 0 else ""
+
+        matching_keys = get_matching_keys(dep_name, dep_version, dep_version_suffix, version_mapping)
+        # search through possible matching keys
+        match_found = False
+        for key in matching_keys:
+            # Skip dependencies on the same name
+            if name == key or name == key[0]:
+                continue
+            new_version, supported_toolchains, *new_version_suffix = version_mapping[key]
+            new_version_suffix = new_version_suffix[0] if len(new_version_suffix) == 1 else dep_version_suffix
+
+            # test if one of the supported toolchains is a subtoolchain of the toolchain with which we are building. If so, a match is found, replace the dependency
+            supported_versions = [tc[1] for tc in supported_toolchains]
+            for tc_name, tc_version in supported_toolchains:
+                try_tc, _ = search_toolchain(tc_name)
+                # for whatever reason, issubclass and class comparison does not work. It is the same class name, but not the same class, so comparing strings
+                str_mro = [str(x) for x in ec.toolchain.__class__.__mro__]
+                if try_tc == SystemToolchain or str(try_tc) in str_mro and ec.toolchain.version in supported_versions:
+                    match_found = True
+                    new_dep = (dep_name, new_version, new_version_suffix, (tc_name, tc_version))
+                    if str(new_dep) != str(dep):
+                        print("%s: Matching updated %s found. Replacing %s with %s" % (ec.filename(), param, str(dep), str(new_dep)))
+                    list_of_deps[n] = new_dep
+                    break
+
+            if match_found: break
+
+        if dep_name == 'SciPy-bundle':
+            new_dep = ('SciPy-Stack', '2026a')
+        elif dep_name == 'Boost.Serial':
+            new_dep = ('Boost', dep_version)
+        elif dep_name == 'HDF5.Serial':
+            new_dep = ('HDF5', dep_version)
+        elif dep_name == 'netCDF.Serial':
+            new_dep = ('netCDF', dep_version)
+        elif dep_name == 'libfabric' and new_dep is not None and new_dep[0] == 'libfabric':
+            dep = new_dep
+            new_dep = dep[:2]
+        elif dep_name == 'oldest-supported-numpy':
+            print(f"Dependency on oldest-supported-numpy is now deprecated. Replacing with ('numpy', '2.1.1')")
+            new_dep = ('numpy', '2.1.1')
+        else:
+            new_dep = None
+        if new_dep is not None and str(new_dep) != str(dep):
+            list_of_deps[n] = new_dep
+            print("%s: Replacing %s with %s" % (ec.filename(), str(dep), str(new_dep)))
+
+
+    return list_of_deps
+
+def modify_dependencies(ec, param, version_mapping):
+    name = ec["name"]
+    version = ec["version"]
+    toolchain_name = ec.toolchain.name
+    if ec[param] and isinstance(ec[param][0], list) and ec[param][0] and isinstance(ec[param][0][0], tuple):
+        for n, deps in enumerate(ec[param]):
+            ec[param][n] = modify_list_of_dependencies(ec, param, version_mapping, ec[param][n])
+    elif ec[param] and isinstance(ec[param][0], tuple):
+        ec[param] = modify_list_of_dependencies(ec, param, version_mapping, ec[param])
+
+
+
+compiler_modluafooter = """
+local arch = "x86-64-v3"
+if os.getenv("RSNT_ARCH") == "avx512" then
+	arch = "x86-64-v4"
+end
+prepend_path("MODULEPATH", pathJoin("/cvmfs/soft.computecanada.ca/easybuild/modules/{year}", arch, "{sub_path}"))
+if isDir(pathJoin(os.getenv("HOME"), ".local/easybuild/modules/{year}", arch, "{sub_path}")) then
+    prepend_path("MODULEPATH", pathJoin(os.getenv("HOME"), ".local/easybuild/modules/{year}", arch, "{sub_path}"))
+end
+
+add_property("type_","tools")
+"""
+
+mpi_modluafooter = """
+assert(loadfile("/cvmfs/soft.computecanada.ca/config/lmod/%s_custom.lua"))("%%(version_major_minor)s")
+
+add_property("type_","mpi")
+family("mpi")
+"""
+
+# for e.g. CUDA-12.2-gompi-2026.eb we need to add e.g. 2023/x86-64-v3/CUDA/gcc12/cuda12.2 to MODULEPATH
+# but not for spider as that shadows the non-MPI cuda module
+cuda_mpi_modluafooter = """
+if (mode() ~= "spider") then
+    prepend_path("MODULEPATH", "/cvmfs/soft.computecanada.ca/easybuild/modules/{year}/{sub_path}")
+    if isDir(pathJoin(os.getenv("HOME"), ".local/easybuild/modules/{year}/{sub_path}")) then
+        prepend_path("MODULEPATH", pathJoin(os.getenv("HOME"), ".local/easybuild/modules/{year}/{sub_path}"))
+    end
+end
+prepend_path("MODULEPATH", "/cvmfs/soft.computecanada.ca/easybuild/modules/{year}/{sub_mpi_path}")
+if isDir(pathJoin(os.getenv("HOME"), ".local/easybuild/modules/2023/{sub_mpi_path}")) then
+    prepend_path("MODULEPATH", pathJoin(os.getenv("HOME"), ".local/easybuild/modules/{year}/{sub_mpi_path}"))
+end
+"""
+
+intelmpi2021_dict = {
+    'builddependencies': ([('opa-psm2', '12.0.1')], REPLACE),
+    'accept_eula': (True, REPLACE),
+    'set_mpi_wrappers_all': (True, REPLACE),
+    # Fix mpirun from IntelMPI to explicitly unset I_MPI_PMI_LIBRARY
+    # it can only be used with srun.
+    'postinstallcmds': ([
+        "sed -i 's@\\(#!/bin/sh.*\\)$@\\1\\nunset I_MPI_PMI_LIBRARY@' %(installdir)s/mpi/latest/bin/mpirun",
+        "/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/mpi/latest/bin",
+        "for i in %(installdir)s/mpi/latest/bin/I*; do patchelf --set-rpath '$ORIGIN/../lib/release' --force-rpath $i; done",
+        "patchelf --set-rpath '$ORIGIN/../lib/release:$ORIGIN/../libfabric/lib' --force-rpath %(installdir)s/mpi/latest/bin/impi_info",
+        "if [ -L %(installdir)s/mpi/latest/lib/release ]; then "
+        "  for f in %(installdir)s/mpi/latest/lib/*.so.*.*; do /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path $f --add_path='$ORIGIN/../libfabric/lib'; done; "
+        "  for f in %(installdir)s/mpi/latest/lib/mpi/debug/*.so.*.*; do /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path $f --add_path='$ORIGIN/../../../libfabric/lib'; done; else"
+        "  for dir in release debug; do /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/mpi/latest/lib/$dir --add_path='$ORIGIN/../../libfabric/lib'; done; fi",
+        "patchelf --set-rpath $EBROOTUCX/lib --force-rpath %(installdir)s/mpi/latest/libfabric/lib/prov/libmlx-fi.so",
+        "patchelf --set-rpath $EBROOTOPAMINPSM2/lib64 --force-rpath %(installdir)s/mpi/latest/libfabric/lib/prov/libpsmx2-fi.so",
+    ], REPLACE),
+    'modluafooter': (mpi_modluafooter % 'intelmpi', REPLACE),
+}
+
+intel_common_postinstallcmds = '''
+    for compname in icx icpx ifx; do
+       echo "--sysroot=$EPREFIX" > %(installdir)s/compiler/$shortver/bin/$compname.cfg
+       echo "--gcc-install-dir=$EBROOTGENTOO/lib/gcc/x86_64-pc-linux-gnu/${EBVERSIONGCCCORE:0:2}" >> %(installdir)s/compiler/$shortver/bin/$compname.cfg
+       echo "-Wl,-dynamic-linker=$EPREFIX/lib64/ld-linux-x86-64.so.2" >> %(installdir)s/compiler/$shortver/bin/$compname.cfg
+    done
+    mv %(installdir)s/compiler/$shortver/bin/{dpcpp,dpcpp.orig}
+    echo "#!$EPREFIX/bin/sh" > %(installdir)s/compiler/$shortver/bin/dpcpp
+    echo "exec %(installdir)s/compiler/$shortver/bin/dpcpp.orig --sysroot=$EPREFIX -Wl,-dynamic-linker=$EPREFIX/lib64/ld-linux-x86-64.so.2 --gcc-install-dir=$EBROOTGENTOO/lib/gcc/x86_64-pc-linux-gnu/${EBVERSIONGCCCORE:0:2} \\${1+\\"\\$@\\"}" >> %(installdir)s/compiler/$shortver/bin/dpcpp
+    chmod +x %(installdir)s/compiler/$shortver/bin/dpcpp
+    /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s
+    /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/compiler/$shortver/lib --add_origin
+    patchelf --set-rpath '$ORIGIN:$ORIGIN/../../../tbb/$tbbshortver/lib' %(installdir)s/compiler/$shortver/lib/libintelocl.so
+    installdir=%(installdir)s
+    publicdir=${installdir/restricted.computecanada.ca/soft.computecanada.ca}
+    rm -rf $publicdir
+    for i in $(grep -h "installdir.*" $installdir/compiler/$shortver/share/doc/compiler/[cf]redist.txt | cut -c 13-); do
+       if [ -f $installdir/compiler/$shortver/$i ]; then
+         mkdir -p $(dirname $publicdir/compiler/$shortver/$i)
+         cp -p $installdir/compiler/$shortver/$i $publicdir/compiler/$shortver/$i
+       fi
+    done
+    for i in $(cd $installdir && find tbb); do
+       if [ -f $installdir/$i ]; then
+         mkdir -p $(dirname $publicdir/$i)
+         cp -p $installdir/$i $publicdir/$i
+       fi
+    done
+    cd $installdir
+    for i in compiler/$shortver/lib/libur_adapter_cuda.so.*; do
+       cp -a $i $publicdir/$i
+    done
+    for i in $(find . -type l); do
+       if [ -f $publicdir/$i ]; then
+         cp -a $i $publicdir/$i
+       fi
+    done
+    for i in tbb/$tbbshortver/lib/*; do
+       if [ -L $i ]; then
+         cp -a $i $publicdir/$i
+       fi
+    done
+    ln -s $tbbshortver $publicdir/tbb/latest
+    ln -s $shortver $publicdir/compiler/latest
+'''
+
+opts_changes = {
+    'ALPSCore': {
+        'dependencies': ([('Boost', '1.72.0'), ('HDF5', '1.8.22'), ('Eigen', '3.3.7', '', True) ], REPLACE)
+    },
+    ('Apptainer', '1'): {
+        'dependencies': ([('Apptainer', '1.2.4')], REPLACE),
+    },
+    'Apptainer': {
+        'modluafooter': ('assert(loadfile("/cvmfs/soft.computecanada.ca/config/lmod/apptainer_custom.lua"))()', REPLACE),
+    },
+    'Bazel': {
+        # Bazel really needs to use Java 11, not 13
+        'dependencies': ([('Java', '11', '', True)], REPLACE)
+    },
+    'Boost.Serial': {
+        'name': ('Boost', REPLACE),
+        'multi_deps': ({'Python': ['2.7', '3.6', '3.7', '3.8']}, REPLACE),
+        'builddependencies': ([[('SciPy-Stack', '2026a'), ('Python', v)] for v in ['2.7', '3.6', '3.7', '3.8'] ], REPLACE),
+        'patches': (['Boost-1.65.1_python3.patch'], REPLACE),
+        'checksums': ('d86d34cf48fdbc4b9a36ae7706b3f3353f9ad521ff1d5a716cce750ae9f5dd33', APPEND_LIST),
+    },
+    'Boost': {
+        'configopts': ('--without-libraries=python', DROP),
+        'prebuildopts': ('[ "$(ls -A %(installdir)s)" ] && mv %(installdir)s/* %(builddir)s/obj ; ', REPLACE),
+    },
+    'Boost.MPI': {
+        'modaltsoftname': ('boost-mpi', REPLACE),
+        'configopts': ('--without-libraries=python', DROP),
+        'prebuildopts': ('[ "$(ls -A %(installdir)s)" ] && mv %(installdir)s/* %(builddir)s/obj ; ', REPLACE),
+    },
+    'BOLT-LMM': {
+        'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s '], REPLACE),
+    },
+    'Brunsli' : {
+        'buildopts': (" BROTLI_DIR=$EBROOTGENTOO BROTLI_INCLUDE=$EBROOTGENTOO/include", APPEND),
+    },
+    'Clang': {
+        'preconfigopts': (
+                 # Use dynamic linker from ${EPREFIX}
+                 """sed -i -e "/LibDir.*Loader/s@return \\"\\/\\"@return \\"${EPREFIX%/}/\\"@" """ +
+                 """%(builddir)s/llvm-project-%(version)s.src/clang/lib/Driver/ToolChains/Linux.cpp &&""",
+            PREPEND),
+        'configopts': ('-DDEFAULT_SYSROOT=${EPREFIX} ', PREPEND),
+    },
+    'CMake': {
+        'patches': (['cmake-3.14.0_rc3-prefix-dirs.patch'], REPLACE),
+        'checksums': (['4c2daf971ea0edd9c2b200e96fca011eb858513252124a7c4daa974cd091c6bc'], APPEND_LIST),
+        'preconfigopts': ('sed -i ' +
+                          '-e "s|@GENTOO_PORTAGE_GCCLIBDIR@|$EBROOTGENTOO/$(gcc -dumpmachine)/lib/|g" ' +
+                          '-e "/@GENTOO_HOST@/d" ' +
+                          '-e "s|@GENTOO_PORTAGE_EPREFIX@|${EPREFIX}/|g" ' +
+                          'Modules/Platform/{UnixPaths,Darwin}.cmake && ',
+                          PREPEND)
+    },
+    'cram': {
+        'multi_deps': ({'Python': ['2.7', '3.6', '3.7', '3.8']}, REPLACE),
+        'modluafooter': ('depends_on("python")', REPLACE),
+    },
+    ('CUDA', '13.3.1'): {
+        'version': ('13.3', REPLACE),
+    },
+    'CUDAcore': {
+        'sources': ('cuda-postinstall.sh', APPEND_LIST),
+        'patches': (('cuda-installer-wrapper.sh', '.'), APPEND_LIST),
+        'checksums': (['20ca9ff9b5130e48ef2df4e3e1378bd0734beec13520a204f613afae6254bc97',
+                       '8bea045a50b8217dc2850adc59d3f000e9448031898afb82b9adca40e4bc670a'], APPEND_LIST),
+        'accept_eula': (True, REPLACE),
+        'preinstallopts': ("mv cuda-installer cuda-installer.orig && mv cuda-installer-wrapper.sh cuda-installer && ", PREPEND),
+        'modluafooter': ('''
+if cuda_driver_library_available("%(version_major_minor)s") == "compat" then
+        depends_on("cudacompat")
+end
+''', REPLACE)
+    },
+    'cuDNN': {
+        'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_path $EBROOTCUDACORE/lib64 --add_origin'], APPEND_LIST),
+    },
+    'DB': {
+        'configopts': ('--enable-cxx --enable-stl --enable-dbm', APPEND),
+    },
+    'FFmpeg': {
+        'configopts': (' --enable-libvidstab', APPEND),
+    },
+    'FFTW.MPI': {
+        'modaltsoftname': ('fftw-mpi', REPLACE),
+    },
+    'FreeSurfer': {
+        'postinstallcmds': ([
+            'upx -d %(installdir)s/bin/*; true',
+            '/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s '], APPEND_LIST),
+    },
+    'GObject-Introspection': {
+        'multi_deps': ({'Python': ['3.6', '3.7', '3.8']}, REPLACE),
+        'builddependencies': ([[('Python', v)] for v in ['2.7', '3.6', '3.7', '3.8'] ], REPLACE),
+        'modextrapaths': ({'PYTHONPATH': ['lib/gobject-introspection']}, REPLACE),
+        'dependencies': ([], REPLACE),
+        'modluafooter': ('depends_on(atleast("python", "3"))', REPLACE),
+        'versionsuffix': ('', REPLACE),
+    },
+    'HDF': {
+        'configopts': (' --with-szlib=$EBROOTGENTOO CFLAGS="$CFLAGS -I$EBROOTGENTOO/include/tirpc"', APPEND),
+    },
+    'HDF5.Serial': {
+        'name': ('HDF5', REPLACE),
+    },
+    'impi': intelmpi2021_dict,
+    ('intel-compilers', '2026.1.0'): {
+        'accept_eula': (True, REPLACE),
+        #See compiler/2026.1/share/doc/compiler/credist.txt
+        'postinstallcmds': (['''
+    shortver='2026.1'
+    tbbshortver='2022.2'
+''' + intel_common_postinstallcmds + '''
+    for i in $(cd $installdir && find tcm); do
+       if [ -f $installdir/$i ]; then
+         mkdir -p $(dirname $publicdir/$i)
+         cp -p $installdir/$i $publicdir/$i
+       fi
+    done
+    for i in tcm/1.4/lib/*; do
+       if [ -L $i ]; then
+         cp -a $i $publicdir/$i
+       fi
+    done
+    ln -s 1.4 $publicdir/tcm/latest
+'''], REPLACE),
+        "modluafooter": ("""
+if isloaded("imkl") then
+    always_load("imkl/%(version)s")
+end
+""", APPEND),
+    },
+    'ispc': {
+        'sources': (['ispc-v%(version)s-linux-oneapi.tar.gz'], REPLACE),
+        'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s',
+                             '/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/lib64 --add_path=%(installdir)s/lib64'],
+                            REPLACE),
+    },
+    'itac': {
+        'postinstallcmds': (['chmod -R u+w %(installdir)s && /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s'], REPLACE),
+    },
+    'InterProScan': {
+        'sanity_check_commands': (['%(installdir)s/bin/prosite/pfsearchV3 -h'], APPEND_LIST),
+    },
+    'IQ-TREE': {
+        'toolchainopts': ({}, REPLACE),
+        'configopts': ('-DIQTREE_FLAGS=omp -DUSE_LSD2=ON -DTERRAPHAST_ARCH_NATIVE=OFF', REPLACE),
+    },
+    'iq-tree-mpi': {
+        'configopts': ('-DIQTREE_FLAGS=mpi -DUSE_LSD2=ON -DTERRAPHAST_ARCH_NATIVE=OFF', REPLACE),
+    },
+    'Java': {
+        'postinstallcmds': (['/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s'], REPLACE),
+        'modluafooter': ('setenv("JAVA_TOOL_OPTIONS", "-Xmx2g")', REPLACE),
+    },
+    ('libfabric', '2.6.0'): {
+        'builddependencies': ([('PSM2', '12.0.1'), ('GDRCopy', '2.6'), ('CUDAcore', '13.3.1')], REPLACE),
+        'dependencies': ([('hwloc', '2.14.0')], REPLACE),
+        'configopts': ('--enable-cuda-dlopen --enable-gdrcopy-dlopen --enable-psm2=dl ', PREPEND),
+        'patches': (['libfabric-2.1.0_eliminate-cudart-use.patch'], APPEND_LIST),
+        'checksums': ('f6615a08b4cc1a3ed68fe753ee555806f7a1b5b8054e824b2c620dd75383e284', APPEND_LIST),
+    },
+    'libgeotiff': {
+        'configopts': (' --with-libtiff=$EBROOTGENTOO --with-zlib=$EBROOTGENTOO --with-jpeg=$EBROOTGENTOO', APPEND),
+    },
+    'libxsmm': {
+        'skipsteps': ([], REPLACE),
+        'preconfigopts': ('#', REPLACE),
+        'installopts': ({'sse3': ' SSE=3', 'avx': ' AVX=1', 'avx2': ' AVX=2', 'avx512': ' AVX=3'}
+                        [os.getenv('RSNT_ARCH')], APPEND),
+    },
+    'LLDB': {
+        'dependencies': ([], REPLACE),
+    },
+    'mpi4py': {
+        'builddependencies': ([[('Python', v), ('Cython', '3.2.4')] for v in ['3.13', '3.14'] ], REPLACE),
+        'dependencies': ([], REPLACE),
+        'multi_deps': ({'Python': ['3.13', '3.14'] }, REPLACE),
+    },
+    'Nextflow': {
+        'postinstallcmds': (['sed -i -e "s/cli=(\\$(/cli=(\\$(export NFX_OPTS=\\$JAVA_TOOL_OPTIONS; unset JAVA_TOOL_OPTIONS; /g" %(installdir)s/bin/nextflow'], APPEND_LIST),
+    },
+    'NextGenMap': {
+        'preconfigopts': (" sed -i '/include_directories(.*zlib/d' ../NextGenMap-%(version)s/CMakeLists.txt && ", APPEND),
+    },
+    'nodejs': {
+        'postinstallcmds': (["export PATH=%(installdir)s/bin:$PATH; %(installdir)s/bin/npm install --global yarn"], APPEND_LIST),
+    },
+    ('NCCL', '2.18.3'): {
+        'checksums': (['6477d83c9edbb34a0ebce6d751a1b32962bc6415d75d04972b676c6894ceaef9'], REPLACE),
+    },
+    'NVHPC': {
+        'postinstallcmds': (['''
+        installdir=%(installdir)s/Linux_x86_64/%(version)s
+        /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path $installdir
+        sed -i "s@\\(set LDSO=.*\\);@\\1 --sysroot=$EPREFIX;@" $installdir/compilers/bin/localrc
+        echo "set DEFLIBDIR=$EBROOTGENTOO/lib64;" >> $installdir/compilers/bin/localrc
+        echo "set DEFSTDOBJDIR=$EBROOTGENTOO/lib64;" >> $installdir/compilers/bin/localrc
+        echo "set NORPATH=YES;" >> $installdir/compilers/bin/localrc
+        publicdir=${installdir/restricted.computecanada.ca/soft.computecanada.ca}
+        rm -rf $publicdir
+        mkdir -p $publicdir
+        cp -a $installdir/REDIST/* $publicdir
+        for i in $(find $publicdir); do
+            if [[ $(readlink $i) == ../../../* ]]; then
+                rm $i
+                cp -p ${i/soft.computecanada.ca/restricted.computecanada.ca} $i
+            fi
+        done
+        '''], REPLACE),
+    },
+    ("OpenFOAM", "11"): {
+        'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
+        source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
+end""".format(version="11"), REPLACE),
+        'patches': (['OpenFOAM-11-cleanup-cc.patch'], APPEND_LIST),
+        'checksums': ('56a98703a1022d5e75f7b1f7cd4592bc79ba93c1dd53d3e52316726797430c33', APPEND_LIST),
+    },
+    ("OpenFOAM", "12"): {
+        'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
+        source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
+end""".format(version="12"), REPLACE),
+        'patches': (['OpenFOAM-11-cleanup-cc.patch'], APPEND_LIST),
+        'checksums': ('56a98703a1022d5e75f7b1f7cd4592bc79ba93c1dd53d3e52316726797430c33', APPEND_LIST),
+    },
+    ("OpenFOAM", "13"): {
+        'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
+        source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
+end""".format(version="13"), REPLACE),
+        'patches': (['OpenFOAM-11-cleanup-cc.patch'], APPEND_LIST),
+        'checksums': ('56a98703a1022d5e75f7b1f7cd4592bc79ba93c1dd53d3e52316726797430c33', APPEND_LIST),
+    },
+    ("OpenFOAM", "v2306"): {
+        'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
+        source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
+end""".format(version="v2306"), REPLACE),
+        'prebuildopts': ('MPFR_ARCH_PATH=$EBROOTGENTOO ', APPEND),
+    },
+    ("OpenFOAM", "v2312"): {
+        'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
+        source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
+end""".format(version="v2312"), REPLACE),
+        'prebuildopts': ('MPFR_ARCH_PATH=$EBROOTGENTOO ', APPEND),
+    },
+    ("OpenFOAM", "v2406"): {
+        'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
+        source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
+end""".format(version="v2406"), REPLACE),
+        'prebuildopts': ('MPFR_ARCH_PATH=$EBROOTGENTOO ', APPEND),
+    },
+    ("OpenFOAM", "v2412"): {
+        'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
+        source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
+end""".format(version="v2412"), REPLACE),
+        'prebuildopts': ('MPFR_ARCH_PATH=$EBROOTGENTOO ', APPEND),
+    },
+    ("OpenMPI", "5.0.10"): {
+        # local customizations for OpenMPI
+        'builddependencies': ([('PSM2', '12.0.1')], REPLACE),
+        'configopts': (
+                    # rpath is already done by ld wrapper
+                    '--disable-wrapper-runpath --disable-wrapper-rpath ' +
+                    '--enable-mpi1-compatibility ' +
+                    # enumerate all mca's that should be compiled as plugins
+                    # (only those that link to system-specific
+                    # libraries (lustre, fabric, and scheduler)
+                    '--enable-mca-dso=common-ofi,common-ucx,' +
+                    'accelerator-cuda,atomic-ucx,btl-ofi,btl-smcuda,btl-uct,' +
+                    'coll-ucc,fs-lustre,mtl-ofi,mtl-psm2,osc-ucx,' +
+                    'pml-ucx,rcache-gpusm,rcache-rgpusm,scoll-ucc,spml-ucx,sshmem-ucx ',
+                    PREPEND),
+        'postinstallcmds': (['rm %(installdir)s/lib/*.la %(installdir)s/lib/*/*.la'], REPLACE),
+        'modluafooter': (mpi_modluafooter % 'openmpi', REPLACE),
+    },
+    "PMIx": {
+        # local customizations for PMIx
+        'configopts': ('--with-munge ' + #enable Munge in PMIx
+                    # enumerate all mca's that should be compiled as plugins
+                    '--enable-mca-dso=psec-munge',
+                    PREPEND),
+        'postinstallcmds': (['rm %(installdir)s/lib/*.la %(installdir)s/lib/*/*.la'],
+                            REPLACE),
+    },
+    'Python': {
+        'modextrapaths': ({'PYTHONPATH': ['/cvmfs/soft.computecanada.ca/easybuild/python/site-packages']}, REPLACE),
+        'ebpythonprefixes': (False, REPLACE),  # disable upstream's version of sitecustomize.py for ebpythonprefixes
+        'allow_prepend_abs_path': (True, REPLACE),
+        'installopts': (' && /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_path %(installdir)s/lib --any_interpreter', APPEND),
+        'builddependencies': (('Rust', '1.52.1'), DROP_FROM_LIST),
+        # replace pip 21.1.1 with pip 20.0.2
+        'exts_list': ([(('pip', '21.1.1', { 'checksums': ['51ad01ddcd8de923533b01a870e7b987c2eb4d83b50b89e1bf102723ff9fed8b'],}),
+                       ('pip', '20.0.2', {'checksums': ['7db0c8ea4c7ea51c8049640e8e6e7fde949de672bfa4949920675563a5a6967f'],})),
+                       (('virtualenv', '20.4.6', {'checksums': ['72cf267afc04bf9c86ec932329b7e94db6a0331ae9847576daaa7ca3c86b29a4']}),
+                        ('virtualenv', '20.0.18', {'checksums': ['ac53ade75ca189bc97b6c1d9ec0f1a50efe33cbf178ae09452dcd9fd309013c1']}))
+                       ], REPLACE_IN_LIST),
+    },
+    'Qt5': {
+        'modaltsoftname': ('qt', REPLACE),
+    },
+    'ROOT': {
+        # Cling needs to know about different sysroot
+        'configopts': ("-DDEFAULT_SYSROOT=$EPREFIX", PREPEND),
+    },
+    'Rust': {
+        'prebuildopts': ("for f in config.toml bootstrap.toml; do [ -f \"$f\" ] && sed -i 's/\\(ninja.*=.*\\)false/\\1true/' \"$f\"; done; export EASYBUILD_SYSROOT=$EPREFIX && ", PREPEND),
+    },
+    ('SCOTCH', '6.1.2', '-no-thread'): {
+        'modaltsoftname': ('scotch-no-thread', REPLACE),
+    },
+    ('SCOTCH', '7.0.3', '-no-thread'): {
+        'modaltsoftname': ('scotch-no-thread', REPLACE),
+    },
+    'Togl': {
+            'patches': ('Togl-2.0_configure.patch', DROP_FROM_LIST),
+            'checksums': ('da97f36b60cd107444cd92453809135b14dc1e8775146b3ba0731da8002e6f9f', DROP_FROM_LIST),
+    },
+    'tbb': {
+        'postinstallcmds': (['chmod -R u-w %(installdir)s/cmake || chmod -R u-w %(installdir)s/lib64/cmake'], REPLACE),
+    },
+    'UCX': {
+        # local customizations for UCX
+        'configopts': ("--with-rdmacm=$EBROOTGENTOO --with-verbs=$EBROOTGENTOO --with-knem=$EBROOTGENTOO --without-ze ",
+                       PREPEND)
+    },
+    'Valgrind': {
+        # tell correct location of debuginfo files
+        'configopts': (' && sed -i "s@/usr/lib/debug@$EPREFIX/usr/lib/debug@g" coregrind/m_debuginfo/readelf.c', APPEND),
+        'modaltsoftname': ('valgrind-mpi', REPLACE),
+        'versionsuffix': ('-mpi', REPLACE),
+    },
+    ('Wannier90', '2.0.1.1', '-abinit'): {
+        'modaltsoftname': ('wannier90-abinit', REPLACE),
+    },
+}
+
+
+
+# modules with both -mpi and no-mpi varieties
+mpi_modaltsoftname = ['hdf5', 'netcdf-c++4', 'netcdf-c++', 'netcdf-fortran', 'netcdf', 'iq-tree', 'vtk', 'libgridxc', 'etsf_io', 'valgrind']
+modaltsoftnames = {
+    "iccifort": "intel",
+    "intel-compilers": "intel",
+    "impi": "intelmpi",
+    "llvm-compilers": "llvm",
+}
+def set_modaltsoftname(ec):
+    if ec['name'] in modaltsoftnames:
+        ec['modaltsoftname'] = modaltsoftnames[ec['name']]
+
+    # add -mpi to module name for various modules with both -mpi and no-mpi varieties
+    toolchain = ec.get('toolchain')
+    toolchain_class, _ = search_toolchain(toolchain['name'])
+    if (ec['name'].lower() in mpi_modaltsoftname and
+        (toolchain_class(version=toolchain['version']).mpi_family() or (ec['toolchainopts'] and ec['toolchainopts'].get('usempi')))
+       ):
+        ec['modaltsoftname'] = ec['name'].lower() + '-mpi'
+        ec['versionsuffix'] = '-mpi'
+
+
+def disable_use_mpi_for_non_mpi_toolchains(ec):
+    toolchain = ec.get('toolchain')
+    toolchain_class, _ = search_toolchain(toolchain['name'])
+    if ec['toolchainopts'] and ec['toolchainopts'].get('usempi') and not toolchain_class(version=toolchain['version']).mpi_family():
+        print("usempi option found, but using a non-MPI toolchain. Disabling it")
+        del ec['toolchainopts']['usempi']
+        print("New toolchainopts:%s" % str(ec['toolchainopts']))
+
+
+def set_modluafooter(ec):
+    matching_keys = get_matching_keys_from_ec(ec, opts_changes)
+    for key in matching_keys:
+        for opt in ('modluafooter', 'allow_prepend_abs_path', 'modextrapaths', 'ebpythonprefixes'):
+            if opt in opts_changes[key]:
+                update_opts(ec, opts_changes[key][opt][0], opt, opts_changes[key][opt][1])
+
+    moduleclass = ec.get('moduleclass','')
+    year = os.environ['EBVERSIONGENTOO']
+    name = ec['name'].lower()
+    if moduleclass == 'compiler' and not name in ('gcccore', 'llvm', 'clang', 'fpc', 'dpc++', 'ispc'):
+        if name in ['iccifort', 'intel-compilers']:
+            name = 'intel'
+        elif name in {'llvm-compilers', 'rocm-compilers'}:
+            name = name[:4]
+        comp = os.path.join('Compiler', name + ec['version'][:ec['version'].find('.')])
+        ec['modluafooter'] += (compiler_modluafooter.format(year=year,sub_path=comp) + 'family("compiler")\n')
+    if ec['name'] == 'CUDAcore':
+        comp = os.path.join('CUDA', 'gcccore', 'cuda' + '.'.join(ec['version'].split('.')[:2]))
+        ec['modluafooter'] += compiler_modluafooter.format(year=year, sub_path=comp)
+    elif ec['name'] == 'CUDA' and 'mpi' in ec['toolchain']['name'] and 'compiler' not in ec['toolchain']['name']:
+        mod_subdir = ec.mod_subdir.split('/') # e.g. x86-64-v3/MPI/gcc12/openmpi4 -> x86-64-v3/CUDA/gcc12/cuda12.2
+        comp = os.path.join(mod_subdir[0], 'CUDA', mod_subdir[2], 'cuda' + '.'.join(ec['version'].split('.')[:2]))
+        mpi_comp = os.path.join(mod_subdir[0], 'CUDA', mod_subdir[2], mod_subdir[3], 'cuda' + '.'.join(ec['version'].split('.')[:2]))
+        ec['modluafooter'] += cuda_mpi_modluafooter.format(year=year, sub_path=comp, sub_mpi_path=mpi_comp)
+
+
+def add_dependencies(ec, keyword):
+    matching_keys = get_matching_keys_from_ec(ec, opts_changes)
+    for key in matching_keys:
+        if keyword in opts_changes[key]:
+            update_opts(ec, opts_changes[key][keyword][0], keyword, opts_changes[key][keyword][1])
+
+def drop_dependencies(ec, param):
+    # dictionary in format <name>:<version under which to drop>
+    to_drop = {
+            'CMake': '3.18.4',
+            'ICU': 'ALL',
+            'libxslt': 'ALL',
+            'libzip': 'ALL',
+            'Meson': 'ALL',
+            'Ninja': 'ALL',
+            'PyQt5': 'ALL',
+            'SQLite': '3.42.0',
+            'pybind11': 'ALL',
+            'git': 'ALL',
+            'CUDA': 'ALL',
+    }
+    # iterate over a copy
+    for dep in ec[param][:]:
+        if isinstance(dep, list):
+            dep_copy = dep[:]
+            for d in dep_copy:
+                name, version = d[0], d[1]
+                if name in to_drop and name != 'CUDA':
+                    if to_drop[name] == 'ALL' or LooseVersion(version) < LooseVersion(to_drop[name]):
+                        print("%s: Dropped %s, %s from %s" % (ec.filename(), name, version, param))
+                        dep.remove(d)
+
+        else:
+            dep_list = list(dep)
+            if dep_list[0] == ec.name:
+                continue
+            if dep_list[0] in to_drop:
+                if to_drop[dep_list[0]] == 'ALL' or LooseVersion(dep_list[1]) < LooseVersion(to_drop[dep_list[0]]):
+                    # special case: drop CUDA dep for easyconfigs with CUDA versionsuffix (we use toolchains instead)
+                    if dep_list[0] == 'CUDA' and not ec['toolchain']['name'].endswith('cuda'):
+                        continue
+                    print("%s: Dropped %s, %s from %s" % (ec.filename(), dep_list[0],dep_list[1],param))
+                    ec[param].remove(dep)
+
+
+def is_filtered_ec(ec):
+    filter_spec = ec.parse_filter_deps()
+    software_spec = {'name': ec.name, 'version': ec.version}
+    return ec.dep_is_filtered(software_spec, filter_spec)
+
+def parse_hook(ec, *args, **kwargs):
+    """Example parse hook to inject a patch file for a fictive software package named 'Example'."""
+    if is_filtered_ec(ec):
+        print("ERROR, software %s/%s is filtered. Please contact a RSNT software admin before installing" % (ec.name, ec.version))
+        exit(1)
+
+    disable_use_mpi_for_non_mpi_toolchains(ec)
+
+    # automatic --try-toolchain for common cases:
+    builddeps = ec['builddependencies']
+    if builddeps and builddeps[0] and isinstance(builddeps[0], list):
+        builddeps = builddeps[0]
+    if ec['toolchain']['name'] == 'GCCcore':
+        if ec['versionsuffix'] == '-CUDA-%(cudaver)s':
+            ec['toolchain'] = {'name': 'gcccorecuda', 'version': '2026'}
+            ec['versionsuffix'] = ''
+        else:
+            ec['toolchain'] = {'name': 'GCCcore', 'version': '15.3.0'}
+    elif ec['toolchain']['name'] == 'gcccorecuda':
+        builddeps.append(('CUDAcore', '%(cudaver)s'))
+
+    # Use ifx by default as Fortran compiler for Intel toolchains.
+    # Adapt optarch if oneapi compilers are used.
+    toolchain, _ = search_toolchain(ec['toolchain']['name'])
+    if toolchain.COMPILER_FAMILY == 'Intel':
+        if ec['toolchainopts'] is None:
+            ec['toolchainopts'] = {}
+        tcopts = ec['toolchainopts']
+        if tcopts.get('optarch', True) == True:
+            optarch = build_option('optarch')
+            # for some reason optarch isn't always parsed yet with --job
+            if isinstance(optarch, str):
+                optarch = dict([kv.split(':') for kv in optarch.split(';')])
+            optarch = optarch['Intel']
+            optarch_new = optarch.replace('core-avx2', 'x86-64-v3').replace('skylake-avx512', 'x86-64-v4')
+            if (tcopts.get('oneapi') or (tcopts.get('oneapi_c_cxx', True) and tcopts.get('oneapi_fortran'))):
+                tcopts['optarch'] = optarch_new
+            elif tcopts.get('oneapi_c_cxx', True):
+                # use new optarch flags for C/C++ only (default)
+                for key in 'extra_cflags', 'extra_cxxflags':
+                    tcopts[key] = optarch_new + ' ' + tcopts.get(key, '')
+                for key in 'extra_fflags', 'extra_fcflags', 'extra_f90flags':
+                    tcopts[key] = optarch + ' ' + tcopts.get(key, '')
+                tcopts['optarch'] = ''
+
+    modify_dependencies(ec, 'dependencies', new_version_mapping_2026)
+    modify_dependencies(ec, 'builddependencies', new_version_mapping_2026)
+    drop_dependencies(ec, 'dependencies')
+    drop_dependencies(ec, 'builddependencies')
+    set_modaltsoftname(ec)
+    modify_all_opts(ec, opts_changes, opts_to_change=PARSE_OPTS)
+
+    # always disable multi_deps_load_default when multi_deps is used
+    multi_deps = ec.get('multi_deps', None)
+    if multi_deps:
+        ec['multi_deps_load_default'] = False
+
+        if 'Python' in multi_deps:
+            # ensure PythonPackage that build with multi_deps have a corresponding modluafooter
+            # don't overwrite the existing one if there is one in the recipe
+            if ec.get('easyblock', None) in ['PythonPackage', 'PythonBundle']:
+                # get lowest and highest supported versions
+                versions = sorted([LooseVersion(x) for x in multi_deps['Python']])
+                lowest = str(versions[0])
+                highest = str(versions[-1])
+
+                # we need to get the next subversion higher than highest for Lmod syntax
+                highest_major, highest_minor = str(highest).split('.')[:2]
+                highest_plus = '.'.join([highest_major, str(int(highest_minor)+1)])
+
+                footer_str = """if convertToCanonical(LmodVersion()) >= convertToCanonical("8.2.9") then
+        depends_on(between("python",'{lowest}<','<{highest_plus}'))
+end""".format(lowest=lowest, highest_plus=highest_plus)
+                modluafooter = ec.get('modluafooter', "")
+                # don't add anything, it is already there
+                if 'depends_on("python")' in modluafooter:
+                    print("WARNING, this is a multi_deps module. modluafooter should not contain depends_on('python')): %s" % modluafooter)
+                elif footer_str in modluafooter:
+                    pass
+                elif 'depends_on(between(' in ec.get('modluafooter', None):
+                    print("Error, incorrect modluafooter for specified versions of python: %s" % ec.get('modluafooter', None))
+                    print("Should be absent or should contain:%s" % footer_str)
+                    exit(1)
+                else:
+                    print("%s: Adding to modluafooter: %s" % (ec.filename(), footer_str))
+                    ec['modluafooter'] += "\n" + footer_str + "\n"
+
+
+            # add sanity_checks if there are not already there
+            sanity_check_paths = ec.get('sanity_check_paths', {})
+            if ec.name not in ['Boost']:
+                if not 'dirs' in sanity_check_paths:
+                    sanity_check_paths['dirs'] = []
+                if not 'files' in sanity_check_paths:
+                    sanity_check_paths['files'] = []
+
+                site_packages_path = 'lib/python%(pyshortver)s/site-packages'
+                if not site_packages_path in sanity_check_paths['dirs']:
+                    sanity_check_paths['dirs'] += [site_packages_path]
+                    print("%s: Adding %s to sanity_check_paths['dir']" % (ec.filename(), site_packages_path))
+                    print(str(ec.get('sanity_check_paths', None)))
+
+                # for non-generic EasyBlock, the EasyBlock might modify the sanity_check_paths, so we consider
+                # our changes as an enhancement
+                if not ec.get('easyblock', None):
+                    ec['enhance_sanity_check'] = True
+
+    if 'Python' in ec.get('multi_deps', []) or 'Python' in [x[0] for x in ec.get('builddependencies',[])] or 'Python' in [x[0] for x in ec.get('dependencies',[])]:
+            # add sanity_check_commands to avoid .egg files
+            sanity_check_commands = ec.get('sanity_check_commands', [])
+            sanity_check_commands += ["""if [ -n "$(find %(installdir)s/lib*/python*/site-packages -name '*.egg*')" ] ; then echo 'Found .egg file, please use pip. See https://github.com/ComputeCanada/software-stack/issues/137' ; exit 1; else  exit 0; fi"""]
+            ec['sanity_check_commands'] = sanity_check_commands
+
+            # ensure pip is verbose
+            if ec.get('use_pip'):
+                ec['installopts'] += ' --verbose '
+
+    # hide toolchains
+    if ec.get('moduleclass','') == 'toolchain' or ec['name'] == 'GCCcore' or ec['name'] == 'CUDAcore' or ec['name'] == 'ROCm-LLVM':
+        ec['hidden'] = True
+
+def python_fetchhook(ec):
+    # don't do anything for "default" version
+    if ec['version'] == "default":
+        return
+
+    # keep only specific extensions, generate variant (flit-core, flit_core)
+    python_extensions_to_keep = {
+        variant
+        for name in {
+            'setuptools', 'pip', 'wheel', 'virtualenv', 'appdirs', 'distlib', 'filelock',
+            'six', 'setuptools_scm', 'tomli', 'flit-core', 'packaging', 'pyparsing',
+            'platformdirs', 'hatchling', 'pathspec', 'pluggy', 'hatch_vcs',
+            'typing_extensions', 'editables', 'trove-classifiers', 'setuptools-scm'
+        }
+        for variant in (name, name.replace('-', '_'), name.replace('_', '-'))
+    }
+
+    new_ext_list = [ext for ext in ec['exts_list'] if ext[0] in python_extensions_to_keep]
+    ec['exts_list'] = new_ext_list
+
+
+def pre_configure_hook(self, *args, **kwargs):
+    "Modify configopts (here is more efficient than parse_hook since only called once)"
+    modify_all_opts(self.cfg, opts_changes, opts_to_skip=PARSE_OPTS + ['exts_list',
+                                                                       'postinstallcmds',
+                                                                       'modluafooter',
+                                                                       'ebpythonprefixes',
+                                                                       'allow_prepend_abs_path',
+                                                                       'modextrapaths'])
+
+    # additional changes for CMakeMake EasyBlocks
+    ec = self.cfg
+    if ec.easyblock is None or isinstance(ec.easyblock, str):
+        c = get_easyblock_class(ec.easyblock, name=ec.name)
+    elif isinstance(ec.easyblock, type):
+        c = ec.easyblock
+    # need to use a string comparison instead of issubbclass as CMakeMake may be overridden by a custom easyblock
+    if c == CMakeMake or str(CMakeMake) in map(str, c.__mro__):
+        # ensure CMake is in the build dependencies or dependencies
+        if 'CMake' not in str(self.cfg['dependencies']) + str(self.cfg['builddependencies']):
+            print("Error, for CMakeMake recipes, you should have a dependency on CMake")
+            exit(1)
+        # skip for those
+        if (ec['name'],ec['version']) in [('ROOT','5.34.36'), ('mariadb', '10.4.11')]:
+            pass
+        else:
+            update_opts(ec, ' -DCMAKE_SKIP_INSTALL_RPATH=ON ', 'configopts', PREPEND)
+        # disable XHOST
+        update_opts(ec, ' -DENABLE_XHOST=OFF ', 'configopts', PREPEND)
+        # use verbose makefile to get the command lines that are executed
+        update_opts(ec, ' -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ', 'configopts', PREPEND)
+        # use correct Python_EXECUTABLE and Python3_EXECUTABLE, can be removed when cmakemake easyblock fixed
+        if os.getenv('EBROOTPYTHON'):
+            update_opts(ec, ' -DPYTHON_EXECUTABLE=$EBROOTPYTHON/bin/python ', 'configopts', PREPEND)
+            update_opts(ec, ' -DPython_EXECUTABLE=$EBROOTPYTHON/bin/python ', 'configopts', PREPEND)
+            update_opts(ec, ' -DPython3_EXECUTABLE=$EBROOTPYTHON/bin/python ', 'configopts', PREPEND)
+
+    # additional changes for MesonNinja EasyBlocks
+    if (c == MesonNinja or str(MesonNinja) in map(str, c.__mro__)) and c != CMakeNinja:
+        update_opts(ec, False, 'fail_on_missing_ninja_meson_dep', REPLACE)
+    if c == EB_LLVM or c == EB_ROCm_minus_LLVM:
+        setvar("EBROOTZLIB", os.environ["EBROOTGENTOO"])
+        setvar("EBROOTGCCCORE", os.environ["EBROOTGENTOO"])
+        setvar("EBROOTLIBFFI", os.path.join(os.environ["EBROOTGENTOO"], "lib64", "libffi"))
+        setvar("EBVERSIONGCCCORE", os.environ["EBVERSIONGCCCORE"].split('.')[0])
+        setvar("EBROOTLIT", os.environ["EBROOTGENTOO"])
+        setvar("EBROOTPSUTIL", os.environ["EBROOTGENTOO"])
+        setvar("CPATH", os.environ["CPATH"] + ':' + os.path.join(os.environ["EBROOTLIBFFI"], "include"))
+        # the easyblock uses this to keep track of dependencies that we have in filter-deps
+        self.deps.extend(['zlib', 'zstd', 'z3', 'libffi', 'libxml2'])
+        if c == EB_LLVM:
+            self.deps.append('gdb')
+
+def pre_fetch_hook(self, *args, **kwargs):
+    "Modify extension list (here is more efficient than parse_hook since only called once)"
+    modify_all_opts(self.cfg, opts_changes, opts_to_change=['accept_eula', 'exts_list'])
+    # special extensions hook for Python
+    if self.cfg['name'].lower() == 'python':
+        python_fetchhook(self.cfg)
+
+def pre_postproc_hook(self, *args, **kwargs):
+    "Modify postinstallcmds (here is more efficient than parse_hook since only called once)"
+    modify_all_opts(self.cfg, opts_changes, opts_to_change=['postinstallcmds'])
+
+def pre_module_hook(self, *args, **kwargs):
+    "Modify module footer (here is more efficient than parse_hook since only called once)"
+    set_modluafooter(self.cfg)
+    # special extensions hook for Python with --module-only
+    if self.cfg['name'].lower() == 'python':
+        python_fetchhook(self.cfg)
+
+def post_module_hook(self, *args, **kwargs):
+    "Generate Lmod cache, only as 'ebuser'"
+    if os.getenv("USER") == "ebuser":
+        run_shell_cmd("/etc/rsnt/generate_lmod_cache.py --arch avx2 avx512")
+
+def start_hook():
+    modulepath = os.environ["MODULEPATH"].split(':')
+    modulepath.extend([p + '-hidden' for p in modulepath if p.endswith('/gcccore')])
+    setvar("MODULEPATH", ':'.join(modulepath))
+
+def pre_prepare_hook(self, *args, **kwargs):
+    packages_in_gentoo = ["EBROOTLIBXML2", "EBROOTLIBJPEGMINTURBO", "EBROOTLIBPNG", "EBROOTLIBTIFF",
+                          "EBROOTLIBGLU", "EBROOTMESA", "EBROOTFLTK", "EBROOTTCL", "EBROOTTK", "EBROOTBZIP2",
+                          "EBROOTZSTD", "EBROOTFREETYPE", "EBROOTGLIB", "EBROOTLIBXMLPLUSPLUS",
+                          "EBROOTSQLITE3", "EBROOTPKGMINCONFIG", "EBROOTMESON", "EBROOTGPERFTOOLS",
+                          "EBROOTZ3"]
+    ebrootgentoo = os.environ["EBROOTGENTOO"]
+    for package in packages_in_gentoo:
+        setvar(package, ebrootgentoo)
+
+    # this should only be set if external EB PMIx is used in Open MPI
+    if self.cfg['name'] == 'OpenMPI' and "PMIx" in {dep["name"] for dep in self.cfg['dependencies']}:
+        setvar("EBROOTLIBEVENT", ebrootgentoo)
+
+    # this can not be set in general because it causes issues with Python. It however avoids having to patch
+    # OpenFOAM locally to find readline in gentoo
+    if self.cfg['name'] == 'OpenFOAM':
+        setvar("EBROOTLIBREADLINE", ebrootgentoo)
+
+    setvar("EBVERSIONTCL", "8.6")
+    setvar("EBVERSIONTK", "8.6")
+    setvar("EBVERSIONMESON", "1.1.1")
+    setvar("EBVERSIONGPERFTOOLS", "2.9.1")
+
+def post_prepare_hook(self, *args, **kwargs):
+    # we need to define variables such as EBROOTHDF5SERIAL even though we don't use this naming scheme
+    serial_to_no_qualifier = ["HDF5", "BOOST", "NETCDF"]
+    for pkg in serial_to_no_qualifier:
+        to_check = "EBROOT" + pkg
+        to_set = "EBROOT" + pkg + "SERIAL"
+        if to_check in os.environ:
+            setvar(to_set, os.environ[to_check])
+    # also define EBROOTCUDA if EBROOTCUDACORE is set for compatibility with upstream easyblocks
+    if "EBROOTCUDACORE" in os.environ and "EBROOTCUDA" not in os.environ:
+        setvar("EBROOTCUDA", os.environ["EBROOTCUDACORE"])
+
+def module_write_hook(self, filepath, module_txt, *args, **kwargs):
+    # Only keep one path in FSL to avoid it overriding regular non-FSL commands
+    if self.cfg['name'] == 'FSL':
+        lines = module_txt.split('\n')
+        lines = [l for l in lines if not l.startswith('prepend_path(') or 'share/fsl/' in l]
+        return '\n'.join(lines)
+    elif self.cfg['name'] == 'Allinea':
+        lines = module_txt.split('\n')
+        lines = [l for l in lines if 'LIBRARY_PATH' not in l]
+        return '\n'.join(lines)
+
+def end_hook():
+    user = os.getenv("USER")
+    # only do this if we are "ebuser"
+    if True: #user != "ebuser":
+        return
+
+    arch = os.getenv("RSNT_ARCH")
+
+    modulepath = '/cvmfs/soft.computecanada.ca/custom/modules'
+    index_dir = '/cvmfs/soft.computecanada.ca/custom/mii/data'
+    mii = "/cvmfs/soft.computecanada.ca/easybuild/software/2020/Core/mii/1.1.1/bin/mii"
+    final_index_file = os.path.join(index_dir, arch)
+    exclude_modnames = ",".join(("gentoo","nixpkgs"))
+
+    unique_filename = arch + "_" + str(uuid.uuid4())
+    index_file = os.path.join(index_dir,unique_filename)
+    cmd = "MII_INDEX_FILE=%s %s build -m %s -n %s" % (index_file, mii, modulepath, exclude_modnames)
+    print("Generating the Mii index with cmd:%s" % cmd )
+    (out, _) = run_cmd(cmd, log_all=True, simple=False, log_output=True)
+
+    # create a new symlink
+    new_symlink_path = os.path.join(index_dir, arch + str(uuid.uuid4()))
+    os.symlink(index_file, new_symlink_path)
+
+    # if the path exists and is a link, remove the target of the link
+    current_target = None
+    if os.path.islink(final_index_file):
+        # get the path of the current index
+        current_target = os.readlink(final_index_file)
+
+    # rename the new symlink, overwriting the old symlink or file
+    shutil.move(new_symlink_path, final_index_file)
+
+    if current_target:
+        # remove the old target
+        os.remove(current_target)

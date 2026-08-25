@@ -105,17 +105,17 @@ class SoftCCHierarchicalMNS(HierarchicalMNS):
             <name>/<version>[-<toolchain>]
         """
         # We rename our iccifort compiler to INTEL and this needs a hard fix because it is a toolchain
-        modname_regex = re.compile('^%s/\S+$' % re.escape(name.lower()))
+        modname_regex = re.compile('^%s/\\S+$' % re.escape(name.lower()))
         res = bool(modname_regex.match(short_modname.lower()))
         if not res:
             if name in ['iccifort', 'intel-compilers']:
-                modname_regex = re.compile('^%s/\S+$' % re.escape('intel'))
+                modname_regex = re.compile('^%s/\\S+$' % re.escape('intel'))
             elif name == 'llvm-compilers':
-                modname_regex = re.compile('^%s/\S+$' % re.escape('llvm'))
+                modname_regex = re.compile('^%s/\\S+$' % re.escape('llvm'))
             elif name == 'impi':
-                modname_regex = re.compile('^%s/\S+$' % re.escape('intelmpi'))
+                modname_regex = re.compile('^%s/\\S+$' % re.escape('intelmpi'))
             elif name in ['FFTW', 'FFTW.MPI']:
-                modname_regex = re.compile('^%s/\S+$' % re.escape('fftw-mpi'))
+                modname_regex = re.compile('^%s/\\S+$' % re.escape('fftw-mpi'))
             res = bool(modname_regex.match(short_modname.lower()))
 
         self.log.debug("Checking whether '%s' is a module name for software with name '%s' via regex %s: %s",
