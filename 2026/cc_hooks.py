@@ -550,7 +550,6 @@ end""".format(version="v2412"), REPLACE),
     'Python': {
         'modextrapaths': ({'PYTHONPATH': ['/cvmfs/soft.computecanada.ca/easybuild/python/site-packages']}, REPLACE),
         'ebpythonprefixes': (False, REPLACE),  # disable upstream's version of sitecustomize.py for ebpythonprefixes
-        'allow_prepend_abs_path': (True, REPLACE),
         'installopts': (' && /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_path %(installdir)s/lib --any_interpreter', APPEND),
         'builddependencies': (('Rust', '1.52.1'), DROP_FROM_LIST),
         # replace pip 21.1.1 with pip 20.0.2
@@ -635,7 +634,7 @@ def disable_use_mpi_for_non_mpi_toolchains(ec):
 def set_modluafooter(ec):
     matching_keys = get_matching_keys_from_ec(ec, opts_changes)
     for key in matching_keys:
-        for opt in ('modluafooter', 'allow_prepend_abs_path', 'modextrapaths', 'ebpythonprefixes'):
+        for opt in ('modluafooter', 'modextrapaths', 'ebpythonprefixes'):
             if opt in opts_changes[key]:
                 update_opts(ec, opts_changes[key][opt][0], opt, opts_changes[key][opt][1])
 
@@ -842,7 +841,8 @@ def python_fetchhook(ec):
             'setuptools', 'pip', 'wheel', 'virtualenv', 'appdirs', 'distlib', 'filelock',
             'six', 'setuptools_scm', 'tomli', 'flit-core', 'packaging', 'pyparsing',
             'platformdirs', 'hatchling', 'pathspec', 'pluggy', 'hatch_vcs',
-            'typing_extensions', 'editables', 'trove-classifiers', 'setuptools-scm'
+            'typing_extensions', 'editables', 'trove-classifiers', 'setuptools-scm',
+            'vcs-versioning', 'tomlkit', 'python-discovery', 'poetry-core',
         }
         for variant in (name, name.replace('-', '_'), name.replace('_', '-'))
     }
@@ -857,7 +857,6 @@ def pre_configure_hook(self, *args, **kwargs):
                                                                        'postinstallcmds',
                                                                        'modluafooter',
                                                                        'ebpythonprefixes',
-                                                                       'allow_prepend_abs_path',
                                                                        'modextrapaths'])
 
     # additional changes for CMakeMake EasyBlocks
