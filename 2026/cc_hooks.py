@@ -53,7 +53,7 @@ new_version_mapping_2026 = {
         ('Boost.MPI','ANY', ''): ('1.92.0', cOMPI_2026),
         ('CUDA', '13.3.1'): ('13.3', COMPILERS_2026),
         'CGAL': ('6.2', SYSTEM),
-        'CMake': ('4.4.1', GCCCORE153),
+        'CMake': ('4.4.2', GCCCORE153),
         'ETSF_IO': ('1.0.4', [('iompi', '2026'), ('intel-compilers', '2026.1.0')]),
         ('FFTW', 'ANY', ""): ('3.3.11', COMPILERS_2026),
         ('FFTW.MPI', 'ANY', ''): ('3.3.11', cOMPI_2026),
@@ -309,8 +309,8 @@ opts_changes = {
         'configopts': ('-DDEFAULT_SYSROOT=${EPREFIX} ', PREPEND),
     },
     'CMake': {
-        'patches': (['cmake-3.14.0_rc3-prefix-dirs.patch'], REPLACE),
-        'checksums': (['4c2daf971ea0edd9c2b200e96fca011eb858513252124a7c4daa974cd091c6bc'], APPEND_LIST),
+        'patches': (['cmake-4.4.2-0002-Set-some-proper-paths-to-make-cmake-find-our-tools.patch'], REPLACE),
+        'checksums': (['e747c415dcf2ea66bb5848c449600df1f6f8557cc65ae6b3706073bfa119865c'], APPEND_LIST),
         'preconfigopts': ('sed -i ' +
                           '-e "s|@GENTOO_PORTAGE_GCCLIBDIR@|$EBROOTGENTOO/$(gcc -dumpmachine)/lib/|g" ' +
                           '-e "/@GENTOO_HOST@/d" ' +
