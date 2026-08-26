@@ -53,7 +53,7 @@ new_version_mapping_2026 = {
         ('Boost.MPI','ANY', ''): ('1.92.0', cOMPI_2026),
         ('CUDA', '13.3.1'): ('13.3', COMPILERS_2026),
         'CGAL': ('6.2', SYSTEM),
-        'CMake': ('4.4.2', GCCCORE153),
+        'CMake': ('4.4.2', SYSTEM),
         'ETSF_IO': ('1.0.4', [('iompi', '2026'), ('intel-compilers', '2026.1.0')]),
         ('FFTW', 'ANY', ""): ('3.3.11', COMPILERS_2026),
         ('FFTW.MPI', 'ANY', ''): ('3.3.11', cOMPI_2026),
