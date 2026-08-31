@@ -35,7 +35,7 @@ from easybuild.toolchains.gcccorecuda import GCCcoreCUDA
 from easybuild.toolchains.cudacore import CUDAcore
 
 
-class GccCUDA(GccToolchain, GCCcoreCUDA, Cuda):
+class GccCUDA(GccToolchain, Cuda, GCCcoreCUDA):
     """Compiler toolchain with GCC and CUDA."""
     NAME = 'gcccuda'
 
