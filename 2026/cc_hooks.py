@@ -59,6 +59,7 @@ new_version_mapping_2026 = {
         ('FFTW.MPI', 'ANY', ''): ('3.3.11', cOMPI_2026),
         'Eigen': ('5.0.0', SYSTEM),
         ('Java', '11'): ('25', SYSTEM),
+        ('GDRCopy', '2.5.2'): ('2.6', GCCCORE153 + [('gcccorecuda', '2026')]),
         ('HDF5','ANY',''): ('2.1.1', COMPILERS_2026),
         ('HDF5','ANY',''): ('2.1.1', cOMPI_2026, '-mpi'),
         ('HDF5','ANY','-mpi'): ('2.1.1', cOMPI_2026, '-mpi'),
@@ -68,6 +69,7 @@ new_version_mapping_2026 = {
         ('libbeef', '0.1.2'): ('0.1.2', COMPILERS_2026),
         'libcerf': ('3.3', GCCCORE153),
         ('METIS', '5.1.0', ""): ('5.1.0', GCCCORE153, '-64idx'),
+        ('NCCL', '2.30.4', '-CUDA-%(cudaver)s'): ('2.31.2', [('gcccorecuda', '2026')], ''),
         ('netCDF','ANY',""): ('4.10.1', COMPILERS_2026),
         ('netCDF','ANY',""): ('4.10.1', cOMPI_2026, '-mpi'),
         ('netCDF','ANY','-mpi'): ('4.10.1', cOMPI_2026, '-mpi'),
@@ -85,7 +87,10 @@ new_version_mapping_2026 = {
         'Qt5': ('5.15.19', GCCCORE153),
         'Qt6': ('6.8.4', GCCCORE153),
         'SCOTCH': ('7.0.13', cOMPI_2026, None),
-        ('UCX', '1.20.0'): ('1.22.0', GCCCORE153),
+        ('UCX', '1.20.0'): ('1.22.0', GCCCORE153 + [('gcccorecuda', '2026')]),
+        ('UCX-CUDA', '1.20.0', '-CUDA-%(cudaver)s'): ('1.22.0', [('gcccorecuda', '2026')], ''),
+        ('UCC', '1.7.0'): ('1.8.0', GCCCORE153 + [('gcccorecuda', '2026')]),
+        ('UCC-CUDA', '1.7.0', '-CUDA-%(cudaver)s'): ('1.8.0', [('gcccorecuda', '2026')], ''),
 }
 
 def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
@@ -698,7 +703,11 @@ def drop_dependencies(ec, param):
             if dep_list[0] in to_drop:
                 if to_drop[dep_list[0]] == 'ALL' or LooseVersion(dep_list[1]) < LooseVersion(to_drop[dep_list[0]]):
                     # special case: drop CUDA dep for easyconfigs with CUDA versionsuffix (we use toolchains instead)
-                    if dep_list[0] == 'CUDA' and not ec['toolchain']['name'].endswith('cuda'):
+                    if (dep_list[0] == 'CUDA' and not (
+                            ec['toolchain']['name'].endswith('cuda') or
+                            ec['toolchain']['name'].endswith('mpic') or
+                            ec['toolchain']['name'].endswith('fbc') or
+                            ec['toolchain']['name'].endswith('fbfc'))):
                         continue
                     print("%s: Dropped %s, %s from %s" % (ec.filename(), dep_list[0],dep_list[1],param))
                     ec[param].remove(dep)
