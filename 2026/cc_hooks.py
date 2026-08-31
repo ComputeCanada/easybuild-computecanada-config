@@ -85,6 +85,7 @@ new_version_mapping_2026 = {
         'Qt5': ('5.15.19', GCCCORE153),
         'Qt6': ('6.8.4', GCCCORE153),
         'SCOTCH': ('7.0.13', cOMPI_2026, None),
+        ('UCX', '1.20.0'): ('1.22.0', GCCCORE153),
 }
 
 def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
