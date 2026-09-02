@@ -227,8 +227,10 @@ intelmpi2021_dict = {
 intel_common_postinstallcmds = '''
     for compname in icx icpx ifx; do
        echo "--sysroot=$EPREFIX" > %(installdir)s/compiler/$shortver/bin/$compname.cfg
-       echo "--gcc-install-dir=$EBROOTGENTOO/lib/gcc/x86_64-pc-linux-gnu/${EBVERSIONGCCCORE:0:2}" >> %(installdir)s/compiler/$shortver/bin/$compname.cfg
        echo "-Wl,-dynamic-linker=$EPREFIX/lib64/ld-linux-x86-64.so.2" >> %(installdir)s/compiler/$shortver/bin/$compname.cfg
+    done
+    for compname in icx icpx; do
+       echo "--gcc-install-dir=$EBROOTGENTOO/lib/gcc/x86_64-pc-linux-gnu/${EBVERSIONGCCCORE:0:2}" >> %(installdir)s/compiler/$shortver/bin/$compname.cfg
     done
     mv %(installdir)s/compiler/$shortver/bin/{dpcpp,dpcpp.orig}
     echo "#!$EPREFIX/bin/sh" > %(installdir)s/compiler/$shortver/bin/dpcpp
@@ -237,37 +239,6 @@ intel_common_postinstallcmds = '''
     /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s
     /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/compiler/$shortver/lib --add_origin
     patchelf --set-rpath '$ORIGIN:$ORIGIN/../../../tbb/$tbbshortver/lib' %(installdir)s/compiler/$shortver/lib/libintelocl.so
-    installdir=%(installdir)s
-    publicdir=${installdir/restricted.computecanada.ca/soft.computecanada.ca}
-    rm -rf $publicdir
-    for i in $(grep -h "installdir.*" $installdir/compiler/$shortver/share/doc/compiler/[cf]redist.txt | cut -c 13-); do
-       if [ -f $installdir/compiler/$shortver/$i ]; then
-         mkdir -p $(dirname $publicdir/compiler/$shortver/$i)
-         cp -p $installdir/compiler/$shortver/$i $publicdir/compiler/$shortver/$i
-       fi
-    done
-    for i in $(cd $installdir && find tbb); do
-       if [ -f $installdir/$i ]; then
-         mkdir -p $(dirname $publicdir/$i)
-         cp -p $installdir/$i $publicdir/$i
-       fi
-    done
-    cd $installdir
-    for i in compiler/$shortver/lib/libur_adapter_cuda.so.*; do
-       cp -a $i $publicdir/$i
-    done
-    for i in $(find . -type l); do
-       if [ -f $publicdir/$i ]; then
-         cp -a $i $publicdir/$i
-       fi
-    done
-    for i in tbb/$tbbshortver/lib/*; do
-       if [ -L $i ]; then
-         cp -a $i $publicdir/$i
-       fi
-    done
-    ln -s $tbbshortver $publicdir/tbb/latest
-    ln -s $shortver $publicdir/compiler/latest
 '''
 
 opts_changes = {
@@ -381,21 +352,8 @@ end
         #See compiler/2026.1/share/doc/compiler/credist.txt
         'postinstallcmds': (['''
     shortver='2026.1'
-    tbbshortver='2022.2'
-''' + intel_common_postinstallcmds + '''
-    for i in $(cd $installdir && find tcm); do
-       if [ -f $installdir/$i ]; then
-         mkdir -p $(dirname $publicdir/$i)
-         cp -p $installdir/$i $publicdir/$i
-       fi
-    done
-    for i in tcm/1.4/lib/*; do
-       if [ -L $i ]; then
-         cp -a $i $publicdir/$i
-       fi
-    done
-    ln -s 1.4 $publicdir/tcm/latest
-'''], REPLACE),
+    tbbshortver='2023.1'
+''' + intel_common_postinstallcmds], REPLACE),
         "modluafooter": ("""
 if isloaded("imkl") then
     always_load("imkl/%(version)s")
