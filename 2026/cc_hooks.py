@@ -57,7 +57,7 @@ new_version_mapping_2026 = {
         'ETSF_IO': ('1.0.4', [('iompi', '2026'), ('intel-compilers', '2026.1.0')]),
         ('FFTW', 'ANY', ""): ('3.3.11', COMPILERS_2026),
         ('FFTW.MPI', 'ANY', ''): ('3.3.11', cOMPI_2026),
-        'Eigen': ('5.0.0', SYSTEM),
+        'Eigen': ('5.0.1', GCCCORE153),
         ('Java', '11'): ('25', SYSTEM),
         ('GDRCopy', '2.5.2'): ('2.6', GCCCORE153 + [('gcccorecuda', '2026')]),
         ('HDF5','ANY',''): ('2.2.0', COMPILERS_2026),
