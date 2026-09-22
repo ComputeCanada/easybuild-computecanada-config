@@ -217,7 +217,7 @@ end
 """
 
 intelmpi2021_dict = {
-    'builddependencies': ([('opa-psm2', '12.0.1')], REPLACE),
+    'builddependencies': ([('opa-psm2', '12.0.1'), ('PMIx', '5.0.8')], REPLACE),
     'accept_eula': (True, REPLACE),
     'set_mpi_wrappers_all': (True, REPLACE),
     # Fix mpirun from IntelMPI to explicitly unset I_MPI_PMI_LIBRARY
@@ -228,9 +228,9 @@ intelmpi2021_dict = {
         "for i in %(installdir)s/mpi/latest/bin/I*; do patchelf --set-rpath '$ORIGIN/../lib/release' --force-rpath $i; done",
         "patchelf --set-rpath '$ORIGIN/../lib/release:$ORIGIN/../libfabric/lib' --force-rpath %(installdir)s/mpi/latest/bin/impi_info",
         "if [ -L %(installdir)s/mpi/latest/lib/release ]; then "
-        "  for f in %(installdir)s/mpi/latest/lib/*.so.*.*; do /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path $f --add_path='$ORIGIN/../libfabric/lib'; done; "
+        "  for f in %(installdir)s/mpi/latest/lib/*.so.*.*; do /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path $f --add_path='$ORIGIN/../libfabric/lib:$EBROOTPMIX/lib'; done; "
         "  for f in %(installdir)s/mpi/latest/lib/mpi/debug/*.so.*.*; do /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path $f --add_path='$ORIGIN/../../../libfabric/lib'; done; else"
-        "  for dir in release debug; do /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/mpi/latest/lib/$dir --add_path='$ORIGIN/../../libfabric/lib'; done; fi",
+        "  for dir in release debug; do /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s/mpi/latest/lib/$dir --add_path='$ORIGIN/../../libfabric/lib:$EBROOTPMIX/lib'; done; fi",
         "patchelf --set-rpath $EBROOTUCX/lib --force-rpath %(installdir)s/mpi/latest/libfabric/lib/prov/libmlx-fi.so",
         "patchelf --set-rpath $EBROOTOPAMINPSM2/lib64 --force-rpath %(installdir)s/mpi/latest/libfabric/lib/prov/libpsmx2-fi.so",
     ], REPLACE),
