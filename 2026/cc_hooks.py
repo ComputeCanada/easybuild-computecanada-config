@@ -853,7 +853,7 @@ def pre_configure_hook(self, *args, **kwargs):
             update_opts(ec, ' -DPYTHON_EXECUTABLE=$EBROOTPYTHON/bin/python ', 'configopts', PREPEND)
             update_opts(ec, ' -DPython_EXECUTABLE=$EBROOTPYTHON/bin/python ', 'configopts', PREPEND)
             update_opts(ec, ' -DPython3_EXECUTABLE=$EBROOTPYTHON/bin/python ', 'configopts', PREPEND)
-        if ec['version'].startswith('4'):
+        if any(dep.get('name','') == 'CMake' and dep.get('version', '0').startswith('4') for dep in self.cfg['builddependencies'] + self.cfg['dependencies']):
             update_opts(ec, ' -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ', 'configopts', PREPEND)
 
     # additional changes for MesonNinja EasyBlocks
