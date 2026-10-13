@@ -204,7 +204,7 @@ end
 """
 
 intelmpi2021_dict = {
-    'builddependencies': ([('opa-psm2', '12.0.1')], REPLACE),
+    'builddependencies': ([('PSM2', '12.0.1')], REPLACE),
     'accept_eula': (True, REPLACE),
     'set_mpi_wrappers_all': (True, REPLACE),
     # Fix mpirun from IntelMPI to explicitly unset I_MPI_PMI_LIBRARY
