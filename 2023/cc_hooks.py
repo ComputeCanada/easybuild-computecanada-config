@@ -1171,7 +1171,7 @@ def pre_prepare_hook(self, *args, **kwargs):
                           "EBROOTLIBGLU", "EBROOTMESA", "EBROOTFLTK", "EBROOTTCL", "EBROOTTK", "EBROOTBZIP2",
                           "EBROOTZSTD", "EBROOTFREETYPE", "EBROOTGLIB", "EBROOTLIBXMLPLUSPLUS",
                           "EBROOTSQLITE3", "EBROOTPKGMINCONFIG", "EBROOTMESON", "EBROOTGPERFTOOLS",
-                          "EBROOTZ3"]
+                          "EBROOTZ3", "EBROOTPKGCONF"]
     ebrootgentoo = os.environ["EBROOTGENTOO"]
     for package in packages_in_gentoo:
         setvar(package, ebrootgentoo)
