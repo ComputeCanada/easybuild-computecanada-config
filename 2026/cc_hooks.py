@@ -85,7 +85,7 @@ new_version_mapping_2026 = {
         **dict.fromkeys([('Python', '3.13.%s' % str(x)) for x in range(0,16)], ('3.13', GCCCORE153)),
         **dict.fromkeys([('Python', '3.14.%s' % str(x)) for x in range(0,7)], ('3.14', GCCCORE153)),
         'Qt5': ('5.15.19', GCCCORE153),
-        'Qt6': ('6.8.4', GCCCORE153),
+        'Qt6': ('6.12.0', GCCCORE153),
         'SCOTCH': ('7.0.13', cOMPI_2026, None),
         ('UCX', '1.20.0'): ('1.22.0', GCCCORE153 + [('gcccorecuda', '2026')]),
         ('UCX-CUDA', '1.20.0', '-CUDA-%(cudaver)s'): ('1.22.0', [('gcccorecuda', '2026')], ''),
