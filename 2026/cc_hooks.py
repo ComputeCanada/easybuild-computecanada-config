@@ -81,6 +81,7 @@ new_version_mapping_2026 = {
         ('netCDF-Fortran','ANY','-mpi'): ('4.6.4', cOMPI_2026, '-mpi'),
         ('ParaView', '6.0.1'): ('6.1.1', [('gompi', '2026')], None),
         'Perl': ('5.44.0', GCCCORE153),
+        'PROJ': ('9.9.0', GCCCORE153),
         'UDUNITS': ('2.2.28', GCCCORE153),
         **dict.fromkeys([('Python', '3.13.%s' % str(x)) for x in range(0,16)], ('3.13', GCCCORE153)),
         **dict.fromkeys([('Python', '3.14.%s' % str(x)) for x in range(0,7)], ('3.14', GCCCORE153)),
