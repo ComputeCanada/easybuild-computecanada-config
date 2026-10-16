@@ -340,9 +340,6 @@ end
         'modluafooter': ('depends_on(atleast("python", "3"))', REPLACE),
         'versionsuffix': ('', REPLACE),
     },
-    'HDF': {
-        'configopts': (' --with-szlib=$EBROOTGENTOO CFLAGS="$CFLAGS -I$EBROOTGENTOO/include/tirpc"', APPEND),
-    },
     'HDF5.Serial': {
         'name': ('HDF5', REPLACE),
     },
