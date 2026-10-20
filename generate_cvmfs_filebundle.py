@@ -5,6 +5,7 @@ import os
 import re
 import shlex
 import shutil
+import signal
 import subprocess
 import sys
 
@@ -86,17 +87,27 @@ def trace_and_generate_cvmfs_bundle(
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
+            start_new_session=True,
         )
 
         try:
             stdout, stderr = process.communicate(timeout=timeout_seconds)
         except subprocess.TimeoutExpired:
-            process.kill()
-            stdout, stderr = process.communicate()
             print(
                 f"[-] Execution exceeded {timeout_seconds}s timeout. Capturing partial traces...",
                 file=sys.stderr,
             )
+            # Send SIGTERM to the entire process group so strace can detach, terminate tracees, and flush stderr
+            try:
+                os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+                stdout, stderr = process.communicate(timeout=2)
+            except (subprocess.TimeoutExpired, ProcessLookupError, OSError):
+                # If still alive after grace period, unconditionally kill the entire process group
+                try:
+                    os.killpg(os.getpgid(process.pid), signal.SIGKILL)
+                except (ProcessLookupError, OSError):
+                    pass
+                stdout, stderr = process.communicate()
 
     except FileNotFoundError:
         print(
