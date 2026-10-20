@@ -33,23 +33,31 @@ def detect_cvmfs_prefix(path):
     """
     norm_path = os.path.abspath(path)
     parts = norm_path.split(os.sep)
-    if len(parts) >= 3 and parts[1] == "cvmfs" and parts[2]:
-        return f"/cvmfs/{parts[2]}"
+    if norm_path.startswith(f"{os.sep}cvmfs{os.sep}"):
+        return os.sep.join(parts[:3])
     return ""
 
 
 def trace_and_generate_cvmfs_bundle(
     executable_path,
+    cvmfs_repo_prefix,
     args=None,
     timeout_seconds=60,
-    cvmfs_repo_prefix="",
     output_file=None,
+    follow_forks=False,
 ):
     """
     Launches an executable, records files opened, resolves relative segments,
-    removes the cvmfs_prefix, excludes paths outside of that prefix, and drops directories.
+    removes the cvmfs_repo_prefix, excludes paths outside of that prefix, and drops directories.
     Writes the resulting bundle specification JSON to output_file (or stdout if output_file is '-').
     """
+    if not cvmfs_repo_prefix:
+        print("[-] Error: 'cvmfs_repo_prefix' must be defined.", file=sys.stderr)
+        return None
+
+    cvmfs_repo_prefix = cvmfs_repo_prefix.rstrip("/")
+    repo_prefix_slash = cvmfs_repo_prefix + "/"
+
     if args is None:
         args = []
     elif isinstance(args, str):
@@ -61,11 +69,13 @@ def trace_and_generate_cvmfs_bundle(
         output_file = get_default_bundle_path(executable_path)
 
     # Build strace command focusing only on open operations
-    command = ["strace", "-q", "-e", "trace=open,openat", executable_path] + args
+    command = ["strace", "-q"]
+    if follow_forks:
+        command.append("-f")
+    command += ["-e", "trace=open,openat", executable_path] + args
 
     print(f"[*] Monitoring execution: {' '.join(command)}", file=sys.stderr)
-    if cvmfs_repo_prefix:
-        print(f"[*] Filtering for files under prefix: {cvmfs_repo_prefix}", file=sys.stderr)
+    print(f"[*] Filtering for files under prefix: {cvmfs_repo_prefix}", file=sys.stderr)
 
     try:
         process = subprocess.Popen(
@@ -92,12 +102,9 @@ def trace_and_generate_cvmfs_bundle(
         )
         return None
 
-    # Regex to match paths within open/openat calls
-    file_path_regex = re.compile(r'^(?:open|openat)\([^,\s]+,\s*"([^"]+)"')
+    # Regex to match paths within open/openat calls (accounting for optional [pid ...] prefix from strace -f)
+    file_path_regex = re.compile(r'^(?:\[pid\s+\d+\]\s+)?(?:open|openat)\([^,\s]+,\s*"([^"]+)"')
     opened_files = set()
-
-    # System path prefixes to ignore for CVMFS dependencies
-    ignored_prefixes = ("/proc/", "/dev/", "/sys/", "/etc/")
 
     for line in stderr.splitlines():
         match = file_path_regex.search(line)
@@ -107,29 +114,20 @@ def trace_and_generate_cvmfs_bundle(
             # Resolve relative references like "../" and "./" into a clean canonical path
             normalized_path = os.path.normpath(raw_path)
 
-            # 1. Filter out standard Linux virtual file systems / transient configurations
-            if normalized_path.startswith(ignored_prefixes):
+            # 1. Filter out files outside of the CVMFS repository prefix
+            if not normalized_path.startswith(repo_prefix_slash):
                 continue
 
             # 2. Drop the path if it points to a directory instead of a file
             if not os.path.isfile(normalized_path):
                 continue
 
-            # 3. Handle repository prefix filtering
-            if cvmfs_repo_prefix:
-                prefix = cvmfs_repo_prefix.rstrip("/")
-                # Drop any file path that does NOT start with the repository directory
-                if not (normalized_path == prefix or normalized_path.startswith(prefix + "/")):
-                    continue
+            # Strip the repository prefix out of the path string (relative to repo root)
+            rel_path = normalized_path[len(cvmfs_repo_prefix):]
+            if not rel_path.startswith("/"):
+                rel_path = "/" + rel_path
 
-                # Strip the prefix out of the path string
-                normalized_path = normalized_path[len(prefix):]
-
-            # Ensure path starts with an absolute slash relative to the repo root
-            if not normalized_path.startswith("/"):
-                normalized_path = "/" + normalized_path
-
-            opened_files.add(normalized_path)
+            opened_files.add(rel_path)
 
     # Construct the JSON payload strictly following the CernVM-FS specification format
     cvmfs_bundle = {
@@ -189,6 +187,13 @@ def main():
         help="Output file path (default: full path of target executable prefixed by '.cvmfsbundle-'; use '-' for stdout).",
     )
     parser.add_argument(
+        "-f", "--follow-forks",
+        dest="follow_forks",
+        action="store_true",
+        default=False,
+        help="Follow child processes created by fork/clone in strace (passes -f to strace).",
+    )
+    parser.add_argument(
         "-t", "--timeout",
         dest="timeout",
         type=int,
@@ -203,10 +208,17 @@ def main():
     cvmfs_prefix = parsed_args.cvmfs_prefix
     output_file = parsed_args.output_file
     timeout = parsed_args.timeout
+    follow_forks = parsed_args.follow_forks
 
     # Auto-detect CVMFS prefix if not provided
     if cvmfs_prefix is None:
         cvmfs_prefix = detect_cvmfs_prefix(target_executable)
+
+    if not cvmfs_prefix:
+        parser.error(
+            "CVMFS repository prefix could not be determined from the executable path. "
+            "Please specify it with -p / --cvmfs-prefix."
+        )
 
     # Determine default output file if not provided
     if output_file is None:
@@ -214,10 +226,11 @@ def main():
 
     result = trace_and_generate_cvmfs_bundle(
         executable_path=target_executable,
+        cvmfs_repo_prefix=cvmfs_prefix,
         args=target_args,
         timeout_seconds=timeout,
-        cvmfs_repo_prefix=cvmfs_prefix,
         output_file=output_file,
+        follow_forks=follow_forks,
     )
     if result is None:
         sys.exit(1)
