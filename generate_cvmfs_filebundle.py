@@ -11,18 +11,21 @@ import sys
 
 def get_default_bundle_path(executable_path):
     """
-    Returns the default bundle file path: the full path of the executable being run,
-    but with the executable filename prefixed by .cvmfsbundle-
+    Returns the default bundle file path: the full path of the completely resolved
+    executable target (resolving any symlinks), but with the filename prefixed by .cvmfsbundle-
     as described in https://cvmfs.readthedocs.io/en/2.14/cpt-file-bundles/
     e.g. /cvmfs/example.cern.ch/lib/libexample.so -> /cvmfs/example.cern.ch/lib/.cvmfsbundle-libexample.so
     """
     if not os.path.dirname(executable_path):
         resolved = shutil.which(executable_path)
-        full_path = os.path.abspath(resolved) if resolved else os.path.abspath(executable_path)
+        full_path = resolved if resolved else executable_path
     else:
-        full_path = os.path.abspath(executable_path)
+        full_path = executable_path
 
-    dirname, basename = os.path.split(full_path)
+    # Completely resolve symlinks to find the real target executable
+    real_path = os.path.realpath(full_path)
+
+    dirname, basename = os.path.split(real_path)
     return os.path.join(dirname, f".cvmfsbundle-{basename}")
 
 
@@ -31,7 +34,7 @@ def detect_cvmfs_prefix(path):
     Detects the CVMFS repository root prefix from a path if located under /cvmfs.
     e.g. /cvmfs/example.cern.ch/bin/foo -> /cvmfs/example.cern.ch
     """
-    norm_path = os.path.abspath(path)
+    norm_path = os.path.realpath(path)
     parts = norm_path.split(os.sep)
     if norm_path.startswith(f"{os.sep}cvmfs{os.sep}"):
         return os.sep.join(parts[:3])
