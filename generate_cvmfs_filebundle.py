@@ -215,13 +215,7 @@ def main():
 
     # Auto-detect CVMFS prefix if not provided
     if cvmfs_prefix is None:
-        cvmfs_prefix = detect_cvmfs_prefix(target_executable)
-
-    if not cvmfs_prefix:
-        parser.error(
-            "CVMFS repository prefix could not be determined from the executable path. "
-            "Please specify it with -p / --cvmfs-prefix."
-        )
+        cvmfs_prefix = detect_cvmfs_prefix(target_executable) or '/cvmfs/soft.computecanada.ca'
 
     # Determine default output file if not provided
     if output_file is None:
