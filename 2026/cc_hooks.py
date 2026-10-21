@@ -68,7 +68,7 @@ new_version_mapping_2026 = {
         ('imkl','2025.3.1'): ('2026.1.0', SYSTEM),
         ('intel-compilers', '2025.3.3'): ('2026.1.0', SYSTEM),
         ('libbeef', '0.1.2'): ('0.1.2', COMPILERS_2026),
-        'libcerf': ('3.3', GCCCORE153),
+        'libcerf': ('3.9', GCCCORE153),
         ('METIS', '5.1.0', ""): ('5.1.0', GCCCORE153, '-64idx'),
         ('NCCL', '2.30.4', '-CUDA-%(cudaver)s'): ('2.31.2', [('gcccorecuda', '2026')], ''),
         ('netCDF','ANY',""): ('4.10.1', COMPILERS_2026),
