@@ -49,6 +49,7 @@ def trace_and_generate_cvmfs_bundle(
     timeout_seconds=60,
     output_file=None,
     follow_forks=False,
+    append=False,
 ):
     """
     Launches an executable, records files opened, resolves relative segments,
@@ -71,6 +72,13 @@ def trace_and_generate_cvmfs_bundle(
 
     if output_file is None:
         output_file = get_default_bundle_path(executable_path)
+    elif output_file != "-":
+        basename = os.path.basename(output_file)
+        if not basename.startswith(".cvmfsbundle-"):
+            if not os.path.exists(output_file):
+                print(f"[-] Error: Target file for output does not exist: '{output_file}'", file=sys.stderr)
+                return None
+            output_file = get_default_bundle_path(output_file)
 
     # Build strace command focusing only on open operations
     command = ["strace", "-q"]
@@ -119,6 +127,25 @@ def trace_and_generate_cvmfs_bundle(
     # Regex to match paths within open/openat calls (accounting for optional [pid ...] prefix from strace -f)
     file_path_regex = re.compile(r'^(?:\[pid\s+\d+\]\s+)?(?:open|openat)\([^,\s]+,\s*"([^"]+)"')
     opened_files = set()
+
+    # Load existing dependencies if append mode is requested and output bundle exists
+    if append and output_file != "-" and os.path.isfile(output_file):
+        try:
+            with open(output_file, "r", encoding="utf-8") as f:
+                existing_bundle = json.load(f)
+                if isinstance(existing_bundle, dict):
+                    existing_deps = existing_bundle.get("dependencies", [])
+                    if isinstance(existing_deps, list):
+                        opened_files.update(existing_deps)
+                        print(
+                            f"[*] Appending to existing bundle: loaded {len(existing_deps)} dependencies from {output_file}",
+                            file=sys.stderr,
+                        )
+        except Exception as e:
+            print(
+                f"[-] Warning: Failed to read existing bundle from '{output_file}': {e}",
+                file=sys.stderr,
+            )
 
     for line in stderr.splitlines():
         match = file_path_regex.search(line)
@@ -198,7 +225,14 @@ def main():
         "-o", "--output",
         dest="output_file",
         default=None,
-        help="Output file path (default: full path of target executable prefixed by '.cvmfsbundle-'; use '-' for stdout).",
+        help="Output file path (default: full path of target executable prefixed by '.cvmfsbundle-'; use '-' for stdout). If targeting a file not named as a bundle, its corresponding .cvmfsbundle-<filename> will be used.",
+    )
+    parser.add_argument(
+        "-A", "--append",
+        dest="append",
+        action="store_true",
+        default=False,
+        help="Append new opened files to an existing bundle if it already exists.",
     )
     parser.add_argument(
         "-f", "--follow-forks",
@@ -223,14 +257,21 @@ def main():
     output_file = parsed_args.output_file
     timeout = parsed_args.timeout
     follow_forks = parsed_args.follow_forks
+    append = parsed_args.append
 
     # Auto-detect CVMFS prefix if not provided
     if cvmfs_prefix is None:
         cvmfs_prefix = detect_cvmfs_prefix(target_executable) or '/cvmfs/soft.computecanada.ca'
 
-    # Determine default output file if not provided
+    # Determine default output file if not provided, or resolve target file to bundle path
     if output_file is None:
         output_file = get_default_bundle_path(target_executable)
+    elif output_file != "-":
+        basename = os.path.basename(output_file)
+        if not basename.startswith(".cvmfsbundle-"):
+            if not os.path.exists(output_file):
+                parser.error(f"Target file for --output does not exist: '{output_file}'")
+            output_file = get_default_bundle_path(output_file)
 
     result = trace_and_generate_cvmfs_bundle(
         executable_path=target_executable,
@@ -239,6 +280,7 @@ def main():
         timeout_seconds=timeout,
         output_file=output_file,
         follow_forks=follow_forks,
+        append=append,
     )
     if result is None:
         sys.exit(1)
