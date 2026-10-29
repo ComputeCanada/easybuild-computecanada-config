@@ -84,8 +84,8 @@ new_version_mapping_2026 = {
         'Perl': ('5.44.0', GCCCORE153),
         'PROJ': ('9.9.0', GCCCORE153),
         'UDUNITS': ('2.2.28', GCCCORE153),
-        **dict.fromkeys([('Python', '3.14.%s' % str(x)) for x in range(0,7)], ('3.14', SYSTEM)),
-        **dict.fromkeys([('Python', '3.15.%s' % str(x)) for x in range(0,7)], ('3.15', SYSTEM)),
+        **dict.fromkeys([('Python', '3.14.%s' % str(x)) for x in range(0,8)], ('3.14', GCCCORE153)),
+        **dict.fromkeys([('Python', '3.15.%s' % str(x)) for x in range(0,7)], ('3.15', GCCCORE153)),
         'Qt5': ('5.15.19', GCCCORE153),
         'Qt6': ('6.12.0', GCCCORE153),
         'SCOTCH': ('7.0.13', cOMPI_2026, None),
@@ -150,8 +150,7 @@ def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
         elif dep_name == 'oldest-supported-numpy':
             print(f"Dependency on oldest-supported-numpy is now deprecated. Replacing with ('numpy', '2.5.3')")
             new_dep = ('numpy', '2.5.3')
-        elif dep_name in ['Python', 'python-build-bundle', 'Cython', 'numpy']:
-            print(f"Bumping {dep_name} toolchain to ('GCCcore', '15.3.0')")
+        elif dep_name in ['Python', 'python-build-bundle', 'Cython', 'numpy'] and (len(rest) <= 1 or not rest[1]):
             new_dep = (dep_name, new_version or dep_version, '', ('GCCcore', '15.3.0'))
         else:
             new_dep = None
