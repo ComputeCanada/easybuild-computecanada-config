@@ -67,10 +67,12 @@ class DepRule:
       - match_dep_toolchain: Filter on dependency's current toolchain ('ANY', 'SYSTEM', 'NONE')
 
     Target update parameters:
+      - new_name: Target software name (for renaming / normalization)
       - new_version (or new_ver): Target version string (None = preserve current dep version)
       - new_suffix: Target suffix string (None = preserve current dep suffix)
-      - new_toolchain: Target toolchain for dependency (None = use resolved match_toolchain)
+      - new_toolchain: Target toolchain for dependency (None = use resolved match_toolchain, False = strip toolchain)
       - drop: Set to True to drop this dependency when matched
+      - message: Optional warning or notification message to print when rule matches
     """
     def __init__(
         self,
@@ -82,10 +84,13 @@ class DepRule:
         new_suffix=None,
         match_dep_toolchain='ANY',
         drop=False,
+        new_name=None,
+        message=None,
         # Optional shortcuts
         new_ver=None,
         match_ver=None,
     ):
+        self.new_name = new_name
         self.new_version = new_version if new_version is not None else new_ver
         self.match_version = match_ver if match_ver is not None else match_version
         self.match_suffix = match_suffix
@@ -94,6 +99,7 @@ class DepRule:
         self.new_toolchain = new_toolchain
         self.match_dep_toolchain = match_dep_toolchain
         self.drop = drop
+        self.message = message
 
     def matches(self, dep_ver, dep_suffix, dep_tc=None, ec=None):
         if not _match_version_pattern(self.match_version, dep_ver):
@@ -126,17 +132,6 @@ class DepRule:
         return True
 
 
-def _to_rule(spec):
-    """Support shorthand tuple syntax: ('new_ver', match_toolchains[, new_suffix])."""
-    if isinstance(spec, DepRule):
-        return spec
-    if isinstance(spec, tuple):
-        new_ver, match_tc = spec[0], spec[1]
-        new_suffix = spec[2] if len(spec) > 2 else None
-        return DepRule(new_version=new_ver, match_toolchain=match_tc, new_suffix=new_suffix)
-    raise ValueError(f"Unknown rule specification: {spec}")
-
-
 def get_compatible_toolchain(ec_toolchain, supported_toolchains):
     """Find the first compatible toolchain in supported_toolchains for ec_toolchain."""
     if supported_toolchains in ('ANY', 'CUDA'):
@@ -155,6 +150,8 @@ def resolve_target_toolchain(ec_toolchain, matching_tc, new_toolchain):
     """Determine the final (tc_name, tc_version) to assign to the dependency."""
     if new_toolchain is None:
         return matching_tc
+    if new_toolchain is False:
+        return False
     if isinstance(new_toolchain, tuple):
         return new_toolchain
     if isinstance(new_toolchain, list):
@@ -169,8 +166,20 @@ def resolve_target_toolchain(ec_toolchain, matching_tc, new_toolchain):
 
 # Dictionary containing version mapping and drop rules
 # Keys: software name
-# Values: (new_version, match_toolchain[, new_suffix]) or DepRule(...) or list of DepRule(...)
+# Values: DepRule(...) or list of DepRule(...)
 new_version_mapping_2026 = {
+    # Normalization: *.Serial aliases resolve to their base name, then re-match remaining rules
+    'Boost.Serial': DepRule(new_name='Boost'),
+    'HDF5.Serial': DepRule(new_name='HDF5'),
+    'netCDF.Serial': DepRule(new_name='netCDF'),
+
+    # Deprecations: renamed packages with fixed replacement (new_toolchain=False strips the toolchain field)
+    'SciPy-bundle': DepRule(new_name='SciPy-Stack', new_version='2026a', new_toolchain=False),
+    'oldest-supported-numpy': DepRule(
+        new_name='numpy', new_version='2.5.3', new_toolchain=False,
+        message="Dependency on oldest-supported-numpy is now deprecated. Replacing with ('numpy', '2.5.3')",
+    ),
+
     # Packages to drop (provided by Gentoo or filtered)
     'ICU': DepRule(drop=True),
     'libxslt': DepRule(drop=True),
@@ -188,19 +197,19 @@ new_version_mapping_2026 = {
     ],
 
     # Simple software upgrades
-    'CGAL': ('6.2', SYSTEM),
-    'CMake': ('4.4.2', SYSTEM),
-    'Eigen': ('5.0.1', GCCCORE153),
-    'GEOS': ('3.14.1', GCCCORE153),
-    'Java': ('25', SYSTEM),
-    'libcerf': ('3.9', GCCCORE153),
-    'Perl': ('5.44.0', GCCCORE153),
-    'PROJ': ('9.9.0', GCCCORE153),
-    'UDUNITS': ('2.2.28', GCCCORE153),
-    'Qt5': ('5.15.19', GCCCORE153),
-    'Qt6': ('6.12.0', GCCCORE153),
-    'SCOTCH': ('7.0.13', cOMPI_2026),
-    'ETSF_IO': ('1.0.4', [('iompi', '2026'), ('intel-compilers', '2026.1.0')]),
+    'CGAL': DepRule(new_version='6.2', match_toolchain=SYSTEM),
+    'CMake': DepRule(new_version='4.4.2', match_toolchain=SYSTEM),
+    'Eigen': DepRule(new_version='5.0.1', match_toolchain=GCCCORE153),
+    'GEOS': DepRule(new_version='3.14.1', match_toolchain=GCCCORE153),
+    'Java': DepRule(new_version='25', match_toolchain=SYSTEM),
+    'libcerf': DepRule(new_version='3.9', match_toolchain=GCCCORE153),
+    'Perl': DepRule(new_version='5.44.0', match_toolchain=GCCCORE153),
+    'PROJ': DepRule(new_version='9.9.0', match_toolchain=GCCCORE153),
+    'UDUNITS': DepRule(new_version='2.2.28', match_toolchain=GCCCORE153),
+    'Qt5': DepRule(new_version='5.15.19', match_toolchain=GCCCORE153),
+    'Qt6': DepRule(new_version='6.12.0', match_toolchain=GCCCORE153),
+    'SCOTCH': DepRule(new_version='7.0.13', match_toolchain=cOMPI_2026),
+    'ETSF_IO': DepRule(new_version='1.0.4', match_toolchain=[('iompi', '2026'), ('intel-compilers', '2026.1.0')]),
 
     # Dual MPI/Serial packages: MPI toolchain gets -mpi, serial compiler gets empty suffix
     'HDF5': [
@@ -264,49 +273,52 @@ def update_dependency(dep, ec, rules_dict=new_version_mapping_2026):
     dep_suffix = rest[0] if len(rest) > 0 else ""
     dep_tc = rest[1] if len(rest) > 1 else None
 
-    # 1. Normalization & deprecation replacements
-    if dep_name == 'oldest-supported-numpy':
-        print(f"Dependency on oldest-supported-numpy is now deprecated. Replacing with ('numpy', '2.5.3')")
-        return ('numpy', '2.5.3')
-    if dep_name == 'SciPy-bundle':
-        return ('SciPy-Stack', '2026a')
-    if dep_name.endswith('.Serial'):
-        dep_name = dep_name[:-7]
-
     # Don't modify self-dependencies
     if dep_name == ec.name:
         return dep
 
     rules = rules_dict.get(dep_name)
     if not rules:
-        if dep_name != dep[0]:
-            return (dep_name, dep_ver) + tuple(rest)
         return dep
 
     if not isinstance(rules, list):
         rules = [rules]
 
-    for raw_rule in rules:
-        rule = _to_rule(raw_rule)
+    for rule in rules:
         if not rule.matches(dep_ver, dep_suffix, dep_tc, ec):
             continue
+
+        if rule.message:
+            print(rule.message)
 
         if rule.drop:
             return None
 
+        target_name = rule.new_name if rule.new_name is not None else dep_name
+        target_ver = rule.new_version if rule.new_version is not None else dep_ver
+
+        # Rename-only rules (no version/toolchain specified): recursively re-match under new name
+        if target_name != dep_name and rule.new_version is None and rule.new_toolchain is None and rule.match_toolchain == 'ANY':
+            renamed_dep = (target_name, dep_ver) + tuple(rest)
+            return update_dependency(renamed_dep, ec, rules_dict)
+
+        # new_toolchain=False means strip toolchain from the result (return bare (name, ver) tuple)
+        if rule.new_toolchain is False:
+            return (target_name, target_ver)
+
         matching_tc = get_compatible_toolchain(ec.toolchain, rule.match_toolchain)
         if matching_tc:
-            target_ver = rule.new_version if rule.new_version is not None else dep_ver
             target_suffix = rule.new_suffix if rule.new_suffix is not None else dep_suffix
             target_tc = resolve_target_toolchain(ec.toolchain, matching_tc, rule.new_toolchain)
 
-            new_dep = (dep_name, target_ver, target_suffix, target_tc)
-            if dep_name == 'libfabric':
+            new_dep = (target_name, target_ver, target_suffix, target_tc)
+            if target_name == 'libfabric':
                 new_dep = new_dep[:2]
             return new_dep
 
-    if dep_name != dep[0]:
-        return (dep_name, dep_ver) + tuple(rest)
+        if target_name != dep_name:
+            return (target_name, target_ver) + tuple(rest)
+
     return dep
 
 
@@ -858,8 +870,6 @@ def parse_hook(ec, *args, **kwargs):
 
     modify_dependencies(ec, 'dependencies', new_version_mapping_2026)
     modify_dependencies(ec, 'builddependencies', new_version_mapping_2026)
-    drop_dependencies(ec, 'dependencies')
-    drop_dependencies(ec, 'builddependencies')
     set_modaltsoftname(ec)
     modify_all_opts(ec, opts_changes, opts_to_change=PARSE_OPTS)
 
