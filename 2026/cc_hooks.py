@@ -99,6 +99,7 @@ new_version_mapping_2026 = {
         ('UCX-CUDA', '1.20.0', '-CUDA-%(cudaver)s'): ('1.22.0', [('gcccorecuda', '2026')], ''),
         ('UCC', '1.7.0'): ('1.8.0', GCCCORE153 + [('gcccorecuda', '2026')]),
         ('UCC-CUDA', '1.7.0', '-CUDA-%(cudaver)s'): ('1.8.0', [('gcccorecuda', '2026')], ''),
+        'yaml-cpp': ('0.9.0', SYSTEM),
 }
 
 def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
