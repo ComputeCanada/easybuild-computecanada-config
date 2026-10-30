@@ -135,7 +135,7 @@ def resolve_target_toolchain(ec_toolchain, matching_tc, new_toolchain, dep_tc=No
     new_toolchain can be:
       - None: strip toolchain (return None -> dependency becomes 2-tuple)
       - AUTOMATIC: use resolved matching_tc from match_toolchain (or keep dep_tc if match_toolchain is 'ANY'/'CUDA')
-      - A toolchain tuple (tc_name, tc_version) or list of tuples: use that explicit toolchain
+      - A toolchain tuple (tc_name, tc_version): use that explicit toolchain
     """
     if new_toolchain is None:
         return None
@@ -145,14 +145,7 @@ def resolve_target_toolchain(ec_toolchain, matching_tc, new_toolchain, dep_tc=No
         return dep_tc
     if isinstance(new_toolchain, tuple):
         return new_toolchain
-    if isinstance(new_toolchain, list):
-        if len(new_toolchain) == 1:
-            return new_toolchain[0]
-        compat = get_compatible_toolchain(ec_toolchain, new_toolchain)
-        return compat if compat else new_toolchain[0]
-    if isinstance(new_toolchain, str):
-        return (new_toolchain, new_toolchain)
-    return new_toolchain
+    raise ValueError(f"new_toolchain must be AUTOMATIC, None, or a (name, version) tuple, got: {new_toolchain!r}")
 
 
 class DepRule:
@@ -181,7 +174,7 @@ class DepRule:
       - new_toolchain: Target toolchain for dependency:
           AUTOMATIC (default) -> use resolved compatible toolchain from match_toolchain
           None                -> strip toolchain (bare (name, version) 2-tuple)
-          tuple or list       -> assign explicit toolchain (e.g. GCCCORE153)
+          tuple               -> assign explicit toolchain tuple, e.g. ('GCCcore', '15.3.0')
       - drop: Set to True to drop this dependency when matched
       - message: Optional warning or notification message to print when rule matches
     """
@@ -201,6 +194,8 @@ class DepRule:
         new_ver=None,
         match_ver=None,
     ):
+        if new_toolchain not in (AUTOMATIC, None) and not isinstance(new_toolchain, tuple):
+            raise ValueError(f"new_toolchain must be AUTOMATIC, None, or a (name, version) tuple, got: {new_toolchain!r}")
         self.new_name = new_name
         self.new_version = new_version if new_version is not None else new_ver
         raw_match_version = match_ver if match_ver is not None else match_version
@@ -315,14 +310,14 @@ new_version_mapping_2026 = {
     'FFTW.MPI': DepRule(new_version='3.3.11', match_toolchain=cOMPI_2026, match_suffix='', new_suffix=''),
 
     # Python packages bumped from SYSTEM to GCCcore (PR #99)
-    'python-build-bundle': DepRule(match_toolchain=SYSTEM, exact_toolchain=True, new_toolchain=GCCCORE153),
-    'Cython':              DepRule(match_toolchain=SYSTEM, exact_toolchain=True, new_toolchain=GCCCORE153),
-    'numpy':               DepRule(match_toolchain=SYSTEM, exact_toolchain=True, new_toolchain=GCCCORE153),
+    'python-build-bundle': DepRule(match_toolchain=SYSTEM, exact_toolchain=True, new_toolchain=('GCCcore', '15.3.0')),
+    'Cython':              DepRule(match_toolchain=SYSTEM, exact_toolchain=True, new_toolchain=('GCCcore', '15.3.0')),
+    'numpy':               DepRule(match_toolchain=SYSTEM, exact_toolchain=True, new_toolchain=('GCCcore', '15.3.0')),
     'Python': [
         DepRule(match_version='3.14.*', new_version='3.14', match_toolchain=GCCCORE153),
         DepRule(match_version='3.15.*', new_version='3.15', match_toolchain=GCCCORE153),
         # Catch-all: bump toolchain to GCCcore for SYSTEM-toolchain Python deps
-        DepRule(match_toolchain=SYSTEM, exact_toolchain=True, new_toolchain=GCCCORE153),
+        DepRule(match_toolchain=SYSTEM, exact_toolchain=True, new_toolchain=('GCCcore', '15.3.0')),
     ],
 
     # Version-specific rules
