@@ -86,6 +86,7 @@ new_version_mapping_2026 = {
         ('ParaView', '6.0.1'): ('6.1.1', [('gompi', '2026')], None),
         'Perl': ('5.44.0', GCCCORE153),
         'PROJ': ('9.9.0', GCCCORE153),
+        ('PostgreSQL', '16.0'): ('18.6', GCCCORE153),
         'UDUNITS': ('2.2.28', GCCCORE153),
         ('python-build-bundle', '2026a'): ('2026b', SYSTEM),
         **dict.fromkeys([('Python', '3.14.%s' % str(x)) for x in range(0,8)], ('3.14', GCCCORE153)),
