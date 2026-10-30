@@ -1,4 +1,4 @@
-from easybuild.framework.easyconfig.easyconfig import get_easyblock_class, get_toolchain_hierarchy
+from easybuild.framework.easyconfig.easyconfig import get_easyblock_class, get_toolchain_hierarchy, EasyConfig
 from easybuild.easyblocks.generic.cmakemake import CMakeMake
 from easybuild.easyblocks.generic.cmakeninja import CMakeNinja
 from easybuild.easyblocks.generic.mesonninja import MesonNinja
@@ -36,148 +36,410 @@ ICC2026 = [('intel-compilers', '2026.1.0')]
 COMPILERS_2026 = [ICC2026[0], GCC153[0]]
 cOMPI_2026 = [('iompi', '2026'),('gompi', '2026')]
 
-# Dictionary containing version mapping
-# Keys can be one of :
-# - software name
-# - (software name, software version)
-# - (software name, 'ANY', version suffix)
-# - (software name, software version, version suffix)
-#
-# The most specific key match will be used
-#
-# Values can be one of :
-# - (new software version, list of compatible toolchains)
-# - (new software version, list of compatible toolchains, None)
-new_version_mapping_2026 = {
-        'babel': ('2.18.0', SYSTEM),
-        ('Boost', 'ANY', ''): ('1.92.0', COMPILERS_2026),
-        ('Boost.MPI','ANY', ''): ('1.92.0', cOMPI_2026),
-        ('Boost', 'ANY', '-core'): ('1.92.0', GCCCORE153, '-core'),
-        'calibre': ('9.17.0', SYSTEM),
-        ('CUDA', '13.3.1'): ('13.3', COMPILERS_2026),
-        'CGAL': ('6.2', SYSTEM),
-        'CMake': ('4.4.2', SYSTEM),
-        'ETSF_IO': ('1.0.4', [('iompi', '2026'), ('intel-compilers', '2026.1.0')]),
-        ('FFTW', 'ANY', ""): ('3.3.11', COMPILERS_2026),
-        ('FFTW.MPI', 'ANY', ''): ('3.3.11', cOMPI_2026),
-        'Eigen': ('5.0.1', GCCCORE153),
-        'GEOS': ('3.14.1', GCCCORE153),
-        'Java': ('25', SYSTEM),
-        ('GDRCopy', '2.5.2'): ('2.6', GCCCORE153 + [('gcccorecuda', '2026')]),
-        ('HDF5','ANY',''): ('2.2.0', COMPILERS_2026),
-        ('HDF5','ANY',''): ('2.2.0', cOMPI_2026, '-mpi'),
-        ('HDF5','ANY','-mpi'): ('2.2.0', cOMPI_2026, '-mpi'),
-        ('hwloc', '2.13.0'): ('2.14.0', GCCCORE153),
-        ('imkl','2025.3.1'): ('2026.1.0', SYSTEM),
-        ('intel-compilers', '2025.3.3'): ('2026.1.0', SYSTEM),
-        ('libbeef', '0.1.2'): ('0.1.2', COMPILERS_2026),
-        'libcerf': ('3.9', GCCCORE153),
-        ('METIS', '5.1.0', ""): ('5.1.0', GCCCORE153, '-64idx'),
-        ('NCCL', '2.30.4', '-CUDA-%(cudaver)s'): ('2.31.2', [('gcccorecuda', '2026')], ''),
-        ('netCDF','ANY',""): ('4.10.1', COMPILERS_2026),
-        ('netCDF','ANY',""): ('4.10.1', cOMPI_2026, '-mpi'),
-        ('netCDF','ANY','-mpi'): ('4.10.1', cOMPI_2026, '-mpi'),
-        ('netCDF-C++4','ANY', ""): ('4.3.1', COMPILERS_2026),
-        ('netCDF-C++4','ANY', ""): ('4.3.1', cOMPI_2026, '-mpi'),
-        ('netCDF-C++4','ANY','-mpi'): ('4.3.1', cOMPI_2026, '-mpi'),
-        ('netCDF-Fortran','ANY', ""): ('4.6.4', COMPILERS_2026),
-        ('netCDF-Fortran','ANY', ""): ('4.6.4', cOMPI_2026, '-mpi'),
-        ('netCDF-Fortran','ANY','-mpi'): ('4.6.4', cOMPI_2026, '-mpi'),
-        ('ParaView', '6.0.1'): ('6.1.1', [('gompi', '2026')], None),
-        'Perl': ('5.44.0', GCCCORE153),
-        'PROJ': ('9.9.0', GCCCORE153),
-        ('PostgreSQL', '16.0'): ('18.6', GCCCORE153),
-        'UDUNITS': ('2.2.28', GCCCORE153),
-        ('python-build-bundle', '2026a'): ('2026b', SYSTEM),
-        **dict.fromkeys([('Python', '3.14.%s' % str(x)) for x in range(0,8)], ('3.14', GCCCORE153)),
-        **dict.fromkeys([('Python', '3.15.%s' % str(x)) for x in range(0,7)], ('3.15', GCCCORE153)),
-        ('Python', '3.13'): ('3.15', SYSTEM),
-        'Qt5': ('5.15.19', GCCCORE153),
-        'Qt6': ('6.12.0', GCCCORE153),
-        'SCOTCH': ('7.0.13', cOMPI_2026, None),
-        ('UCX', '1.20.0'): ('1.22.0', GCCCORE153 + [('gcccorecuda', '2026')]),
-        ('UCX-CUDA', '1.20.0', '-CUDA-%(cudaver)s'): ('1.22.0', [('gcccorecuda', '2026')], ''),
-        ('UCC', '1.7.0'): ('1.8.0', GCCCORE153 + [('gcccorecuda', '2026')]),
-        ('UCC-CUDA', '1.7.0', '-CUDA-%(cudaver)s'): ('1.8.0', [('gcccorecuda', '2026')], ''),
-        'yaml-cpp': ('0.9.0', GCCCORE153),
+CUDA_TOOLCHAIN_SUFFIXES = ('cuda', 'mpic', 'fbc', 'fbfc')
+AUTOMATIC = 'AUTOMATIC'
+ANY = 'ANY'
+
+
+def _is_system_toolchain(tc):
+    """Check if a toolchain specification represents a system / unassigned toolchain."""
+    return (
+        tc is None or
+        tc is True or
+        tc == 'system' or
+        tc == ('system', 'system') or
+        tc == [('system', 'system')] or
+        tc == 'SYSTEM' or
+        tc == SYSTEM
+    )
+
+
+def _parse_version_spec(spec):
+    """Parse a version specification string using EasyBuild's parse_version_range.
+
+    Accepts:
+      - ANY                   -> always match
+      - EasyBuild range strings: ':3.42.0]', ']1.0:2.0[', '3.14.0' (exact)
+      - Glob suffix: '3.14.*'  -> prefix match (not a range, handled separately)
+
+    Returns either ANY, the string as-is (for glob/exact), or a parsed range dict
+    {lower, upper, excl_lower, excl_upper} as returned by parse_version_range.
+    """
+    if spec == ANY:
+        return ANY
+    if spec is None:
+        raise ValueError("Version spec cannot be None. Use ANY to match any version.")
+    if spec.endswith('*'):
+        return spec  # glob kept as-is
+    if ':' in spec:
+        return EasyConfig.parse_version_range(None, spec)
+    return spec  # exact version string
+
+
+def _match_version_spec(spec, version):
+    """Match a version string against a parsed version spec.
+
+    spec may be:
+      - ANY -> always True
+      - a glob string ending with '*' (e.g. '3.14.*')
+      - an exact version string (e.g. '3.14.0')
+      - a range dict from _parse_version_spec / EasyConfig.parse_version_range
+
+    For range dicts, delegates directly to EasyConfig.dep_is_filtered so the
+    comparison logic is not reimplemented here.
+    """
+    if spec == ANY:
+        return True
+    if spec is None:
+        return False
+    if isinstance(spec, str):
+        if spec.endswith('*'):
+            return version.startswith(spec[:-1])
+        return version == spec
+    # Range dict: delegate to EasyBuild's dep_is_filtered with a synthetic dep
+    # and a synthetic filter_deps_specs keyed by a sentinel name.
+    _SENTINEL = '__version_check__'
+    return EasyConfig.dep_is_filtered(None,
+                                      dep={'name': _SENTINEL, 'version': version},
+                                      filter_deps_specs={_SENTINEL: spec})
+
+
+def get_compatible_toolchain(ec_toolchain, supported_toolchains):
+    """Find the first compatible toolchain in supported_toolchains for ec_toolchain (reproducing main)."""
+    if supported_toolchains == ANY:
+        return ANY
+    if supported_toolchains is None:
+        return None
+
+    if isinstance(ec_toolchain, tuple) and len(ec_toolchain) >= 2:
+        tc_name, tc_version = ec_toolchain[0], ec_toolchain[1]
+        try_tc_cls, _ = search_toolchain(tc_name)
+        str_mro = [str(cls) for cls in try_tc_cls.__class__.__mro__] if try_tc_cls else []
+    else:
+        tc_name = getattr(ec_toolchain, 'name', None) or (ec_toolchain.get('name', '') if isinstance(ec_toolchain, dict) else '')
+        tc_version = getattr(ec_toolchain, 'version', None) or (ec_toolchain.get('version', '') if isinstance(ec_toolchain, dict) else '')
+        str_mro = [str(cls) for cls in ec_toolchain.__class__.__mro__] if hasattr(ec_toolchain, '__class__') else []
+
+    if supported_toolchains == 'CUDA':
+        if any(tc_name.endswith(s) for s in CUDA_TOOLCHAIN_SUFFIXES):
+            return 'CUDA'
+        return None
+
+    if not isinstance(supported_toolchains, list):
+        supported_toolchains = [supported_toolchains]
+
+    supported_versions = [tc[1] for tc in supported_toolchains]
+
+    for sub_tc_name, sub_tc_version in supported_toolchains:
+        try_tc, _ = search_toolchain(sub_tc_name)
+        if try_tc == SystemToolchain or (str(try_tc) in str_mro and tc_version in supported_versions):
+            return (sub_tc_name, sub_tc_version)
+    return None
+
+
+class DepRule:
+    """
+    Rule defining matching conditions and target updates for a dependency.
+
+    Matching parameters:
+      - match_version: Version pattern. Accepts:
+          ANY               -> match any version
+          '3.14.*'          -> prefix/glob match
+          '3.14.2'          -> exact match
+          EasyBuild range strings as used in filter-deps config, e.g.:
+            ':3.42.0]'      -> version <= 3.42.0  (same as '=:3.42.0]')
+            ':3.42.0['      -> version < 3.42.0
+            ']1.0:2.0]'     -> 1.0 < version <= 2.0
+      - match_suffix: Suffix to match (ANY, '', '-mpi', etc.)
+      - match_toolchain: Toolchains to match (e.g. COMPILERS_2026, SYSTEM, 'CUDA', ANY)
+      - exact_toolchain: If True, match_toolchain is matched exactly against the dependency's
+        own toolchain (e.g. match_toolchain=SYSTEM to match deps currently on SYSTEM).
+        If False (default), match_toolchain is checked for compatibility against ec.toolchain.
+
+    Target update parameters:
+      - new_name: Target software name (for renaming / normalization)
+      - new_version: Target version string (None = preserve current dep version)
+      - new_suffix: Target suffix string (None = preserve current dep suffix)
+      - new_toolchain: Target toolchain for dependency:
+          AUTOMATIC (default) -> use resolved compatible toolchain from match_toolchain
+          None                -> strip toolchain (bare (name, version) 2-tuple)
+          tuple               -> assign explicit toolchain tuple, e.g. ('GCCcore', '15.3.0')
+      - drop: Set to True to drop this dependency when matched
+      - message: Optional warning or notification message to print when rule matches
+    """
+    def __init__(
+        self,
+        new_version=None,
+        match_toolchain=ANY,
+        new_toolchain=AUTOMATIC,
+        exact_toolchain=False,
+        match_version=ANY,
+        match_suffix=ANY,
+        new_suffix=None,
+        drop=False,
+        new_name=None,
+        message=None,
+    ):
+        if match_version is None:
+            raise ValueError("match_version cannot be None. Use ANY to match any version.")
+        if match_toolchain is None:
+            raise ValueError("match_toolchain cannot be None. Use ANY to match any toolchain.")
+        if match_suffix is None:
+            raise ValueError("match_suffix cannot be None. Use ANY to match any suffix, or '' for empty suffix.")
+        if new_version == ANY:
+            raise ValueError("new_version cannot be ANY. Use None to preserve the current version.")
+        if new_suffix == ANY:
+            raise ValueError("new_suffix cannot be ANY. Use None to preserve the current suffix.")
+        if new_toolchain not in (AUTOMATIC, None) and not isinstance(new_toolchain, tuple):
+            raise ValueError(f"new_toolchain must be AUTOMATIC, None, or a (name, version) tuple, got: {new_toolchain!r}")
+        self.new_name = new_name
+        self.new_version = new_version
+        self.match_version = _parse_version_spec(match_version)
+        self.match_suffix = match_suffix
+        self.new_suffix = new_suffix
+        self.match_toolchain = match_toolchain
+        self.new_toolchain = new_toolchain
+        self.exact_toolchain = exact_toolchain
+        self.drop = drop
+        self.message = message
+
+    def matches(self, dep_ver, dep_suffix, dep_tc=None, ec=None):
+        if self.match_version != ANY and not _match_version_spec(self.match_version, dep_ver):
+            return False
+
+        if self.match_suffix != ANY and dep_suffix != self.match_suffix:
+            return False
+
+        if self.match_toolchain == ANY:
+            return True
+
+        if self.exact_toolchain:
+            # Exact match against the dependency's current toolchain
+            if _is_system_toolchain(self.match_toolchain):
+                return _is_system_toolchain(dep_tc)
+            if isinstance(self.match_toolchain, list):
+                return dep_tc in self.match_toolchain
+            return dep_tc == self.match_toolchain
+
+        # Compatible match against ec.toolchain (and dep_tc if dep_tc is explicitly non-system)
+        if not _is_system_toolchain(dep_tc):
+            if not get_compatible_toolchain(dep_tc, self.match_toolchain):
+                return False
+
+        if ec is not None:
+            ec_tc = getattr(ec, 'toolchain', None) or (ec.get('toolchain', None) if isinstance(ec, dict) else None)
+            if ec_tc is not None and not get_compatible_toolchain(ec_tc, self.match_toolchain):
+                return False
+
+        return True
+
+
+# Dictionary containing dependency transforms and drop rules
+# Keys: software name
+# Values: DepRule(...) or list of DepRule(...)
+dep_transforms_2026 = {
+    # Normalization: *.Serial aliases resolve to their base name, then re-match remaining rules
+    'Boost.Serial': DepRule(new_name='Boost'),
+    'HDF5.Serial': DepRule(new_name='HDF5'),
+    'netCDF.Serial': DepRule(new_name='netCDF'),
+
+    # Deprecations & special formats: (new_toolchain=None strips the toolchain field to return a 2-tuple)
+    'SciPy-bundle': DepRule(new_name='SciPy-Stack', new_version='2026a', new_toolchain=None),
+    'oldest-supported-numpy': DepRule(
+        new_name='numpy', new_version='2.5.3', new_toolchain=None,
+        message="Dependency on oldest-supported-numpy is now deprecated. Replacing with ('numpy', '2.5.3')",
+    ),
+    'libfabric': DepRule(new_toolchain=None),
+
+    # Packages to drop (not in filter-deps; provided by Gentoo or locally filtered)
+    'ICU': DepRule(drop=True),
+    'libxslt': DepRule(drop=True),
+    'libzip': DepRule(drop=True),
+    'Meson': DepRule(drop=True),
+    'Ninja': DepRule(drop=True),
+    'PyQt5': DepRule(drop=True),
+    'pybind11': DepRule(drop=True),
+    # CUDA: dropped for CUDA-enabled toolchains; upgraded for compiler toolchains
+    'CUDA': [
+        DepRule(match_toolchain='CUDA', drop=True),
+        DepRule(match_version='13.3.1', new_version='13.3', match_toolchain=COMPILERS_2026),
+    ],
+
+    # Simple software upgrades
+    'babel': DepRule(new_version='2.18.0', match_toolchain=SYSTEM),
+    'calibre': DepRule(new_version='9.17.0', match_toolchain=SYSTEM),
+    'CGAL': DepRule(new_version='6.2', match_toolchain=SYSTEM),
+    'CMake': DepRule(new_version='4.4.2', match_toolchain=SYSTEM),
+    'Eigen': DepRule(new_version='5.0.1', match_toolchain=GCCCORE153),
+    'GEOS': DepRule(new_version='3.14.1', match_toolchain=GCCCORE153),
+    'Java': DepRule(new_version='25', match_toolchain=SYSTEM),
+    'libcerf': DepRule(new_version='3.9', match_toolchain=GCCCORE153),
+    'Perl': DepRule(new_version='5.44.0', match_toolchain=GCCCORE153),
+    'PostgreSQL': DepRule(new_version='18.6', match_toolchain=GCCCORE153),
+    'PROJ': DepRule(new_version='9.9.0', match_toolchain=GCCCORE153),
+    'UDUNITS': DepRule(new_version='2.2.28', match_toolchain=GCCCORE153),
+    'Qt5': DepRule(new_version='5.15.19', match_toolchain=GCCCORE153),
+    'Qt6': DepRule(new_version='6.12.0', match_toolchain=GCCCORE153),
+    'R': DepRule(new_version='4.6.1', match_toolchain=('gcccoreflexiblas', '2023a'), exact_toolchain=True, new_toolchain=('gcccoreflexiblas','2026')),
+    'SCOTCH': DepRule(new_version='7.0.13', match_toolchain=cOMPI_2026),
+    'yaml-cpp': DepRule(new_version='0.9.0', match_toolchain=GCCCORE153),
+    'ETSF_IO': DepRule(new_version='1.0.4', match_toolchain=[('iompi', '2026'), ('intel-compilers', '2026.1.0')]),
+
+    # Dual MPI/Serial packages: MPI toolchain gets -mpi, serial compiler gets empty suffix
+    'HDF5': [
+        DepRule(new_version='2.2.0', match_toolchain=cOMPI_2026, new_suffix='-mpi'),
+        DepRule(new_version='2.2.0', match_toolchain=COMPILERS_2026, match_suffix='', new_suffix=''),
+    ],
+    'netCDF': [
+        DepRule(new_version='4.10.1', match_toolchain=cOMPI_2026, new_suffix='-mpi'),
+        DepRule(new_version='4.10.1', match_toolchain=COMPILERS_2026, match_suffix='', new_suffix=''),
+    ],
+    'netCDF-C++4': [
+        DepRule(new_version='4.3.1', match_toolchain=cOMPI_2026, new_suffix='-mpi'),
+        DepRule(new_version='4.3.1', match_toolchain=COMPILERS_2026, match_suffix='', new_suffix=''),
+    ],
+    'netCDF-Fortran': [
+        DepRule(new_version='4.6.4', match_toolchain=cOMPI_2026, new_suffix='-mpi'),
+        DepRule(new_version='4.6.4', match_toolchain=COMPILERS_2026, match_suffix='', new_suffix=''),
+    ],
+
+    # Boost and FFTW
+    'Boost': [
+        DepRule(new_version='1.92.0', match_toolchain=COMPILERS_2026, match_suffix='', new_suffix=''),
+        DepRule(new_version='1.92.0', match_toolchain=GCCCORE153, match_suffix='-core'),
+    ],
+    'Boost.MPI': DepRule(new_version='1.92.0', match_toolchain=cOMPI_2026, match_suffix='', new_suffix=''),
+    'FFTW': DepRule(new_version='3.3.11', match_toolchain=COMPILERS_2026, match_suffix='', new_suffix=''),
+    'FFTW.MPI': DepRule(new_version='3.3.11', match_toolchain=cOMPI_2026, match_suffix='', new_suffix=''),
+
+    # Python packages bumped from SYSTEM to GCCcore (PR #99)
+    'python-build-bundle': [
+        DepRule(match_version='2026a', new_version='2026b', match_toolchain=GCCCORE153),
+        DepRule(match_toolchain=SYSTEM, exact_toolchain=True, new_toolchain=('GCCcore', '15.3.0')),
+    ],
+    'Cython':              DepRule(match_toolchain=SYSTEM, exact_toolchain=True, new_toolchain=('GCCcore', '15.3.0')),
+    'numpy':               DepRule(match_toolchain=SYSTEM, exact_toolchain=True, new_toolchain=('GCCcore', '15.3.0')),
+    'Python': [
+        DepRule(match_version='3.13*', new_version='3.15', match_toolchain=GCCCORE153),
+        DepRule(match_version='3.14.*', new_version='3.14', match_toolchain=GCCCORE153),
+        DepRule(match_version='3.15.*', new_version='3.15', match_toolchain=GCCCORE153),
+        # Catch-all: bump toolchain to GCCcore for SYSTEM-toolchain Python deps
+        DepRule(match_toolchain=SYSTEM, exact_toolchain=True, new_toolchain=('GCCcore', '15.3.0')),
+    ],
+
+    # Version-specific rules
+    'GDRCopy': DepRule(match_version='2.5.2', new_version='2.6', match_toolchain=GCCCORE153 + [('gcccorecuda', '2026')]),
+    'hwloc': DepRule(match_version='2.13.0', new_version='2.14.0', match_toolchain=GCCCORE153),
+    'imkl': DepRule(match_version='2025.3.1', new_version='2026.1.0', match_toolchain=SYSTEM),
+    'intel-compilers': DepRule(match_version='2025.3.3', new_version='2026.1.0', match_toolchain=SYSTEM),
+    'libbeef': DepRule(match_version='0.1.2', new_version='0.1.2', match_toolchain=COMPILERS_2026),
+    'ParaView': DepRule(match_version='6.0.1', new_version='6.1.1', match_toolchain=[('gompi', '2026')]),
+    'UCX': DepRule(match_version='1.20.0', new_version='1.22.0', match_toolchain=GCCCORE153 + [('gcccorecuda', '2026')]),
+    'UCC': DepRule(match_version='1.7.0', new_version='1.8.0', match_toolchain=GCCCORE153 + [('gcccorecuda', '2026')]),
+
+    # Suffix modifications
+    'METIS': DepRule(match_version='5.1.0', match_suffix='', new_version='5.1.0', match_toolchain=GCCCORE153, new_suffix='-64idx'),
+    'NCCL': DepRule(match_version='2.30.4', match_suffix='-CUDA-%(cudaver)s', new_version='2.31.2', match_toolchain=[('gcccorecuda', '2026')], new_suffix=''),
+    'UCX-CUDA': DepRule(match_version='1.20.0', match_suffix='-CUDA-%(cudaver)s', new_version='1.22.0', match_toolchain=[('gcccorecuda', '2026')], new_suffix=''),
+    'UCC-CUDA': DepRule(match_version='1.7.0', match_suffix='-CUDA-%(cudaver)s', new_version='1.8.0', match_toolchain=[('gcccorecuda', '2026')], new_suffix=''),
 }
 
-def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
-    name = ec["name"]
-    version = ec["version"]
-    toolchain_name = ec.toolchain.name
-    new_dep = None
-    if not list_of_deps or not isinstance(list_of_deps[0], tuple): 
-        print("Error, modify_list_of_dependencies did not receive a list of tuples")
-        return
 
-    for n, dep in enumerate(list_of_deps):
-        if isinstance(dep,list): dep = dep[0]
-        dep_name, dep_version, *rest = tuple(dep)
-        dep_version_suffix = rest[0] if len(rest) > 0 else ""
+def update_dependency(dep, ec, rules_dict=dep_transforms_2026):
+    """Normalize and update a single dependency tuple according to rules (returns None if dropped)."""
+    if isinstance(dep, list):
+        dep = dep[0]
 
-        matching_keys = get_matching_keys(dep_name, dep_version, dep_version_suffix, version_mapping)
-        # search through possible matching keys
-        match_found = False
-        new_version = None
-        for key in matching_keys:
-            # Skip dependencies on the same name
-            if name == key or name == key[0]:
-                continue
-            new_version, supported_toolchains, *new_version_suffix = version_mapping[key]
-            new_version_suffix = new_version_suffix[0] if len(new_version_suffix) == 1 else dep_version_suffix
+    dep_name, dep_ver, *rest = dep
+    dep_suffix = rest[0] if len(rest) > 0 else ""
+    dep_tc = rest[1] if len(rest) > 1 else None
 
-            # test if one of the supported toolchains is a subtoolchain of the toolchain with which we are building. If so, a match is found, replace the dependency
-            supported_versions = [tc[1] for tc in supported_toolchains]
-            for tc_name, tc_version in supported_toolchains:
-                try_tc, _ = search_toolchain(tc_name)
-                # for whatever reason, issubclass and class comparison does not work. It is the same class name, but not the same class, so comparing strings
-                str_mro = [str(x) for x in ec.toolchain.__class__.__mro__]
-                if try_tc == SystemToolchain or str(try_tc) in str_mro and ec.toolchain.version in supported_versions:
-                    match_found = True
-                    new_dep = (dep_name, new_version, new_version_suffix, (tc_name, tc_version))
-                    if str(new_dep) != str(dep):
-                        print("%s: Matching updated %s found. Replacing %s with %s" % (ec.filename(), param, str(dep), str(new_dep)))
-                    list_of_deps[n] = new_dep
-                    break
+    # Don't modify self-dependencies
+    if dep_name == ec.name:
+        return dep
 
-            if match_found: break
+    rules = rules_dict.get(dep_name)
+    if not rules:
+        return dep
 
-        if dep_name == 'SciPy-bundle':
-            new_dep = ('SciPy-Stack', '2026a')
-        elif dep_name == 'Boost.Serial':
-            new_dep = ('Boost', dep_version)
-        elif dep_name == 'HDF5.Serial':
-            new_dep = ('HDF5', dep_version)
-        elif dep_name == 'netCDF.Serial':
-            new_dep = ('netCDF', dep_version)
-        elif dep_name == 'libfabric' and new_dep is not None and new_dep[0] == 'libfabric':
-            dep = new_dep
-            new_dep = dep[:2]
-        elif dep_name == 'oldest-supported-numpy':
-            print(f"Dependency on oldest-supported-numpy is now deprecated. Replacing with ('numpy', '2.5.3')")
-            new_dep = ('numpy', '2.5.3')
-		# only match for unspecified toolchains
-        elif dep_name in ['Python', 'python-build-bundle', 'Cython', 'numpy'] and (len(rest) <= 1 or not rest[1]):
-            new_dep = (dep_name, new_version or dep_version, '', ('GCCcore', '15.3.0'))
+    if not isinstance(rules, list):
+        rules = [rules]
+
+    for rule in rules:
+        if not rule.matches(dep_ver, dep_suffix, dep_tc, ec):
+            continue
+
+        if rule.message:
+            print(rule.message)
+
+        if rule.drop:
+            return None
+
+        target_name = rule.new_name if rule.new_name is not None else dep_name
+        target_ver = rule.new_version if rule.new_version is not None else dep_ver
+        target_suffix = rule.new_suffix if rule.new_suffix is not None else dep_suffix
+
+        # Rename-only rules (no version specified, new_toolchain is AUTOMATIC, match_toolchain is ANY): recursively re-match under new name
+        if target_name != dep_name and rule.new_version is None and rule.new_suffix is None and rule.new_toolchain == AUTOMATIC and rule.match_toolchain == ANY:
+            renamed_dep = (target_name, dep_ver) + tuple(rest)
+            return update_dependency(renamed_dep, ec, rules_dict)
+
+        new_dep = [target_name, target_ver]
+        if target_suffix:
+            new_dep.append(target_suffix)
+
+        if rule.new_toolchain is None:
+            target_tc = None
+        elif isinstance(rule.new_toolchain, tuple):
+            target_tc = rule.new_toolchain
+        elif rule.new_toolchain == AUTOMATIC:
+            ec_tc = getattr(ec, 'toolchain', None) or (ec.get('toolchain', None) if isinstance(ec, dict) else None)
+            matching_tc = get_compatible_toolchain(ec_tc, rule.match_toolchain)
+            target_tc = matching_tc if isinstance(matching_tc, tuple) else dep_tc
         else:
-            new_dep = None
-        if new_dep is not None and str(new_dep) != str(dep):
-            list_of_deps[n] = new_dep
-            print("%s: Replacing %s with %s" % (ec.filename(), str(dep), str(new_dep)))
+            raise ValueError(f"Unexpected new_toolchain value: {rule.new_toolchain!r}")
+
+        if target_tc is not None:
+            if len(new_dep) == 2:
+                new_dep.append("")
+            new_dep.append(target_tc)
+
+        return tuple(new_dep)
+
+    return dep
 
 
+def modify_list_of_dependencies(ec, param, dep_transforms, list_of_deps):
+    """Update a list of dependencies (delegates to update_dependency)."""
+    if not list_of_deps or not isinstance(list_of_deps[0], tuple):
+        print("Error, modify_list_of_dependencies did not receive a list of tuples")
+        return list_of_deps
+
+    updated_deps = []
+    for dep in list_of_deps:
+        new_dep = update_dependency(dep, ec, dep_transforms)
+        if new_dep is None:
+            print("%s: Dropped %s, %s from %s" % (ec.filename(), dep[0], dep[1], param))
+        else:
+            if str(new_dep) != str(dep):
+                print("%s: Matching updated %s found. Replacing %s with %s" % (ec.filename(), param, str(dep), str(new_dep)))
+            updated_deps.append(new_dep)
+
+    list_of_deps[:] = updated_deps
     return list_of_deps
 
-def modify_dependencies(ec, param, version_mapping):
-    name = ec["name"]
-    version = ec["version"]
-    toolchain_name = ec.toolchain.name
-    if ec[param] and isinstance(ec[param][0], list) and ec[param][0] and isinstance(ec[param][0][0], tuple):
+
+def modify_dependencies(ec, param, dep_transforms=None):
+    """Update and filter dependencies in ec[param] (supports flat lists and multi_deps lists)."""
+    if not ec.get(param):
+        return
+
+    transforms = dep_transforms if dep_transforms is not None else dep_transforms_2026
+    if isinstance(ec[param][0], list) and ec[param][0] and isinstance(ec[param][0][0], tuple):
         for n, deps in enumerate(ec[param]):
-            ec[param][n] = modify_list_of_dependencies(ec, param, version_mapping, ec[param][n])
-    elif ec[param] and isinstance(ec[param][0], tuple):
-        ec[param] = modify_list_of_dependencies(ec, param, version_mapping, ec[param])
+            ec[param][n] = modify_list_of_dependencies(ec, param, transforms, ec[param][n])
+    elif isinstance(ec[param][0], tuple):
+        ec[param] = modify_list_of_dependencies(ec, param, transforms, ec[param])
 
 
 
@@ -638,48 +900,6 @@ def add_dependencies(ec, keyword):
         if keyword in opts_changes[key]:
             update_opts(ec, opts_changes[key][keyword][0], keyword, opts_changes[key][keyword][1])
 
-def drop_dependencies(ec, param):
-    # dictionary in format <name>:<version under which to drop>
-    to_drop = {
-            'CMake': '3.18.4',
-            'ICU': 'ALL',
-            'libxslt': 'ALL',
-            'libzip': 'ALL',
-            'Meson': 'ALL',
-            'Ninja': 'ALL',
-            'PyQt5': 'ALL',
-            'SQLite': '3.42.0',
-            'pybind11': 'ALL',
-            'git': 'ALL',
-            'CUDA': 'ALL',
-    }
-    # iterate over a copy
-    for dep in ec[param][:]:
-        if isinstance(dep, list):
-            dep_copy = dep[:]
-            for d in dep_copy:
-                name, version = d[0], d[1]
-                if name in to_drop and name != 'CUDA':
-                    if to_drop[name] == 'ALL' or LooseVersion(version) < LooseVersion(to_drop[name]):
-                        print("%s: Dropped %s, %s from %s" % (ec.filename(), name, version, param))
-                        dep.remove(d)
-
-        else:
-            dep_list = list(dep)
-            if dep_list[0] == ec.name:
-                continue
-            if dep_list[0] in to_drop:
-                if to_drop[dep_list[0]] == 'ALL' or LooseVersion(dep_list[1]) < LooseVersion(to_drop[dep_list[0]]):
-                    # special case: drop CUDA dep for easyconfigs with CUDA versionsuffix (we use toolchains instead)
-                    if (dep_list[0] == 'CUDA' and not (
-                            ec['toolchain']['name'].endswith('cuda') or
-                            ec['toolchain']['name'].endswith('mpic') or
-                            ec['toolchain']['name'].endswith('fbc') or
-                            ec['toolchain']['name'].endswith('fbfc'))):
-                        continue
-                    print("%s: Dropped %s, %s from %s" % (ec.filename(), dep_list[0],dep_list[1],param))
-                    ec[param].remove(dep)
-
 
 def is_filtered_ec(ec):
     filter_spec = ec.parse_filter_deps()
@@ -731,10 +951,8 @@ def parse_hook(ec, *args, **kwargs):
                     tcopts[key] = optarch + ' ' + tcopts.get(key, '')
                 tcopts['optarch'] = ''
 
-    modify_dependencies(ec, 'dependencies', new_version_mapping_2026)
-    modify_dependencies(ec, 'builddependencies', new_version_mapping_2026)
-    drop_dependencies(ec, 'dependencies')
-    drop_dependencies(ec, 'builddependencies')
+    modify_dependencies(ec, 'dependencies', dep_transforms_2026)
+    modify_dependencies(ec, 'builddependencies', dep_transforms_2026)
     set_modaltsoftname(ec)
     modify_all_opts(ec, opts_changes, opts_to_change=PARSE_OPTS)
 
