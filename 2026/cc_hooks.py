@@ -223,12 +223,13 @@ new_version_mapping_2026 = {
     'HDF5.Serial': DepRule(new_name='HDF5'),
     'netCDF.Serial': DepRule(new_name='netCDF'),
 
-    # Deprecations: renamed packages with fixed replacement (new_toolchain=False strips the toolchain field)
+    # Deprecations & special formats: (new_toolchain=False strips the toolchain field to return a 2-tuple)
     'SciPy-bundle': DepRule(new_name='SciPy-Stack', new_version='2026a', new_toolchain=False),
     'oldest-supported-numpy': DepRule(
         new_name='numpy', new_version='2.5.3', new_toolchain=False,
         message="Dependency on oldest-supported-numpy is now deprecated. Replacing with ('numpy', '2.5.3')",
     ),
+    'libfabric': DepRule(new_toolchain=False),
 
     # Packages to drop (not in filter-deps; provided by Gentoo or locally filtered)
     'ICU': DepRule(drop=True),
@@ -366,8 +367,6 @@ def update_dependency(dep, ec, rules_dict=new_version_mapping_2026):
         else:
             new_dep = (target_name, target_ver)
 
-        if target_name == 'libfabric':
-            new_dep = new_dep[:2]
         return new_dep
 
     return dep
@@ -863,10 +862,6 @@ def add_dependencies(ec, keyword):
     for key in matching_keys:
         if keyword in opts_changes[key]:
             update_opts(ec, opts_changes[key][keyword][0], keyword, opts_changes[key][keyword][1])
-
-def drop_dependencies(ec, param):
-    """Legacy function retained for backward-compatibility (dropping is handled in modify_dependencies via DepRule(drop=True))."""
-    pass
 
 
 def is_filtered_ec(ec):
