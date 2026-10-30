@@ -85,6 +85,51 @@ def _match_version_spec(spec, version):
                                       filter_deps_specs={_SENTINEL: spec})
 
 
+def get_compatible_toolchain(ec_toolchain, supported_toolchains):
+    """Find the first compatible toolchain in supported_toolchains for ec_toolchain (reproducing main)."""
+    if supported_toolchains in ('ANY', None):
+        return 'ANY'
+    tc_name = getattr(ec_toolchain, 'name', None) or (ec_toolchain.get('name', '') if isinstance(ec_toolchain, dict) else '')
+    tc_version = getattr(ec_toolchain, 'version', None) or (ec_toolchain.get('version', '') if isinstance(ec_toolchain, dict) else '')
+
+    if supported_toolchains == 'CUDA':
+        if any(tc_name.endswith(s) for s in CUDA_TOOLCHAIN_SUFFIXES):
+            return 'CUDA'
+        return None
+
+    if not isinstance(supported_toolchains, list):
+        supported_toolchains = [supported_toolchains]
+
+    supported_versions = [tc[1] for tc in supported_toolchains]
+    str_mro = [str(cls) for cls in ec_toolchain.__class__.__mro__] if hasattr(ec_toolchain, '__class__') else []
+
+    for sub_tc_name, sub_tc_version in supported_toolchains:
+        try_tc, _ = search_toolchain(sub_tc_name)
+        if try_tc == SystemToolchain or (str(try_tc) in str_mro and tc_version in supported_versions):
+            return (sub_tc_name, sub_tc_version)
+    return None
+
+
+def resolve_target_toolchain(ec_toolchain, matching_tc, new_toolchain, dep_tc=None):
+    """Determine the final (tc_name, tc_version) to assign to the dependency."""
+    if new_toolchain is False:
+        return False
+    if isinstance(new_toolchain, tuple):
+        return new_toolchain
+    if isinstance(new_toolchain, list):
+        if len(new_toolchain) == 1:
+            return new_toolchain[0]
+        compat = get_compatible_toolchain(ec_toolchain, new_toolchain)
+        return compat if compat else new_toolchain[0]
+    if isinstance(new_toolchain, str):
+        return (new_toolchain, new_toolchain)
+    if new_toolchain is None:
+        if isinstance(matching_tc, tuple):
+            return matching_tc
+        return dep_tc
+    return new_toolchain
+
+
 class DepRule:
     """
     Rule defining matching conditions and target updates for a dependency.
@@ -161,44 +206,12 @@ class DepRule:
             elif dep_tc != self.match_dep_toolchain:
                 return False
 
-        if self.match_toolchain == 'CUDA':
-            tc_name = ec['toolchain']['name'] if ec else ''
-            if not any(tc_name.endswith(s) for s in CUDA_TOOLCHAIN_SUFFIXES):
+        if ec is not None:
+            ec_tc = getattr(ec, 'toolchain', None) or (ec.get('toolchain', None) if isinstance(ec, dict) else None)
+            if ec_tc is not None and not get_compatible_toolchain(ec_tc, self.match_toolchain):
                 return False
 
         return True
-
-
-def get_compatible_toolchain(ec_toolchain, supported_toolchains):
-    """Find the first compatible toolchain in supported_toolchains for ec_toolchain."""
-    if supported_toolchains in ('ANY', 'CUDA'):
-        return (ec_toolchain.name, ec_toolchain.version)
-    str_mro = [str(cls) for cls in ec_toolchain.__class__.__mro__]
-    for tc_name, tc_version in supported_toolchains:
-        try_tc, _ = search_toolchain(tc_name)
-        if try_tc == SystemToolchain:
-            return (tc_name, tc_version)
-        if str(try_tc) in str_mro and ec_toolchain.version == tc_version:
-            return (tc_name, tc_version)
-    return None
-
-
-def resolve_target_toolchain(ec_toolchain, matching_tc, new_toolchain):
-    """Determine the final (tc_name, tc_version) to assign to the dependency."""
-    if new_toolchain is None:
-        return matching_tc
-    if new_toolchain is False:
-        return False
-    if isinstance(new_toolchain, tuple):
-        return new_toolchain
-    if isinstance(new_toolchain, list):
-        if len(new_toolchain) == 1:
-            return new_toolchain[0]
-        compat = get_compatible_toolchain(ec_toolchain, new_toolchain)
-        return compat if compat else new_toolchain[0]
-    if isinstance(new_toolchain, str):
-        return (new_toolchain, new_toolchain)
-    return new_toolchain
 
 
 # Dictionary containing version mapping and drop rules
@@ -271,14 +284,14 @@ new_version_mapping_2026 = {
     'FFTW.MPI': DepRule(new_version='3.3.11', match_toolchain=cOMPI_2026, match_suffix='', new_suffix=''),
 
     # Python packages bumped from SYSTEM to GCCcore (PR #99)
-    'python-build-bundle': DepRule(match_toolchain=SYSTEM, new_toolchain=GCCCORE153, match_dep_toolchain='SYSTEM'),
-    'Cython':              DepRule(match_toolchain=SYSTEM, new_toolchain=GCCCORE153, match_dep_toolchain='SYSTEM'),
-    'numpy':               DepRule(match_toolchain=SYSTEM, new_toolchain=GCCCORE153, match_dep_toolchain='SYSTEM'),
+    'python-build-bundle': DepRule(match_dep_toolchain='SYSTEM', new_toolchain=GCCCORE153),
+    'Cython':              DepRule(match_dep_toolchain='SYSTEM', new_toolchain=GCCCORE153),
+    'numpy':               DepRule(match_dep_toolchain='SYSTEM', new_toolchain=GCCCORE153),
     'Python': [
-        DepRule(match_version='3.14.*', new_version='3.14', match_toolchain=SYSTEM, new_toolchain=GCCCORE153),
-        DepRule(match_version='3.15.*', new_version='3.15', match_toolchain=SYSTEM, new_toolchain=GCCCORE153),
+        DepRule(match_version='3.14.*', new_version='3.14', match_dep_toolchain='SYSTEM', new_toolchain=GCCCORE153),
+        DepRule(match_version='3.15.*', new_version='3.15', match_dep_toolchain='SYSTEM', new_toolchain=GCCCORE153),
         # Catch-all: bump toolchain to GCCcore even if version is not in 3.14.* or 3.15.*
-        DepRule(match_toolchain=SYSTEM, new_toolchain=GCCCORE153, match_dep_toolchain='SYSTEM'),
+        DepRule(match_dep_toolchain='SYSTEM', new_toolchain=GCCCORE153),
     ],
 
     # Version-specific rules
@@ -341,18 +354,21 @@ def update_dependency(dep, ec, rules_dict=new_version_mapping_2026):
         if rule.new_toolchain is False:
             return (target_name, target_ver)
 
-        matching_tc = get_compatible_toolchain(ec.toolchain, rule.match_toolchain)
-        if matching_tc:
-            target_suffix = rule.new_suffix if rule.new_suffix is not None else dep_suffix
-            target_tc = resolve_target_toolchain(ec.toolchain, matching_tc, rule.new_toolchain)
+        ec_tc = getattr(ec, 'toolchain', None) or (ec.get('toolchain', None) if isinstance(ec, dict) else None)
+        matching_tc = get_compatible_toolchain(ec_tc, rule.match_toolchain)
+        target_suffix = rule.new_suffix if rule.new_suffix is not None else dep_suffix
+        target_tc = resolve_target_toolchain(ec_tc, matching_tc, rule.new_toolchain, dep_tc)
 
+        if target_tc is not None:
             new_dep = (target_name, target_ver, target_suffix, target_tc)
-            if target_name == 'libfabric':
-                new_dep = new_dep[:2]
-            return new_dep
+        elif len(rest) > 0:
+            new_dep = (target_name, target_ver, target_suffix) + tuple(rest[1:])
+        else:
+            new_dep = (target_name, target_ver)
 
-        if target_name != dep_name:
-            return (target_name, target_ver) + tuple(rest)
+        if target_name == 'libfabric':
+            new_dep = new_dep[:2]
+        return new_dep
 
     return dep
 
