@@ -1,4 +1,4 @@
-from easybuild.framework.easyconfig.easyconfig import get_easyblock_class, get_toolchain_hierarchy
+from easybuild.framework.easyconfig.easyconfig import get_easyblock_class, get_toolchain_hierarchy, EasyConfig
 from easybuild.easyblocks.generic.cmakemake import CMakeMake
 from easybuild.easyblocks.generic.cmakeninja import CMakeNinja
 from easybuild.easyblocks.generic.mesonninja import MesonNinja
@@ -39,21 +39,55 @@ cOMPI_2026 = [('iompi', '2026'),('gompi', '2026')]
 CUDA_TOOLCHAIN_SUFFIXES = ('cuda', 'mpic', 'fbc', 'fbfc')
 
 
-def _match_version_pattern(pattern, version):
-    """Match a version string against 'ANY', wildcard '3.14.*', or comparison '<3.18.4'."""
-    if pattern in ('ALL', 'ANY', None):
+def _parse_version_spec(spec):
+    """Parse a version specification string using EasyBuild's parse_version_range.
+
+    Accepts:
+      - 'ANY' / 'ALL' / None  -> always match
+      - EasyBuild range strings: ':3.42.0]', '=:3.42.0]', ']1.0:2.0[', '3.14.0' (exact)
+      - Glob suffix: '3.14.*'  -> prefix match
+
+    Returns either the string as-is (for ANY/glob/exact) or a parsed range dict
+    {lower, upper, excl_lower, excl_upper} as returned by parse_version_range.
+    """
+    if spec in ('ALL', 'ANY', None):
+        return spec
+    if spec.endswith('*'):
+        return spec  # glob kept as-is
+    if ':' in spec:
+        return EasyConfig.parse_version_range(None, spec)
+    return spec  # exact version string
+
+
+def _match_version_spec(spec, version):
+    """Match a version string against a parsed version spec.
+
+    spec may be:
+      - 'ANY' / 'ALL' / None  -> always True
+      - a glob string ending with '*' (e.g. '3.14.*')
+      - an exact version string (e.g. '3.14.0')
+      - a range dict {lower, upper, excl_lower, excl_upper} from _parse_version_spec
+    """
+    if spec in ('ALL', 'ANY', None):
         return True
-    if pattern.startswith('<='):
-        return LooseVersion(version) <= LooseVersion(pattern[2:].strip())
-    if pattern.startswith('<'):
-        return LooseVersion(version) < LooseVersion(pattern[1:].strip())
-    if pattern.startswith('>='):
-        return LooseVersion(version) >= LooseVersion(pattern[2:].strip())
-    if pattern.startswith('>'):
-        return LooseVersion(version) > LooseVersion(pattern[1:].strip())
-    if pattern.endswith('*'):
-        return version.startswith(pattern[:-1])
-    return version == pattern
+    if isinstance(spec, str):
+        if spec.endswith('*'):
+            return version.startswith(spec[:-1])
+        return version == spec
+    # EasyBuild range dict
+    v = LooseVersion(version)
+    lower = LooseVersion(spec['lower']) if spec.get('lower') else None
+    upper = LooseVersion(spec['upper']) if spec.get('upper') else None
+    if spec.get('always_filter'):
+        return True
+    match = True
+    if lower:
+        if v < lower or (spec['excl_lower'] and v == lower):
+            match = False
+    if upper:
+        if v > upper or (spec['excl_upper'] and v == upper):
+            match = False
+    return match
 
 
 class DepRule:
@@ -61,7 +95,14 @@ class DepRule:
     Rule defining matching conditions and target updates for a dependency.
 
     Matching parameters:
-      - match_version (or match_ver): Version pattern ('ANY', '3.14.*', '<3.42.0', '2.5.2', etc.)
+      - match_version (or match_ver): Version pattern. Accepts:
+          'ANY'             -> match any version
+          '3.14.*'          -> prefix/glob match
+          '3.14.2'          -> exact match
+          EasyBuild range strings as used in filter-deps config, e.g.:
+            ':3.42.0]'      -> version <= 3.42.0  (same as '=:3.42.0]')
+            ':3.42.0['      -> version < 3.42.0
+            ']1.0:2.0]'     -> 1.0 < version <= 2.0
       - match_suffix: Suffix to match ('ANY', '', '-mpi', etc.)
       - match_toolchain: Toolchains compatible with ec.toolchain (e.g. COMPILERS_2026, SYSTEM, 'CUDA', 'ANY')
       - match_dep_toolchain: Filter on dependency's current toolchain ('ANY', 'SYSTEM', 'NONE')
@@ -92,7 +133,8 @@ class DepRule:
     ):
         self.new_name = new_name
         self.new_version = new_version if new_version is not None else new_ver
-        self.match_version = match_ver if match_ver is not None else match_version
+        raw_match_version = match_ver if match_ver is not None else match_version
+        self.match_version = _parse_version_spec(raw_match_version)
         self.match_suffix = match_suffix
         self.new_suffix = new_suffix
         self.match_toolchain = match_toolchain
@@ -102,7 +144,7 @@ class DepRule:
         self.message = message
 
     def matches(self, dep_ver, dep_suffix, dep_tc=None, ec=None):
-        if not _match_version_pattern(self.match_version, dep_ver):
+        if not _match_version_spec(self.match_version, dep_ver):
             return False
 
         if self.match_suffix != 'ANY' and dep_suffix != self.match_suffix:
@@ -180,7 +222,7 @@ new_version_mapping_2026 = {
         message="Dependency on oldest-supported-numpy is now deprecated. Replacing with ('numpy', '2.5.3')",
     ),
 
-    # Packages to drop (provided by Gentoo or filtered)
+    # Packages to drop (not in filter-deps; provided by Gentoo or locally filtered)
     'ICU': DepRule(drop=True),
     'libxslt': DepRule(drop=True),
     'libzip': DepRule(drop=True),
@@ -188,8 +230,6 @@ new_version_mapping_2026 = {
     'Ninja': DepRule(drop=True),
     'PyQt5': DepRule(drop=True),
     'pybind11': DepRule(drop=True),
-    'git': DepRule(drop=True),
-    'SQLite': DepRule(match_version='<3.42.0', drop=True),
     # CUDA: dropped for CUDA-enabled toolchains; upgraded for compiler toolchains
     'CUDA': [
         DepRule(match_toolchain='CUDA', drop=True),
