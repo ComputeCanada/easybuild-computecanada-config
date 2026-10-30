@@ -49,8 +49,10 @@ cOMPI_2026 = [('iompi', '2026'),('gompi', '2026')]
 # - (new software version, list of compatible toolchains)
 # - (new software version, list of compatible toolchains, None)
 new_version_mapping_2026 = {
+        'babel': ('2.18.0', SYSTEM),
         ('Boost', 'ANY', ''): ('1.92.0', COMPILERS_2026),
         ('Boost.MPI','ANY', ''): ('1.92.0', cOMPI_2026),
+        'calibre': ('9.17.0', SYSTEM),
         ('CUDA', '13.3.1'): ('13.3', COMPILERS_2026),
         'CGAL': ('6.2', SYSTEM),
         'CMake': ('4.4.2', SYSTEM),
@@ -84,8 +86,10 @@ new_version_mapping_2026 = {
         'Perl': ('5.44.0', GCCCORE153),
         'PROJ': ('9.9.0', GCCCORE153),
         'UDUNITS': ('2.2.28', GCCCORE153),
+        ('python-build-bundle', '2026a'): ('2026b', SYSTEM),
         **dict.fromkeys([('Python', '3.14.%s' % str(x)) for x in range(0,8)], ('3.14', GCCCORE153)),
         **dict.fromkeys([('Python', '3.15.%s' % str(x)) for x in range(0,7)], ('3.15', GCCCORE153)),
+        ('Python', '3.13'): ('3.15', SYSTEM),
         'Qt5': ('5.15.19', GCCCORE153),
         'Qt6': ('6.12.0', GCCCORE153),
         'SCOTCH': ('7.0.13', cOMPI_2026, None),
