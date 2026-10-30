@@ -402,9 +402,9 @@ end
         'dependencies': ([], REPLACE),
     },
     'mpi4py': {
-        'builddependencies': ([[('Python', v), ('Cython', '3.3.0')] for v in ['3.14'] ], REPLACE),
+        'builddependencies': ([[('Python', v), ('Cython', '3.3.0')] for v in ['3.14', '3.15'] ], REPLACE),
         'dependencies': ([], REPLACE),
-        'multi_deps': ({'Python': ['3.14'] }, REPLACE),
+        'multi_deps': ({'Python': ['3.14', '3.15'] }, REPLACE),
     },
     'Nextflow': {
         'postinstallcmds': (['sed -i -e "s/cli=(\\$(/cli=(\\$(export NFX_OPTS=\\$JAVA_TOOL_OPTIONS; unset JAVA_TOOL_OPTIONS; /g" %(installdir)s/bin/nextflow'], APPEND_LIST),
