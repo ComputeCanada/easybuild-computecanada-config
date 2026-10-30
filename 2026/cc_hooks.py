@@ -52,6 +52,7 @@ new_version_mapping_2026 = {
         'babel': ('2.18.0', SYSTEM),
         ('Boost', 'ANY', ''): ('1.92.0', COMPILERS_2026),
         ('Boost.MPI','ANY', ''): ('1.92.0', cOMPI_2026),
+        ('Boost', 'ANY', '-core'): ('1.92.0', GCCCORE153, '-core'),
         'calibre': ('9.17.0', SYSTEM),
         ('CUDA', '13.3.1'): ('13.3', COMPILERS_2026),
         'CGAL': ('6.2', SYSTEM),
