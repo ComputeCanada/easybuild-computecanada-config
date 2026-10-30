@@ -38,6 +38,7 @@ cOMPI_2026 = [('iompi', '2026'),('gompi', '2026')]
 
 CUDA_TOOLCHAIN_SUFFIXES = ('cuda', 'mpic', 'fbc', 'fbfc')
 AUTOMATIC = 'AUTOMATIC'
+ANY = 'ANY'
 
 
 def _is_system_toolchain(tc):
@@ -57,15 +58,17 @@ def _parse_version_spec(spec):
     """Parse a version specification string using EasyBuild's parse_version_range.
 
     Accepts:
-      - 'ANY' / 'ALL' / None  -> always match
+      - ANY                   -> always match
       - EasyBuild range strings: ':3.42.0]', ']1.0:2.0[', '3.14.0' (exact)
       - Glob suffix: '3.14.*'  -> prefix match (not a range, handled separately)
 
-    Returns either the string as-is (for ANY/glob/exact) or a parsed range dict
+    Returns either ANY, the string as-is (for glob/exact), or a parsed range dict
     {lower, upper, excl_lower, excl_upper} as returned by parse_version_range.
     """
-    if spec in ('ALL', 'ANY', None):
-        return spec
+    if spec == ANY:
+        return ANY
+    if spec is None:
+        raise ValueError("Version spec cannot be None. Use ANY to match any version.")
     if spec.endswith('*'):
         return spec  # glob kept as-is
     if ':' in spec:
@@ -77,7 +80,7 @@ def _match_version_spec(spec, version):
     """Match a version string against a parsed version spec.
 
     spec may be:
-      - 'ANY' / 'ALL' / None  -> always True
+      - ANY -> always True
       - a glob string ending with '*' (e.g. '3.14.*')
       - an exact version string (e.g. '3.14.0')
       - a range dict from _parse_version_spec / EasyConfig.parse_version_range
@@ -85,8 +88,10 @@ def _match_version_spec(spec, version):
     For range dicts, delegates directly to EasyConfig.dep_is_filtered so the
     comparison logic is not reimplemented here.
     """
-    if spec in ('ALL', 'ANY', None):
+    if spec == ANY:
         return True
+    if spec is None:
+        return False
     if isinstance(spec, str):
         if spec.endswith('*'):
             return version.startswith(spec[:-1])
@@ -101,8 +106,10 @@ def _match_version_spec(spec, version):
 
 def get_compatible_toolchain(ec_toolchain, supported_toolchains):
     """Find the first compatible toolchain in supported_toolchains for ec_toolchain (reproducing main)."""
-    if supported_toolchains in ('ANY', None):
-        return 'ANY'
+    if supported_toolchains == ANY:
+        return ANY
+    if supported_toolchains is None:
+        return None
 
     if isinstance(ec_toolchain, tuple) and len(ec_toolchain) >= 2:
         tc_name, tc_version = ec_toolchain[0], ec_toolchain[1]
@@ -135,23 +142,23 @@ class DepRule:
     Rule defining matching conditions and target updates for a dependency.
 
     Matching parameters:
-      - match_version (or match_ver): Version pattern. Accepts:
-          'ANY'             -> match any version
+      - match_version: Version pattern. Accepts:
+          ANY               -> match any version
           '3.14.*'          -> prefix/glob match
           '3.14.2'          -> exact match
           EasyBuild range strings as used in filter-deps config, e.g.:
             ':3.42.0]'      -> version <= 3.42.0  (same as '=:3.42.0]')
             ':3.42.0['      -> version < 3.42.0
             ']1.0:2.0]'     -> 1.0 < version <= 2.0
-      - match_suffix: Suffix to match ('ANY', '', '-mpi', etc.)
-      - match_toolchain: Toolchains to match (e.g. COMPILERS_2026, SYSTEM, 'CUDA', 'ANY')
+      - match_suffix: Suffix to match (ANY, '', '-mpi', etc.)
+      - match_toolchain: Toolchains to match (e.g. COMPILERS_2026, SYSTEM, 'CUDA', ANY)
       - exact_toolchain: If True, match_toolchain is matched exactly against the dependency's
         own toolchain (e.g. match_toolchain=SYSTEM to match deps currently on SYSTEM).
         If False (default), match_toolchain is checked for compatibility against ec.toolchain.
 
     Target update parameters:
       - new_name: Target software name (for renaming / normalization)
-      - new_version (or new_ver): Target version string (None = preserve current dep version)
+      - new_version: Target version string (None = preserve current dep version)
       - new_suffix: Target suffix string (None = preserve current dep suffix)
       - new_toolchain: Target toolchain for dependency:
           AUTOMATIC (default) -> use resolved compatible toolchain from match_toolchain
@@ -163,25 +170,31 @@ class DepRule:
     def __init__(
         self,
         new_version=None,
-        match_toolchain='ANY',
+        match_toolchain=ANY,
         new_toolchain=AUTOMATIC,
         exact_toolchain=False,
-        match_version='ANY',
-        match_suffix='ANY',
+        match_version=ANY,
+        match_suffix=ANY,
         new_suffix=None,
         drop=False,
         new_name=None,
         message=None,
-        # Optional shortcuts
-        new_ver=None,
-        match_ver=None,
     ):
+        if match_version is None:
+            raise ValueError("match_version cannot be None. Use ANY to match any version.")
+        if match_toolchain is None:
+            raise ValueError("match_toolchain cannot be None. Use ANY to match any toolchain.")
+        if match_suffix is None:
+            raise ValueError("match_suffix cannot be None. Use ANY to match any suffix, or '' for empty suffix.")
+        if new_version == ANY:
+            raise ValueError("new_version cannot be ANY. Use None to preserve the current version.")
+        if new_suffix == ANY:
+            raise ValueError("new_suffix cannot be ANY. Use None to preserve the current suffix.")
         if new_toolchain not in (AUTOMATIC, None) and not isinstance(new_toolchain, tuple):
             raise ValueError(f"new_toolchain must be AUTOMATIC, None, or a (name, version) tuple, got: {new_toolchain!r}")
         self.new_name = new_name
-        self.new_version = new_version if new_version is not None else new_ver
-        raw_match_version = match_ver if match_ver is not None else match_version
-        self.match_version = _parse_version_spec(raw_match_version)
+        self.new_version = new_version
+        self.match_version = _parse_version_spec(match_version)
         self.match_suffix = match_suffix
         self.new_suffix = new_suffix
         self.match_toolchain = match_toolchain
@@ -191,13 +204,13 @@ class DepRule:
         self.message = message
 
     def matches(self, dep_ver, dep_suffix, dep_tc=None, ec=None):
-        if not _match_version_spec(self.match_version, dep_ver):
+        if self.match_version != ANY and not _match_version_spec(self.match_version, dep_ver):
             return False
 
-        if self.match_suffix != 'ANY' and dep_suffix != self.match_suffix:
+        if self.match_suffix != ANY and dep_suffix != self.match_suffix:
             return False
 
-        if self.match_toolchain in ('ANY', None):
+        if self.match_toolchain == ANY:
             return True
 
         if self.exact_toolchain:
@@ -366,8 +379,8 @@ def update_dependency(dep, ec, rules_dict=dep_transforms_2026):
         target_ver = rule.new_version if rule.new_version is not None else dep_ver
         target_suffix = rule.new_suffix if rule.new_suffix is not None else dep_suffix
 
-        # Rename-only rules (no version specified, new_toolchain is AUTOMATIC, match_toolchain is 'ANY'): recursively re-match under new name
-        if target_name != dep_name and rule.new_version is None and rule.new_suffix is None and rule.new_toolchain == AUTOMATIC and rule.match_toolchain == 'ANY':
+        # Rename-only rules (no version specified, new_toolchain is AUTOMATIC, match_toolchain is ANY): recursively re-match under new name
+        if target_name != dep_name and rule.new_version is None and rule.new_suffix is None and rule.new_toolchain == AUTOMATIC and rule.match_toolchain == ANY:
             renamed_dep = (target_name, dep_ver) + tuple(rest)
             return update_dependency(renamed_dep, ec, rules_dict)
 
