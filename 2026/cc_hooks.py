@@ -37,6 +37,19 @@ COMPILERS_2026 = [ICC2026[0], GCC153[0]]
 cOMPI_2026 = [('iompi', '2026'),('gompi', '2026')]
 
 CUDA_TOOLCHAIN_SUFFIXES = ('cuda', 'mpic', 'fbc', 'fbfc')
+AUTOMATIC = 'AUTOMATIC'
+
+
+def _is_system_toolchain(tc):
+    """Check if a toolchain specification represents a system / unassigned toolchain."""
+    return (
+        tc is None or
+        tc is True or
+        tc == 'system' or
+        tc == ('system', 'system') or
+        tc == [('system', 'system')] or
+        tc == SYSTEM
+    )
 
 
 def _parse_version_spec(spec):
@@ -89,8 +102,15 @@ def get_compatible_toolchain(ec_toolchain, supported_toolchains):
     """Find the first compatible toolchain in supported_toolchains for ec_toolchain (reproducing main)."""
     if supported_toolchains in ('ANY', None):
         return 'ANY'
-    tc_name = getattr(ec_toolchain, 'name', None) or (ec_toolchain.get('name', '') if isinstance(ec_toolchain, dict) else '')
-    tc_version = getattr(ec_toolchain, 'version', None) or (ec_toolchain.get('version', '') if isinstance(ec_toolchain, dict) else '')
+
+    if isinstance(ec_toolchain, tuple) and len(ec_toolchain) >= 2:
+        tc_name, tc_version = ec_toolchain[0], ec_toolchain[1]
+        try_tc_cls, _ = search_toolchain(tc_name)
+        str_mro = [str(cls) for cls in try_tc_cls.__class__.__mro__] if try_tc_cls else []
+    else:
+        tc_name = getattr(ec_toolchain, 'name', None) or (ec_toolchain.get('name', '') if isinstance(ec_toolchain, dict) else '')
+        tc_version = getattr(ec_toolchain, 'version', None) or (ec_toolchain.get('version', '') if isinstance(ec_toolchain, dict) else '')
+        str_mro = [str(cls) for cls in ec_toolchain.__class__.__mro__] if hasattr(ec_toolchain, '__class__') else []
 
     if supported_toolchains == 'CUDA':
         if any(tc_name.endswith(s) for s in CUDA_TOOLCHAIN_SUFFIXES):
@@ -101,7 +121,6 @@ def get_compatible_toolchain(ec_toolchain, supported_toolchains):
         supported_toolchains = [supported_toolchains]
 
     supported_versions = [tc[1] for tc in supported_toolchains]
-    str_mro = [str(cls) for cls in ec_toolchain.__class__.__mro__] if hasattr(ec_toolchain, '__class__') else []
 
     for sub_tc_name, sub_tc_version in supported_toolchains:
         try_tc, _ = search_toolchain(sub_tc_name)
@@ -111,9 +130,19 @@ def get_compatible_toolchain(ec_toolchain, supported_toolchains):
 
 
 def resolve_target_toolchain(ec_toolchain, matching_tc, new_toolchain, dep_tc=None):
-    """Determine the final (tc_name, tc_version) to assign to the dependency."""
-    if new_toolchain is False:
-        return False
+    """Determine the final (tc_name, tc_version) to assign to the dependency.
+
+    new_toolchain can be:
+      - None: strip toolchain (return None -> dependency becomes 2-tuple)
+      - AUTOMATIC: use resolved matching_tc from match_toolchain (or keep dep_tc if match_toolchain is 'ANY'/'CUDA')
+      - A toolchain tuple (tc_name, tc_version) or list of tuples: use that explicit toolchain
+    """
+    if new_toolchain is None:
+        return None
+    if new_toolchain == AUTOMATIC:
+        if isinstance(matching_tc, tuple):
+            return matching_tc
+        return dep_tc
     if isinstance(new_toolchain, tuple):
         return new_toolchain
     if isinstance(new_toolchain, list):
@@ -123,10 +152,6 @@ def resolve_target_toolchain(ec_toolchain, matching_tc, new_toolchain, dep_tc=No
         return compat if compat else new_toolchain[0]
     if isinstance(new_toolchain, str):
         return (new_toolchain, new_toolchain)
-    if new_toolchain is None:
-        if isinstance(matching_tc, tuple):
-            return matching_tc
-        return dep_tc
     return new_toolchain
 
 
@@ -144,14 +169,19 @@ class DepRule:
             ':3.42.0['      -> version < 3.42.0
             ']1.0:2.0]'     -> 1.0 < version <= 2.0
       - match_suffix: Suffix to match ('ANY', '', '-mpi', etc.)
-      - match_toolchain: Toolchains compatible with ec.toolchain (e.g. COMPILERS_2026, SYSTEM, 'CUDA', 'ANY')
-      - match_dep_toolchain: Filter on dependency's current toolchain ('ANY', 'SYSTEM', 'NONE')
+      - match_toolchain: Toolchains to match (e.g. COMPILERS_2026, SYSTEM, 'CUDA', 'ANY')
+      - exact_toolchain: If True, match_toolchain is matched exactly against the dependency's
+        own toolchain (e.g. match_toolchain=SYSTEM to match deps currently on SYSTEM).
+        If False (default), match_toolchain is checked for compatibility against ec.toolchain.
 
     Target update parameters:
       - new_name: Target software name (for renaming / normalization)
       - new_version (or new_ver): Target version string (None = preserve current dep version)
       - new_suffix: Target suffix string (None = preserve current dep suffix)
-      - new_toolchain: Target toolchain for dependency (None = use resolved match_toolchain, False = strip toolchain)
+      - new_toolchain: Target toolchain for dependency:
+          AUTOMATIC (default) -> use resolved compatible toolchain from match_toolchain
+          None                -> strip toolchain (bare (name, version) 2-tuple)
+          tuple or list       -> assign explicit toolchain (e.g. GCCCORE153)
       - drop: Set to True to drop this dependency when matched
       - message: Optional warning or notification message to print when rule matches
     """
@@ -159,11 +189,11 @@ class DepRule:
         self,
         new_version=None,
         match_toolchain='ANY',
-        new_toolchain=None,
+        new_toolchain=AUTOMATIC,
+        exact_toolchain=False,
         match_version='ANY',
         match_suffix='ANY',
         new_suffix=None,
-        match_dep_toolchain='ANY',
         drop=False,
         new_name=None,
         message=None,
@@ -179,7 +209,7 @@ class DepRule:
         self.new_suffix = new_suffix
         self.match_toolchain = match_toolchain
         self.new_toolchain = new_toolchain
-        self.match_dep_toolchain = match_dep_toolchain
+        self.exact_toolchain = exact_toolchain
         self.drop = drop
         self.message = message
 
@@ -190,20 +220,20 @@ class DepRule:
         if self.match_suffix != 'ANY' and dep_suffix != self.match_suffix:
             return False
 
-        if self.match_dep_toolchain != 'ANY':
-            is_none_or_system = (
-                dep_tc is None or
-                dep_tc is True or
-                dep_tc == ('system', 'system') or
-                dep_tc == [('system', 'system')]
-            )
-            if self.match_dep_toolchain in (None, 'NONE'):
-                if not (dep_tc is None or dep_tc is True):
-                    return False
-            elif self.match_dep_toolchain in ('SYSTEM', SYSTEM):
-                if not is_none_or_system:
-                    return False
-            elif dep_tc != self.match_dep_toolchain:
+        if self.match_toolchain in ('ANY', None):
+            return True
+
+        if self.exact_toolchain:
+            # Exact match against the dependency's current toolchain
+            if self.match_toolchain in ('SYSTEM', SYSTEM):
+                return _is_system_toolchain(dep_tc)
+            if isinstance(self.match_toolchain, list):
+                return dep_tc in self.match_toolchain
+            return dep_tc == self.match_toolchain
+
+        # Compatible match against ec.toolchain (and dep_tc if dep_tc is explicitly non-system)
+        if not _is_system_toolchain(dep_tc):
+            if not get_compatible_toolchain(dep_tc, self.match_toolchain):
                 return False
 
         if ec is not None:
@@ -223,13 +253,13 @@ new_version_mapping_2026 = {
     'HDF5.Serial': DepRule(new_name='HDF5'),
     'netCDF.Serial': DepRule(new_name='netCDF'),
 
-    # Deprecations & special formats: (new_toolchain=False strips the toolchain field to return a 2-tuple)
-    'SciPy-bundle': DepRule(new_name='SciPy-Stack', new_version='2026a', new_toolchain=False),
+    # Deprecations & special formats: (new_toolchain=None strips the toolchain field to return a 2-tuple)
+    'SciPy-bundle': DepRule(new_name='SciPy-Stack', new_version='2026a', new_toolchain=None),
     'oldest-supported-numpy': DepRule(
-        new_name='numpy', new_version='2.5.3', new_toolchain=False,
+        new_name='numpy', new_version='2.5.3', new_toolchain=None,
         message="Dependency on oldest-supported-numpy is now deprecated. Replacing with ('numpy', '2.5.3')",
     ),
-    'libfabric': DepRule(new_toolchain=False),
+    'libfabric': DepRule(new_toolchain=None),
 
     # Packages to drop (not in filter-deps; provided by Gentoo or locally filtered)
     'ICU': DepRule(drop=True),
@@ -285,14 +315,14 @@ new_version_mapping_2026 = {
     'FFTW.MPI': DepRule(new_version='3.3.11', match_toolchain=cOMPI_2026, match_suffix='', new_suffix=''),
 
     # Python packages bumped from SYSTEM to GCCcore (PR #99)
-    'python-build-bundle': DepRule(match_dep_toolchain='SYSTEM', new_toolchain=GCCCORE153),
-    'Cython':              DepRule(match_dep_toolchain='SYSTEM', new_toolchain=GCCCORE153),
-    'numpy':               DepRule(match_dep_toolchain='SYSTEM', new_toolchain=GCCCORE153),
+    'python-build-bundle': DepRule(match_toolchain=SYSTEM, exact_toolchain=True, new_toolchain=GCCCORE153),
+    'Cython':              DepRule(match_toolchain=SYSTEM, exact_toolchain=True, new_toolchain=GCCCORE153),
+    'numpy':               DepRule(match_toolchain=SYSTEM, exact_toolchain=True, new_toolchain=GCCCORE153),
     'Python': [
-        DepRule(match_version='3.14.*', new_version='3.14', match_dep_toolchain='SYSTEM', new_toolchain=GCCCORE153),
-        DepRule(match_version='3.15.*', new_version='3.15', match_dep_toolchain='SYSTEM', new_toolchain=GCCCORE153),
-        # Catch-all: bump toolchain to GCCcore even if version is not in 3.14.* or 3.15.*
-        DepRule(match_dep_toolchain='SYSTEM', new_toolchain=GCCCORE153),
+        DepRule(match_version='3.14.*', new_version='3.14', match_toolchain=GCCCORE153),
+        DepRule(match_version='3.15.*', new_version='3.15', match_toolchain=GCCCORE153),
+        # Catch-all: bump toolchain to GCCcore for SYSTEM-toolchain Python deps
+        DepRule(match_toolchain=SYSTEM, exact_toolchain=True, new_toolchain=GCCCORE153),
     ],
 
     # Version-specific rules
@@ -346,13 +376,13 @@ def update_dependency(dep, ec, rules_dict=new_version_mapping_2026):
         target_name = rule.new_name if rule.new_name is not None else dep_name
         target_ver = rule.new_version if rule.new_version is not None else dep_ver
 
-        # Rename-only rules (no version/toolchain specified): recursively re-match under new name
-        if target_name != dep_name and rule.new_version is None and rule.new_toolchain is None and rule.match_toolchain == 'ANY':
+        # Rename-only rules (no version specified, new_toolchain is AUTOMATIC, match_toolchain is 'ANY'): recursively re-match under new name
+        if target_name != dep_name and rule.new_version is None and rule.new_toolchain == AUTOMATIC and rule.match_toolchain == 'ANY':
             renamed_dep = (target_name, dep_ver) + tuple(rest)
             return update_dependency(renamed_dep, ec, rules_dict)
 
-        # new_toolchain=False means strip toolchain from the result (return bare (name, ver) tuple)
-        if rule.new_toolchain is False:
+        # new_toolchain=None means strip toolchain from the result (return bare (name, ver) tuple)
+        if rule.new_toolchain is None:
             return (target_name, target_ver)
 
         ec_tc = getattr(ec, 'toolchain', None) or (ec.get('toolchain', None) if isinstance(ec, dict) else None)
