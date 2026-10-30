@@ -253,6 +253,8 @@ dep_transforms_2026 = {
     ],
 
     # Simple software upgrades
+    'babel': DepRule(new_version='2.18.0', match_toolchain=SYSTEM),
+    'calibre': DepRule(new_version='9.17.0', match_toolchain=SYSTEM),
     'CGAL': DepRule(new_version='6.2', match_toolchain=SYSTEM),
     'CMake': DepRule(new_version='4.4.2', match_toolchain=SYSTEM),
     'Eigen': DepRule(new_version='5.0.1', match_toolchain=GCCCORE153),
@@ -260,6 +262,7 @@ dep_transforms_2026 = {
     'Java': DepRule(new_version='25', match_toolchain=SYSTEM),
     'libcerf': DepRule(new_version='3.9', match_toolchain=GCCCORE153),
     'Perl': DepRule(new_version='5.44.0', match_toolchain=GCCCORE153),
+    'PostgreSQL': DepRule(new_version='18.6', match_toolchain=GCCCORE153),
     'PROJ': DepRule(new_version='9.9.0', match_toolchain=GCCCORE153),
     'UDUNITS': DepRule(new_version='2.2.28', match_toolchain=GCCCORE153),
     'Qt5': DepRule(new_version='5.15.19', match_toolchain=GCCCORE153),
@@ -286,16 +289,23 @@ dep_transforms_2026 = {
     ],
 
     # Boost and FFTW
-    'Boost': DepRule(new_version='1.92.0', match_toolchain=COMPILERS_2026, match_suffix='', new_suffix=''),
+    'Boost': [
+        DepRule(new_version='1.92.0', match_toolchain=COMPILERS_2026, match_suffix='', new_suffix=''),
+        DepRule(new_version='1.92.0', match_toolchain=GCCCORE153, match_suffix='-core'),
+    ],
     'Boost.MPI': DepRule(new_version='1.92.0', match_toolchain=cOMPI_2026, match_suffix='', new_suffix=''),
     'FFTW': DepRule(new_version='3.3.11', match_toolchain=COMPILERS_2026, match_suffix='', new_suffix=''),
     'FFTW.MPI': DepRule(new_version='3.3.11', match_toolchain=cOMPI_2026, match_suffix='', new_suffix=''),
 
     # Python packages bumped from SYSTEM to GCCcore (PR #99)
-    'python-build-bundle': DepRule(match_toolchain=SYSTEM, exact_toolchain=True, new_toolchain=('GCCcore', '15.3.0')),
+    'python-build-bundle': [
+        DepRule(match_version='2026a', new_version='2026b', match_toolchain=GCCCORE153),
+        DepRule(match_toolchain=SYSTEM, exact_toolchain=True, new_toolchain=('GCCcore', '15.3.0')),
+    ],
     'Cython':              DepRule(match_toolchain=SYSTEM, exact_toolchain=True, new_toolchain=('GCCcore', '15.3.0')),
     'numpy':               DepRule(match_toolchain=SYSTEM, exact_toolchain=True, new_toolchain=('GCCcore', '15.3.0')),
     'Python': [
+        DepRule(match_version='3.13*', new_version='3.15', match_toolchain=GCCCORE153),
         DepRule(match_version='3.14.*', new_version='3.14', match_toolchain=GCCCORE153),
         DepRule(match_version='3.15.*', new_version='3.15', match_toolchain=GCCCORE153),
         # Catch-all: bump toolchain to GCCcore for SYSTEM-toolchain Python deps
