@@ -48,6 +48,7 @@ def _is_system_toolchain(tc):
         tc == 'system' or
         tc == ('system', 'system') or
         tc == [('system', 'system')] or
+        tc == 'SYSTEM' or
         tc == SYSTEM
     )
 
@@ -201,7 +202,7 @@ class DepRule:
 
         if self.exact_toolchain:
             # Exact match against the dependency's current toolchain
-            if self.match_toolchain in ('SYSTEM', SYSTEM):
+            if _is_system_toolchain(self.match_toolchain):
                 return _is_system_toolchain(dep_tc)
             if isinstance(self.match_toolchain, list):
                 return dep_tc in self.match_toolchain
