@@ -150,6 +150,7 @@ def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
         elif dep_name == 'oldest-supported-numpy':
             print(f"Dependency on oldest-supported-numpy is now deprecated. Replacing with ('numpy', '2.5.3')")
             new_dep = ('numpy', '2.5.3')
+		# only match for unspecified toolchains
         elif dep_name in ['Python', 'python-build-bundle', 'Cython', 'numpy'] and (len(rest) <= 1 or not rest[1]):
             new_dep = (dep_name, new_version or dep_version, '', ('GCCcore', '15.3.0'))
         else:
