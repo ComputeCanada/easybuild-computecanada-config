@@ -44,8 +44,8 @@ def _parse_version_spec(spec):
 
     Accepts:
       - 'ANY' / 'ALL' / None  -> always match
-      - EasyBuild range strings: ':3.42.0]', '=:3.42.0]', ']1.0:2.0[', '3.14.0' (exact)
-      - Glob suffix: '3.14.*'  -> prefix match
+      - EasyBuild range strings: ':3.42.0]', ']1.0:2.0[', '3.14.0' (exact)
+      - Glob suffix: '3.14.*'  -> prefix match (not a range, handled separately)
 
     Returns either the string as-is (for ANY/glob/exact) or a parsed range dict
     {lower, upper, excl_lower, excl_upper} as returned by parse_version_range.
@@ -66,7 +66,10 @@ def _match_version_spec(spec, version):
       - 'ANY' / 'ALL' / None  -> always True
       - a glob string ending with '*' (e.g. '3.14.*')
       - an exact version string (e.g. '3.14.0')
-      - a range dict {lower, upper, excl_lower, excl_upper} from _parse_version_spec
+      - a range dict from _parse_version_spec / EasyConfig.parse_version_range
+
+    For range dicts, delegates directly to EasyConfig.dep_is_filtered so the
+    comparison logic is not reimplemented here.
     """
     if spec in ('ALL', 'ANY', None):
         return True
@@ -74,20 +77,12 @@ def _match_version_spec(spec, version):
         if spec.endswith('*'):
             return version.startswith(spec[:-1])
         return version == spec
-    # EasyBuild range dict
-    v = LooseVersion(version)
-    lower = LooseVersion(spec['lower']) if spec.get('lower') else None
-    upper = LooseVersion(spec['upper']) if spec.get('upper') else None
-    if spec.get('always_filter'):
-        return True
-    match = True
-    if lower:
-        if v < lower or (spec['excl_lower'] and v == lower):
-            match = False
-    if upper:
-        if v > upper or (spec['excl_upper'] and v == upper):
-            match = False
-    return match
+    # Range dict: delegate to EasyBuild's dep_is_filtered with a synthetic dep
+    # and a synthetic filter_deps_specs keyed by a sentinel name.
+    _SENTINEL = '__version_check__'
+    return EasyConfig.dep_is_filtered(None,
+                                      dep={'name': _SENTINEL, 'version': version},
+                                      filter_deps_specs={_SENTINEL: spec})
 
 
 class DepRule:
