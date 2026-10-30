@@ -351,17 +351,20 @@ def update_dependency(dep, ec, rules_dict=new_version_mapping_2026):
 
         target_name = rule.new_name if rule.new_name is not None else dep_name
         target_ver = rule.new_version if rule.new_version is not None else dep_ver
+        target_suffix = rule.new_suffix if rule.new_suffix is not None else dep_suffix
 
         # Rename-only rules (no version specified, new_toolchain is AUTOMATIC, match_toolchain is 'ANY'): recursively re-match under new name
-        if target_name != dep_name and rule.new_version is None and rule.new_toolchain == AUTOMATIC and rule.match_toolchain == 'ANY':
+        if target_name != dep_name and rule.new_version is None and rule.new_suffix is None and rule.new_toolchain == AUTOMATIC and rule.match_toolchain == 'ANY':
             renamed_dep = (target_name, dep_ver) + tuple(rest)
             return update_dependency(renamed_dep, ec, rules_dict)
 
-        # new_toolchain=None means strip toolchain from the result (return bare (name, ver) tuple)
-        if rule.new_toolchain is None:
-            return (target_name, target_ver)
+        new_dep = [target_name, target_ver]
+        if target_suffix:
+            new_dep.append(target_suffix)
 
-        if isinstance(rule.new_toolchain, tuple):
+        if rule.new_toolchain is None:
+            target_tc = None
+        elif isinstance(rule.new_toolchain, tuple):
             target_tc = rule.new_toolchain
         elif rule.new_toolchain == AUTOMATIC:
             ec_tc = getattr(ec, 'toolchain', None) or (ec.get('toolchain', None) if isinstance(ec, dict) else None)
@@ -370,16 +373,12 @@ def update_dependency(dep, ec, rules_dict=new_version_mapping_2026):
         else:
             raise ValueError(f"Unexpected new_toolchain value: {rule.new_toolchain!r}")
 
-        target_suffix = rule.new_suffix if rule.new_suffix is not None else dep_suffix
-
         if target_tc is not None:
-            new_dep = (target_name, target_ver, target_suffix, target_tc)
-        elif len(rest) > 0:
-            new_dep = (target_name, target_ver, target_suffix) + tuple(rest[1:])
-        else:
-            new_dep = (target_name, target_ver)
+            if len(new_dep) == 2:
+                new_dep.append("")
+            new_dep.append(target_tc)
 
-        return new_dep
+        return tuple(new_dep)
 
     return dep
 
