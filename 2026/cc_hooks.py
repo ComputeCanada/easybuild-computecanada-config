@@ -129,25 +129,6 @@ def get_compatible_toolchain(ec_toolchain, supported_toolchains):
     return None
 
 
-def resolve_target_toolchain(ec_toolchain, matching_tc, new_toolchain, dep_tc=None):
-    """Determine the final (tc_name, tc_version) to assign to the dependency.
-
-    new_toolchain can be:
-      - None: strip toolchain (return None -> dependency becomes 2-tuple)
-      - AUTOMATIC: use resolved matching_tc from match_toolchain (or keep dep_tc if match_toolchain is 'ANY'/'CUDA')
-      - A toolchain tuple (tc_name, tc_version): use that explicit toolchain
-    """
-    if new_toolchain is None:
-        return None
-    if new_toolchain == AUTOMATIC:
-        if isinstance(matching_tc, tuple):
-            return matching_tc
-        return dep_tc
-    if isinstance(new_toolchain, tuple):
-        return new_toolchain
-    raise ValueError(f"new_toolchain must be AUTOMATIC, None, or a (name, version) tuple, got: {new_toolchain!r}")
-
-
 class DepRule:
     """
     Rule defining matching conditions and target updates for a dependency.
@@ -380,10 +361,16 @@ def update_dependency(dep, ec, rules_dict=new_version_mapping_2026):
         if rule.new_toolchain is None:
             return (target_name, target_ver)
 
-        ec_tc = getattr(ec, 'toolchain', None) or (ec.get('toolchain', None) if isinstance(ec, dict) else None)
-        matching_tc = get_compatible_toolchain(ec_tc, rule.match_toolchain)
+        if isinstance(rule.new_toolchain, tuple):
+            target_tc = rule.new_toolchain
+        elif rule.new_toolchain == AUTOMATIC:
+            ec_tc = getattr(ec, 'toolchain', None) or (ec.get('toolchain', None) if isinstance(ec, dict) else None)
+            matching_tc = get_compatible_toolchain(ec_tc, rule.match_toolchain)
+            target_tc = matching_tc if isinstance(matching_tc, tuple) else dep_tc
+        else:
+            raise ValueError(f"Unexpected new_toolchain value: {rule.new_toolchain!r}")
+
         target_suffix = rule.new_suffix if rule.new_suffix is not None else dep_suffix
-        target_tc = resolve_target_toolchain(ec_tc, matching_tc, rule.new_toolchain, dep_tc)
 
         if target_tc is not None:
             new_dep = (target_name, target_ver, target_suffix, target_tc)
