@@ -220,10 +220,10 @@ class DepRule:
         return True
 
 
-# Dictionary containing version mapping and drop rules
+# Dictionary containing dependency transforms and drop rules
 # Keys: software name
 # Values: DepRule(...) or list of DepRule(...)
-new_version_mapping_2026 = {
+dep_transforms_2026 = {
     # Normalization: *.Serial aliases resolve to their base name, then re-match remaining rules
     'Boost.Serial': DepRule(new_name='Boost'),
     'HDF5.Serial': DepRule(new_name='HDF5'),
@@ -319,7 +319,7 @@ new_version_mapping_2026 = {
 }
 
 
-def update_dependency(dep, ec, rules_dict=new_version_mapping_2026):
+def update_dependency(dep, ec, rules_dict=dep_transforms_2026):
     """Normalize and update a single dependency tuple according to rules (returns None if dropped)."""
     if isinstance(dep, list):
         dep = dep[0]
@@ -383,7 +383,7 @@ def update_dependency(dep, ec, rules_dict=new_version_mapping_2026):
     return dep
 
 
-def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
+def modify_list_of_dependencies(ec, param, dep_transforms, list_of_deps):
     """Update a list of dependencies (delegates to update_dependency)."""
     if not list_of_deps or not isinstance(list_of_deps[0], tuple):
         print("Error, modify_list_of_dependencies did not receive a list of tuples")
@@ -391,7 +391,7 @@ def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
 
     updated_deps = []
     for dep in list_of_deps:
-        new_dep = update_dependency(dep, ec, version_mapping)
+        new_dep = update_dependency(dep, ec, dep_transforms)
         if new_dep is None:
             print("%s: Dropped %s, %s from %s" % (ec.filename(), dep[0], dep[1], param))
         else:
@@ -403,17 +403,17 @@ def modify_list_of_dependencies(ec, param, version_mapping, list_of_deps):
     return list_of_deps
 
 
-def modify_dependencies(ec, param, version_mapping=None):
+def modify_dependencies(ec, param, dep_transforms=None):
     """Update and filter dependencies in ec[param] (supports flat lists and multi_deps lists)."""
     if not ec.get(param):
         return
 
-    mapping = version_mapping if version_mapping is not None else new_version_mapping_2026
+    transforms = dep_transforms if dep_transforms is not None else dep_transforms_2026
     if isinstance(ec[param][0], list) and ec[param][0] and isinstance(ec[param][0][0], tuple):
         for n, deps in enumerate(ec[param]):
-            ec[param][n] = modify_list_of_dependencies(ec, param, mapping, ec[param][n])
+            ec[param][n] = modify_list_of_dependencies(ec, param, transforms, ec[param][n])
     elif isinstance(ec[param][0], tuple):
-        ec[param] = modify_list_of_dependencies(ec, param, mapping, ec[param])
+        ec[param] = modify_list_of_dependencies(ec, param, transforms, ec[param])
 
 
 
@@ -925,8 +925,8 @@ def parse_hook(ec, *args, **kwargs):
                     tcopts[key] = optarch + ' ' + tcopts.get(key, '')
                 tcopts['optarch'] = ''
 
-    modify_dependencies(ec, 'dependencies', new_version_mapping_2026)
-    modify_dependencies(ec, 'builddependencies', new_version_mapping_2026)
+    modify_dependencies(ec, 'dependencies', dep_transforms_2026)
+    modify_dependencies(ec, 'builddependencies', dep_transforms_2026)
     set_modaltsoftname(ec)
     modify_all_opts(ec, opts_changes, opts_to_change=PARSE_OPTS)
 
