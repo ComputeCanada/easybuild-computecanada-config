@@ -39,99 +39,6 @@ cOMPI_2026 = [('iompi', '2026'), ('gompi', '2026')]
 CUDA_TOOLCHAIN_SUFFIXES = ('cuda', 'mpic', 'fbc', 'fbfc')
 AUTOMATIC = 'AUTOMATIC'
 ANY = 'ANY'
-_SYSTEM_SENTINELS = {None, True, 'system', 'SYSTEM', SYSTEM}
-
-
-def _is_system_toolchain(tc):
-    """Check if a toolchain specification represents a system / unassigned toolchain."""
-    if isinstance(tc, list):
-        return len(tc) == 1 and tc[0] in _SYSTEM_SENTINELS
-    return tc in _SYSTEM_SENTINELS
-
-
-def _parse_version_spec(spec):
-    """Parse a version specification string using EasyBuild's parse_version_range.
-
-    Accepts:
-      - ANY                   -> always match
-      - EasyBuild range strings: ':3.42.0]', ']1.0:2.0[', '3.14.0' (exact)
-      - Glob suffix: '3.14.*'  -> prefix match (not a range, handled separately)
-
-    Returns either ANY, the string as-is (for glob/exact), or a parsed range dict
-    {lower, upper, excl_lower, excl_upper} as returned by parse_version_range.
-    """
-    if spec == ANY:
-        return ANY
-    if spec is None:
-        raise ValueError("Version spec cannot be None. Use ANY to match any version.")
-    if spec.endswith('*'):
-        return spec  # glob kept as-is
-    if ':' in spec:
-        return EasyConfig.parse_version_range(None, spec)
-    return spec  # exact version string
-
-
-def _match_version_spec(spec, version):
-    """Match a version string against a parsed version spec.
-
-    spec may be:
-      - ANY -> always True
-      - a glob string ending with '*' (e.g. '3.14.*')
-      - an exact version string (e.g. '3.14.0')
-      - a range dict from _parse_version_spec / EasyConfig.parse_version_range
-
-    For range dicts, delegates directly to EasyConfig.dep_is_filtered so the
-    comparison logic is not reimplemented here.
-    """
-    if spec == ANY:
-        return True
-    if spec is None:
-        return False
-    if isinstance(spec, str):
-        if spec.endswith('*'):
-            return version.startswith(spec[:-1])
-        return version == spec
-    # Range dict: delegate to EasyBuild's dep_is_filtered with a synthetic dep
-    # and a synthetic filter_deps_specs keyed by a sentinel name.
-    _SENTINEL = '__version_check__'
-    return EasyConfig.dep_is_filtered(None,
-                                      dep={'name': _SENTINEL, 'version': version},
-                                      filter_deps_specs={_SENTINEL: spec})
-
-
-def get_compatible_toolchain(ec_toolchain, supported_toolchains):
-    """Find the first compatible toolchain in supported_toolchains for ec_toolchain (reproducing main)."""
-    if supported_toolchains == ANY:
-        return ANY
-    if supported_toolchains is None:
-        return None
-
-    if isinstance(ec_toolchain, tuple) and len(ec_toolchain) >= 2:
-        tc_name, tc_version = ec_toolchain[0], ec_toolchain[1]
-        try_tc_cls, _ = search_toolchain(tc_name)
-        str_mro = [str(cls) for cls in try_tc_cls.__mro__] if try_tc_cls else []
-    else:
-        tc_name = getattr(ec_toolchain, 'name', None) or (ec_toolchain.get('name', '') if isinstance(ec_toolchain, dict) else '')
-        tc_version = getattr(ec_toolchain, 'version', None) or (ec_toolchain.get('version', '') if isinstance(ec_toolchain, dict) else '')
-        str_mro = [str(cls) for cls in ec_toolchain.__class__.__mro__] if hasattr(ec_toolchain, '__class__') else []
-
-    if supported_toolchains == 'CUDA':
-        if any(tc_name.endswith(s) for s in CUDA_TOOLCHAIN_SUFFIXES):
-            return 'CUDA'
-        return None
-
-    if not isinstance(supported_toolchains, list):
-        supported_toolchains = [supported_toolchains]
-
-    supported_versions = [tc[1] for tc in supported_toolchains]
-
-    for sub_tc_name, sub_tc_version in supported_toolchains:
-        try_tc, _ = search_toolchain(sub_tc_name)
-        if try_tc == SystemToolchain or (str(try_tc) in str_mro and tc_version in supported_versions):
-            return (sub_tc_name, sub_tc_version)
-    return None
-
-
 class DepRule:
     """
     Rule defining matching conditions and target updates for a dependency.
@@ -162,6 +69,93 @@ class DepRule:
       - drop: Set to True to drop this dependency when matched
       - message: Optional warning or notification message to print when rule matches
     """
+
+    _SYSTEM_SENTINELS = {None, True, 'system', 'SYSTEM', SYSTEM}
+
+    @staticmethod
+    def _is_system_toolchain(tc):
+        """Check if a toolchain specification represents a system / unassigned toolchain."""
+        if isinstance(tc, list):
+            return len(tc) == 1 and tc[0] in DepRule._SYSTEM_SENTINELS
+        return tc in DepRule._SYSTEM_SENTINELS
+
+    @staticmethod
+    def _parse_version_spec(spec):
+        """Parse a version specification string using EasyBuild's parse_version_range.
+
+        Accepts:
+          - ANY                   -> always match
+          - EasyBuild range strings: ':3.42.0]', ']1.0:2.0[', '3.14.0' (exact)
+          - Glob suffix: '3.14.*'  -> prefix match (not a range, handled separately)
+
+        Returns either ANY, the string as-is (for glob/exact), or a parsed range dict
+        {lower, upper, excl_lower, excl_upper} as returned by parse_version_range.
+        """
+        if spec == ANY:
+            return ANY
+        if spec.endswith('*'):
+            return spec  # glob kept as-is
+        if ':' in spec:
+            return EasyConfig.parse_version_range(None, spec)
+        return spec  # exact version string
+
+    @staticmethod
+    def _match_version_spec(spec, version):
+        """Match a version string against a parsed version spec.
+
+        spec may be:
+          - ANY -> always True
+          - a glob string ending with '*' (e.g. '3.14.*')
+          - an exact version string (e.g. '3.14.0')
+          - a range dict from _parse_version_spec / EasyConfig.parse_version_range
+
+        For range dicts, delegates directly to EasyConfig.dep_is_filtered so the
+        comparison logic is not reimplemented here.
+        """
+        if spec == ANY:
+            return True
+        if isinstance(spec, str):
+            if spec.endswith('*'):
+                return version.startswith(spec[:-1])
+            return version == spec
+        # Range dict: delegate to EasyBuild's dep_is_filtered with a synthetic dep
+        # and a synthetic filter_deps_specs keyed by a sentinel name.
+        _SENTINEL = '__version_check__'
+        return EasyConfig.dep_is_filtered(None,
+                                          dep={'name': _SENTINEL, 'version': version},
+                                          filter_deps_specs={_SENTINEL: spec})
+
+    @staticmethod
+    def _get_compatible_toolchain(ec_toolchain, supported_toolchains):
+        """Find the first compatible toolchain in supported_toolchains for ec_toolchain."""
+        if supported_toolchains in (ANY, None):
+            return supported_toolchains
+
+        if isinstance(ec_toolchain, tuple) and len(ec_toolchain) >= 2:
+            tc_name, tc_version = ec_toolchain[0], ec_toolchain[1]
+            try_tc_cls, _ = search_toolchain(tc_name)
+            str_mro = [str(cls) for cls in try_tc_cls.__mro__] if try_tc_cls else []
+        else:
+            tc_name = getattr(ec_toolchain, 'name', None) or (ec_toolchain.get('name', '') if isinstance(ec_toolchain, dict) else '')
+            tc_version = getattr(ec_toolchain, 'version', None) or (ec_toolchain.get('version', '') if isinstance(ec_toolchain, dict) else '')
+            str_mro = [str(cls) for cls in ec_toolchain.__class__.__mro__] if hasattr(ec_toolchain, '__class__') else []
+
+        if supported_toolchains == 'CUDA':
+            if any(tc_name.endswith(s) for s in CUDA_TOOLCHAIN_SUFFIXES):
+                return 'CUDA'
+            return None
+
+        if not isinstance(supported_toolchains, list):
+            supported_toolchains = [supported_toolchains]
+
+        supported_versions = [tc[1] for tc in supported_toolchains]
+
+        for sub_tc_name, sub_tc_version in supported_toolchains:
+            try_tc, _ = search_toolchain(sub_tc_name)
+            if try_tc == SystemToolchain or (str(try_tc) in str_mro and tc_version in supported_versions):
+                return (sub_tc_name, sub_tc_version)
+        return None
+
     def __init__(
         self,
         new_version=None,
@@ -175,21 +169,16 @@ class DepRule:
         new_name=None,
         message=None,
     ):
-        if match_version is None:
-            raise ValueError("match_version cannot be None. Use ANY to match any version.")
-        if match_toolchain is None:
-            raise ValueError("match_toolchain cannot be None. Use ANY to match any toolchain.")
-        if match_suffix is None:
-            raise ValueError("match_suffix cannot be None. Use ANY to match any suffix, or '' for empty suffix.")
-        if new_version == ANY:
-            raise ValueError("new_version cannot be ANY. Use None to preserve the current version.")
-        if new_suffix == ANY:
-            raise ValueError("new_suffix cannot be ANY. Use None to preserve the current suffix.")
-        if new_toolchain not in (AUTOMATIC, None) and not isinstance(new_toolchain, tuple):
-            raise ValueError(f"new_toolchain must be AUTOMATIC, None, or a (name, version) tuple, got: {new_toolchain!r}")
+        assert match_version is not None, "match_version cannot be None. Use ANY to match any version."
+        assert match_toolchain is not None, "match_toolchain cannot be None. Use ANY to match any toolchain."
+        assert match_suffix is not None, "match_suffix cannot be None. Use ANY to match any suffix, or '' for empty suffix."
+        assert new_version != ANY, "new_version cannot be ANY. Use None to preserve the current version."
+        assert new_suffix != ANY, "new_suffix cannot be ANY. Use None to preserve the current suffix."
+        assert new_toolchain in (AUTOMATIC, None) or isinstance(new_toolchain, tuple), \
+            f"new_toolchain must be AUTOMATIC, None, or a (name, version) tuple, got: {new_toolchain!r}"
         self.new_name = new_name
         self.new_version = new_version
-        self.match_version = _parse_version_spec(match_version)
+        self.match_version = DepRule._parse_version_spec(match_version)
         self.match_suffix = match_suffix
         self.new_suffix = new_suffix
         self.match_toolchain = match_toolchain
@@ -199,7 +188,7 @@ class DepRule:
         self.message = message
 
     def matches(self, dep_ver, dep_suffix, dep_tc=None, ec=None):
-        if self.match_version != ANY and not _match_version_spec(self.match_version, dep_ver):
+        if self.match_version != ANY and not DepRule._match_version_spec(self.match_version, dep_ver):
             return False
 
         if self.match_suffix != ANY and dep_suffix != self.match_suffix:
@@ -210,20 +199,20 @@ class DepRule:
 
         if self.exact_toolchain:
             # Exact match against the dependency's current toolchain
-            if _is_system_toolchain(self.match_toolchain):
-                return _is_system_toolchain(dep_tc)
+            if DepRule._is_system_toolchain(self.match_toolchain):
+                return DepRule._is_system_toolchain(dep_tc)
             if isinstance(self.match_toolchain, list):
                 return dep_tc in self.match_toolchain
             return dep_tc == self.match_toolchain
 
         # Compatible match against ec.toolchain (and dep_tc if dep_tc is explicitly non-system)
-        if not _is_system_toolchain(dep_tc):
-            if not get_compatible_toolchain(dep_tc, self.match_toolchain):
+        if not DepRule._is_system_toolchain(dep_tc):
+            if not DepRule._get_compatible_toolchain(dep_tc, self.match_toolchain):
                 return False
 
         if ec is not None:
             ec_tc = getattr(ec, 'toolchain', None) or (ec.get('toolchain', None) if isinstance(ec, dict) else None)
-            if ec_tc is not None and not get_compatible_toolchain(ec_tc, self.match_toolchain):
+            if ec_tc is not None and not DepRule._get_compatible_toolchain(ec_tc, self.match_toolchain):
                 return False
 
         return True
@@ -236,7 +225,7 @@ class DepRule:
             return self.new_toolchain
         if self.new_toolchain == AUTOMATIC:
             ec_tc = getattr(ec, 'toolchain', None) or (ec.get('toolchain', None) if isinstance(ec, dict) else None)
-            matching_tc = get_compatible_toolchain(ec_tc, self.match_toolchain)
+            matching_tc = DepRule._get_compatible_toolchain(ec_tc, self.match_toolchain)
             return matching_tc if isinstance(matching_tc, tuple) else dep_tc
         raise ValueError(f"Unexpected new_toolchain value: {self.new_toolchain!r}")
 
