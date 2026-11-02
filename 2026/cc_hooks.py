@@ -212,16 +212,13 @@ class DepRule:
             return dep_tc == self.match_toolchain
 
         # Compatible match against ec.toolchain (and dep_tc if dep_tc is explicitly non-system)
-        if not DepRule._is_system_toolchain(dep_tc):
-            if not DepRule._get_compatible_toolchain(dep_tc, self.match_toolchain):
-                return False
+        ec_tc = getattr(ec, 'toolchain', None) or (ec.get('toolchain', None) if isinstance(ec, dict) else None) if ec else None
 
-        if ec is not None:
-            ec_tc = getattr(ec, 'toolchain', None) or (ec.get('toolchain', None) if isinstance(ec, dict) else None)
-            if ec_tc is not None and not DepRule._get_compatible_toolchain(ec_tc, self.match_toolchain):
-                return False
+        if DepRule._is_system_toolchain(dep_tc) or DepRule._get_compatible_toolchain(dep_tc, self.match_toolchain):
+            if ec_tc is None or DepRule._get_compatible_toolchain(ec_tc, self.match_toolchain):
+                return True
 
-        return True
+        return False
 
     def resolve_toolchain(self, ec, dep_tc=None):
         """Determine target toolchain: None (stripped), explicit tuple, or resolved compatible toolchain."""
