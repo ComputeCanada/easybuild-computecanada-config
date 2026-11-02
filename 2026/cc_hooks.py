@@ -505,6 +505,18 @@ intel_common_postinstallcmds = '''
     patchelf --set-rpath '$ORIGIN:$ORIGIN/../../../tbb/$tbbshortver/lib' %(installdir)s/compiler/$shortver/lib/libintelocl.so
 '''
 
+def _openfoam_modluafooter(version):
+    return (
+        'if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then\n'
+        '        source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")\n'
+        'end'.format(version=version)
+    )
+
+# OpenFOAM integer releases (11, 12, 13) share the same patch/checksum
+_OPENFOAM_INT_VERSIONS   = ['11', '12', '13']
+# OpenFOAM .com releases use MPFR from Gentoo
+_OPENFOAM_COM_VERSIONS   = ['v2306', 'v2312', 'v2406', 'v2412']
+
 opts_changes = {
     'ALPSCore': {
         'dependencies': ([('Boost', '1.72.0'), ('HDF5', '1.8.22'), ('Eigen', '3.3.7', '', True) ], REPLACE)
@@ -700,51 +712,15 @@ end
         done
         '''], REPLACE),
     },
-    ("OpenFOAM", "11"): {
-        'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
-        source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
-end""".format(version="11"), REPLACE),
+    **{("OpenFOAM", ver): {
+        'modluafooter': (_openfoam_modluafooter(ver), REPLACE),
         'patches': (['OpenFOAM-11-cleanup-cc.patch'], APPEND_LIST),
         'checksums': ('56a98703a1022d5e75f7b1f7cd4592bc79ba93c1dd53d3e52316726797430c33', APPEND_LIST),
-    },
-    ("OpenFOAM", "12"): {
-        'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
-        source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
-end""".format(version="12"), REPLACE),
-        'patches': (['OpenFOAM-11-cleanup-cc.patch'], APPEND_LIST),
-        'checksums': ('56a98703a1022d5e75f7b1f7cd4592bc79ba93c1dd53d3e52316726797430c33', APPEND_LIST),
-    },
-    ("OpenFOAM", "13"): {
-        'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
-        source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
-end""".format(version="13"), REPLACE),
-        'patches': (['OpenFOAM-11-cleanup-cc.patch'], APPEND_LIST),
-        'checksums': ('56a98703a1022d5e75f7b1f7cd4592bc79ba93c1dd53d3e52316726797430c33', APPEND_LIST),
-    },
-    ("OpenFOAM", "v2306"): {
-        'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
-        source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
-end""".format(version="v2306"), REPLACE),
+    } for ver in _OPENFOAM_INT_VERSIONS},
+    **{("OpenFOAM", ver): {
+        'modluafooter': (_openfoam_modluafooter(ver), REPLACE),
         'prebuildopts': ('MPFR_ARCH_PATH=$EBROOTGENTOO ', APPEND),
-    },
-    ("OpenFOAM", "v2312"): {
-        'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
-        source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
-end""".format(version="v2312"), REPLACE),
-        'prebuildopts': ('MPFR_ARCH_PATH=$EBROOTGENTOO ', APPEND),
-    },
-    ("OpenFOAM", "v2406"): {
-        'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
-        source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
-end""".format(version="v2406"), REPLACE),
-        'prebuildopts': ('MPFR_ARCH_PATH=$EBROOTGENTOO ', APPEND),
-    },
-    ("OpenFOAM", "v2412"): {
-        'modluafooter': ("""if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then
-        source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")
-end""".format(version="v2412"), REPLACE),
-        'prebuildopts': ('MPFR_ARCH_PATH=$EBROOTGENTOO ', APPEND),
-    },
+    } for ver in _OPENFOAM_COM_VERSIONS},
     ("OpenMPI", "5.0.10"): {
         # local customizations for OpenMPI
         'builddependencies': ([('PSM2', '12.0.1')], REPLACE),
