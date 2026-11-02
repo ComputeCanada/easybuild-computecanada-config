@@ -96,7 +96,7 @@ class DepRule:
         if spec.endswith('*'):
             return spec  # glob kept as-is
         if ':' in spec:
-            return EasyConfig.parse_version_range(None, spec)
+            return EasyConfig.parse_version_range(None, spec.removeprefix('='))
         return spec  # exact version string
 
     @staticmethod
@@ -128,22 +128,28 @@ class DepRule:
     @staticmethod
     def _get_compatible_toolchain(ec_toolchain, supported_toolchains):
         """Find the first compatible toolchain in supported_toolchains for ec_toolchain."""
-        if supported_toolchains in (ANY, None):
-            return supported_toolchains
+        if supported_toolchains == ANY:
+            return ANY
 
-        if isinstance(ec_toolchain, tuple) and len(ec_toolchain) >= 2:
+        if isinstance(ec_toolchain, (tuple, list)) and len(ec_toolchain) >= 2:
             tc_name, tc_version = ec_toolchain[0], ec_toolchain[1]
-            try_tc_cls, _ = search_toolchain(tc_name)
-            str_mro = [str(cls) for cls in try_tc_cls.__mro__] if try_tc_cls else []
+            is_obj = False
+        elif isinstance(ec_toolchain, dict):
+            tc_name, tc_version = ec_toolchain.get('name', ''), ec_toolchain.get('version', '')
+            is_obj = False
         else:
-            tc_name = getattr(ec_toolchain, 'name', None) or (ec_toolchain.get('name', '') if isinstance(ec_toolchain, dict) else '')
-            tc_version = getattr(ec_toolchain, 'version', None) or (ec_toolchain.get('version', '') if isinstance(ec_toolchain, dict) else '')
-            str_mro = [str(cls) for cls in ec_toolchain.__class__.__mro__] if hasattr(ec_toolchain, '__class__') else []
+            tc_name = getattr(ec_toolchain, 'name', '')
+            tc_version = getattr(ec_toolchain, 'version', '')
+            is_obj = hasattr(ec_toolchain, '__class__')
 
         if supported_toolchains == 'CUDA':
-            if any(tc_name.endswith(s) for s in CUDA_TOOLCHAIN_SUFFIXES):
-                return 'CUDA'
-            return None
+            return 'CUDA' if any(tc_name.endswith(s) for s in CUDA_TOOLCHAIN_SUFFIXES) else None
+
+        if is_obj:
+            str_mro = [str(cls) for cls in ec_toolchain.__class__.__mro__]
+        else:
+            try_tc_cls, _ = search_toolchain(tc_name) if tc_name else (None, None)
+            str_mro = [str(cls) for cls in try_tc_cls.__mro__] if try_tc_cls else []
 
         if not isinstance(supported_toolchains, list):
             supported_toolchains = [supported_toolchains]
@@ -237,7 +243,7 @@ DEP_NAME_ALIASES = {
     'netCDF.Serial': 'netCDF',
 }
 
-DROP = DepRule(drop=True)
+DROP_DEP = DepRule(drop=True)
 BUMP_TO_GCCCORE = DepRule(match_toolchain=SYSTEM, exact_toolchain=True, new_toolchain=GCCCORE153)
 
 
@@ -253,15 +259,15 @@ def _mpi_serial_rules(version):
 # Values: DepRule(...) or list of DepRule(...)
 dep_transforms_2026 = {
     # Deprecations & special formats: (new_toolchain=None strips the toolchain field to return a 2-tuple)
-    'SciPy-bundle': DepRule(new_name='SciPy-Stack', new_version='2026a', new_toolchain=None),
+    'SciPy-bundle': DepRule(new_name='SciPy-Stack', new_version='2026a', new_suffix='', new_toolchain=None),
     'oldest-supported-numpy': DepRule(
-        new_name='numpy', new_version='2.5.3', new_toolchain=None,
+        new_name='numpy', new_version='2.5.3', new_suffix='', new_toolchain=None,
         message="Dependency on oldest-supported-numpy is now deprecated. Replacing with ('numpy', '2.5.3')",
     ),
-    'libfabric': DepRule(new_toolchain=None),
+    'libfabric': DepRule(new_suffix='', new_toolchain=None),
 
     # Packages to drop (not in filter-deps; provided by Gentoo or locally filtered)
-    **{pkg: DROP for pkg in ['ICU', 'libxslt', 'libzip', 'Meson', 'Ninja', 'PyQt5', 'pybind11']},
+    **{pkg: DROP_DEP for pkg in ['ICU', 'libxslt', 'libzip', 'Meson', 'Ninja', 'PyQt5', 'pybind11']},
     # CUDA: dropped for CUDA-enabled toolchains; upgraded for compiler toolchains
     'CUDA': [
         DepRule(match_toolchain='CUDA', drop=True),
@@ -284,7 +290,7 @@ dep_transforms_2026 = {
     'Qt5': DepRule(new_version='5.15.19', match_toolchain=GCCCORE153),
     'Qt6': DepRule(new_version='6.12.0', match_toolchain=GCCCORE153),
     'R': DepRule(new_version='4.6.1', match_toolchain=('gcccoreflexiblas', '2023a'), exact_toolchain=True, new_toolchain=('gcccoreflexiblas','2026')),
-    'SCOTCH': DepRule(new_version='7.0.13', match_toolchain=cOMPI_2026),
+    'SCOTCH': DepRule(new_version='7.0.13', match_toolchain=cOMPI_2026, new_suffix=''),
     'yaml-cpp': DepRule(new_version='0.9.0', match_toolchain=GCCCORE153),
     'ETSF_IO': DepRule(new_version='1.0.4', match_toolchain=[('iompi', '2026'), ('intel-compilers', '2026.1.0')]),
 
@@ -305,15 +311,15 @@ dep_transforms_2026 = {
 
     # Python packages bumped from SYSTEM to GCCcore (PR #99)
     'python-build-bundle': [
-        DepRule(match_version='2026a', new_version='2026b', match_toolchain=GCCCORE153),
+        DepRule(match_version='2026a', new_version='2026b', match_toolchain=[GCCCORE153, SYSTEM], new_toolchain=GCCCORE153),
         BUMP_TO_GCCCORE,
     ],
     'Cython':              BUMP_TO_GCCCORE,
     'numpy':               BUMP_TO_GCCCORE,
     'Python': [
-        DepRule(match_version='3.13*', new_version='3.15', match_toolchain=GCCCORE153),
-        DepRule(match_version='3.14.*', new_version='3.14', match_toolchain=GCCCORE153),
-        DepRule(match_version='3.15.*', new_version='3.15', match_toolchain=GCCCORE153),
+        DepRule(match_version='3.13*', new_version='3.15', match_toolchain=[GCCCORE153, SYSTEM], new_toolchain=GCCCORE153),
+        DepRule(match_version='3.14.*', new_version='3.14', match_toolchain=[GCCCORE153, SYSTEM], new_toolchain=GCCCORE153),
+        DepRule(match_version='3.15.*', new_version='3.15', match_toolchain=[GCCCORE153, SYSTEM], new_toolchain=GCCCORE153),
         # Catch-all: bump toolchain to GCCcore for SYSTEM-toolchain Python deps
         BUMP_TO_GCCCORE,
     ],
@@ -324,7 +330,7 @@ dep_transforms_2026 = {
     'imkl': DepRule(match_version='2025.3.1', new_version='2026.1.0', match_toolchain=SYSTEM),
     'intel-compilers': DepRule(match_version='2025.3.3', new_version='2026.1.0', match_toolchain=SYSTEM),
     'libbeef': DepRule(match_version='0.1.2', new_version='0.1.2', match_toolchain=COMPILERS_2026),
-    'ParaView': DepRule(match_version='6.0.1', new_version='6.1.1', match_toolchain=[('gompi', '2026')]),
+    'ParaView': DepRule(match_version='6.0.1', new_version='6.1.1', match_toolchain=[('gompi', '2026')], new_suffix=''),
     'UCX': DepRule(match_version='1.20.0', new_version='1.22.0', match_toolchain=[GCCCORE153, ('gcccorecuda', '2026')]),
     'UCC': DepRule(match_version='1.7.0', new_version='1.8.0', match_toolchain=[GCCCORE153, ('gcccorecuda', '2026')]),
 
@@ -342,7 +348,9 @@ def update_dependency(dep, ec, rules_dict=dep_transforms_2026):
         dep = dep[0]
 
     dep_name, dep_ver, *rest = dep
-    dep_name = DEP_NAME_ALIASES.get(dep_name, dep_name)
+    if dep_name in DEP_NAME_ALIASES:
+        dep_name = DEP_NAME_ALIASES[dep_name]
+        dep = (dep_name, dep_ver, *rest)
     dep_suffix = rest[0] if len(rest) > 0 else ""
     dep_tc = rest[1] if len(rest) > 1 else None
 
@@ -388,7 +396,9 @@ def update_dependency(dep, ec, rules_dict=dep_transforms_2026):
 
 def modify_list_of_dependencies(ec, param, dep_transforms, list_of_deps):
     """Update a list of dependencies (delegates to update_dependency)."""
-    if not list_of_deps or not isinstance(list_of_deps[0], tuple):
+    if not list_of_deps:
+        return list_of_deps
+    if not isinstance(list_of_deps[0], tuple):
         print("Error, modify_list_of_dependencies did not receive a list of tuples")
         return list_of_deps
 
@@ -396,10 +406,10 @@ def modify_list_of_dependencies(ec, param, dep_transforms, list_of_deps):
     for dep in list_of_deps:
         new_dep = update_dependency(dep, ec, dep_transforms)
         if new_dep is None:
-            print("%s: Dropped %s, %s from %s" % (ec.filename(), dep[0], dep[1], param))
+            print(f"{ec.filename()}: Dropped {dep[0]}, {dep[1]} from {param}")
         else:
             if str(new_dep) != str(dep):
-                print("%s: Matching updated %s found. Replacing %s with %s" % (ec.filename(), param, str(dep), str(new_dep)))
+                print(f"{ec.filename()}: Matching updated {param} found. Replacing {dep} with {new_dep}")
             updated_deps.append(new_dep)
 
     list_of_deps[:] = updated_deps
@@ -497,8 +507,8 @@ intel_common_postinstallcmds = '''
 def _openfoam_modluafooter(version):
     return (
         'if convertToCanonical(LmodVersion()) >= convertToCanonical("8.6") then\n'
-        '        source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")\n'
-        'end'.format(version=version)
+        f'        source_sh("bash", root .. "/OpenFOAM-{version}/etc/bashrc")\n'
+        'end'
     )
 
 # OpenFOAM integer releases (11, 12, 13) share the same patch/checksum
