@@ -16,7 +16,7 @@ if not os.path.exists(os.path.join(parentdir, 'cc_hooks_common.py')):
     # needed when taking hooks from reprod dir
     sys.path.append('/cvmfs/soft.computecanada.ca/easybuild/easybuild-computecanada-config')
 from cc_hooks_common import modify_all_opts, update_opts, PREPEND, APPEND, REPLACE, APPEND_LIST, DROP, DROP_FROM_LIST, REPLACE_IN_LIST
-from cc_hooks_common import get_matching_keys, get_matching_keys_from_ec
+from cc_hooks_common import get_matching_keys_from_ec
 from easybuild.tools.config import build_option
 from easybuild.tools.toolchain.utilities import search_toolchain
 from easybuild.tools.environment import setvar
@@ -137,8 +137,8 @@ class DepRule:
     @staticmethod
     def _get_compatible_toolchain(ec_toolchain, supported_toolchains):
         """Find the first compatible toolchain in supported_toolchains for ec_toolchain."""
-        if supported_toolchains == ANY:
-            return ANY
+        if supported_toolchains in (ANY, SYSTEM):
+            return supported_toolchains
 
         if isinstance(ec_toolchain, (tuple, list)) and len(ec_toolchain) >= 2:
             tc_name, tc_version = ec_toolchain[0], ec_toolchain[1]
@@ -236,18 +236,13 @@ class DepRule:
         if isinstance(self.new_toolchain, tuple):
             return self.new_toolchain
         if self.new_toolchain == AUTOMATIC:
+            if self.exact_toolchain:
+                return dep_tc
             ec_tc = DepRule._get_ec_toolchain(ec)
             matching_tc = DepRule._get_compatible_toolchain(ec_tc, self.match_toolchain) if ec_tc else None
             return matching_tc if isinstance(matching_tc, tuple) else dep_tc
         raise ValueError(f"Unexpected new_toolchain value: {self.new_toolchain!r}")
 
-
-# Name aliases normalized before rule matching (e.g. *.Serial aliases)
-DEP_NAME_ALIASES = {
-    'Boost.Serial': 'Boost',
-    'HDF5.Serial': 'HDF5',
-    'netCDF.Serial': 'netCDF',
-}
 
 DROP_DEP = DepRule(drop=True)
 BUMP_TO_GCCCORE = DepRule(match_toolchain=SYSTEM, exact_toolchain=True, new_toolchain=GCCCORE153)
@@ -260,10 +255,23 @@ def _mpi_serial_rules(version):
     ]
 
 
+def _serial_alias_rules(target_name, version):
+    """Rules for *.Serial aliases: on compiler toolchains use empty suffix; otherwise just rename."""
+    return [
+        DepRule(new_name=target_name, new_version=version, match_toolchain=COMPILERS_2026, match_suffix='', new_suffix=''),
+        DepRule(new_name=target_name),
+    ]
+
+
 # Dictionary containing dependency transforms and drop rules
 # Keys: software name
 # Values: DepRule(...) or list of DepRule(...)
 dep_transforms_2026 = {
+    # *.Serial aliases: resolve to the base package name with correct suffix per toolchain
+    'Boost.Serial': _serial_alias_rules('Boost', '1.92.0'),
+    'HDF5.Serial': _serial_alias_rules('HDF5', '2.2.0'),
+    'netCDF.Serial': _serial_alias_rules('netCDF', '4.10.1'),
+
     # Deprecations & special formats: (new_toolchain=None strips the toolchain field to return a 2-tuple)
     'SciPy-bundle': DepRule(new_name='SciPy-Stack', new_version='2026a', new_suffix='', new_toolchain=None),
     'oldest-supported-numpy': DepRule(
@@ -354,9 +362,6 @@ def update_dependency(dep, ec, rules_dict=dep_transforms_2026):
         dep = dep[0]
 
     dep_name, dep_ver, *rest = dep
-    if dep_name in DEP_NAME_ALIASES:
-        dep_name = DEP_NAME_ALIASES[dep_name]
-        dep = (dep_name, dep_ver, *rest)
     dep_suffix = rest[0] if len(rest) > 0 else ""
     dep_tc = rest[1] if len(rest) > 1 else None
 
@@ -414,7 +419,7 @@ def modify_list_of_dependencies(ec, param, dep_transforms, list_of_deps):
         if new_dep is None:
             print(f"{ec.filename()}: Dropped {dep[0]}, {dep[1]} from {param}")
         else:
-            if str(new_dep) != str(dep):
+            if new_dep != dep:
                 print(f"{ec.filename()}: Matching updated {param} found. Replacing {dep} with {new_dep}")
             updated_deps.append(new_dep)
 
