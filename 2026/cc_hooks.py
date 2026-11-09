@@ -523,25 +523,8 @@ _OPENFOAM_INT_VERSIONS   = ['11', '12', '13']
 _OPENFOAM_COM_VERSIONS   = ['v2306', 'v2312', 'v2406', 'v2412']
 
 opts_changes = {
-    'ALPSCore': {
-        'dependencies': ([('Boost', '1.72.0'), ('HDF5', '1.8.22'), ('Eigen', '3.3.7', '', True) ], REPLACE)
-    },
-    ('Apptainer', '1'): {
-        'dependencies': ([('Apptainer', '1.2.4')], REPLACE),
-    },
     'Apptainer': {
         'modluafooter': ('assert(loadfile("/cvmfs/soft.computecanada.ca/config/lmod/apptainer_custom.lua"))()', REPLACE),
-    },
-    'Bazel': {
-        # Bazel really needs to use Java 11, not 13
-        'dependencies': ([('Java', '11', '', True)], REPLACE)
-    },
-    'Boost.Serial': {
-        'name': ('Boost', REPLACE),
-        'multi_deps': ({'Python': ['2.7', '3.6', '3.7', '3.8']}, REPLACE),
-        'builddependencies': ([[('SciPy-Stack', '2026a'), ('Python', v)] for v in ['2.7', '3.6', '3.7', '3.8'] ], REPLACE),
-        'patches': (['Boost-1.65.1_python3.patch'], REPLACE),
-        'checksums': ('d86d34cf48fdbc4b9a36ae7706b3f3353f9ad521ff1d5a716cce750ae9f5dd33', APPEND_LIST),
     },
     'Boost': {
         'configopts': ('--without-libraries=python', DROP),
@@ -577,7 +560,7 @@ opts_changes = {
                           PREPEND)
     },
     'cram': {
-        'multi_deps': ({'Python': ['2.7', '3.6', '3.7', '3.8']}, REPLACE),
+        'multi_deps': ({'Python': ['3.14', '3.15']}, REPLACE),
         'modluafooter': ('depends_on("python")', REPLACE),
     },
     ('CUDA', '13.3.1'): {
@@ -614,8 +597,8 @@ end
             '/cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s '], APPEND_LIST),
     },
     'GObject-Introspection': {
-        'multi_deps': ({'Python': ['3.6', '3.7', '3.8']}, REPLACE),
-        'builddependencies': ([[('Python', v)] for v in ['2.7', '3.6', '3.7', '3.8'] ], REPLACE),
+        'multi_deps': ({'Python': ['3.14', '3.15']}, REPLACE),
+        'builddependencies': ([[('Python', v)] for v in ['3.14', '3.15'] ], REPLACE),
         'modextrapaths': ({'PYTHONPATH': ['lib/gobject-introspection']}, REPLACE),
         'dependencies': ([], REPLACE),
         'modluafooter': ('depends_on(atleast("python", "3"))', REPLACE),
@@ -694,9 +677,6 @@ end
     'nodejs': {
         'postinstallcmds': (["export PATH=%(installdir)s/bin:$PATH; %(installdir)s/bin/npm install --global yarn"], APPEND_LIST),
     },
-    ('NCCL', '2.18.3'): {
-        'checksums': (['6477d83c9edbb34a0ebce6d751a1b32962bc6415d75d04972b676c6894ceaef9'], REPLACE),
-    },
     'NVHPC': {
         'postinstallcmds': (['''
         installdir=%(installdir)s/Linux_x86_64/%(version)s
@@ -757,13 +737,6 @@ end
         'modextrapaths': ({'PYTHONPATH': ['/cvmfs/soft.computecanada.ca/easybuild/python/site-packages']}, REPLACE),
         'ebpythonprefixes': (False, REPLACE),  # disable upstream's version of sitecustomize.py for ebpythonprefixes
         'installopts': (' && /cvmfs/soft.computecanada.ca/easybuild/bin/setrpaths.sh --path %(installdir)s --add_path %(installdir)s/lib --any_interpreter', APPEND),
-        'builddependencies': (('Rust', '1.52.1'), DROP_FROM_LIST),
-        # replace pip 21.1.1 with pip 20.0.2
-        'exts_list': ([(('pip', '21.1.1', { 'checksums': ['51ad01ddcd8de923533b01a870e7b987c2eb4d83b50b89e1bf102723ff9fed8b'],}),
-                       ('pip', '20.0.2', {'checksums': ['7db0c8ea4c7ea51c8049640e8e6e7fde949de672bfa4949920675563a5a6967f'],})),
-                       (('virtualenv', '20.4.6', {'checksums': ['72cf267afc04bf9c86ec932329b7e94db6a0331ae9847576daaa7ca3c86b29a4']}),
-                        ('virtualenv', '20.0.18', {'checksums': ['ac53ade75ca189bc97b6c1d9ec0f1a50efe33cbf178ae09452dcd9fd309013c1']}))
-                       ], REPLACE_IN_LIST),
     },
     'Qt5': {
         'modaltsoftname': ('qt', REPLACE),
@@ -774,16 +747,6 @@ end
     },
     'Rust': {
         'prebuildopts': ("for f in config.toml bootstrap.toml; do [ -f \"$f\" ] && sed -i 's/\\(ninja.*=.*\\)false/\\1true/' \"$f\"; done; export EASYBUILD_SYSROOT=$EPREFIX && ", PREPEND),
-    },
-    ('SCOTCH', '6.1.2', '-no-thread'): {
-        'modaltsoftname': ('scotch-no-thread', REPLACE),
-    },
-    ('SCOTCH', '7.0.3', '-no-thread'): {
-        'modaltsoftname': ('scotch-no-thread', REPLACE),
-    },
-    'Togl': {
-            'patches': ('Togl-2.0_configure.patch', DROP_FROM_LIST),
-            'checksums': ('da97f36b60cd107444cd92453809135b14dc1e8775146b3ba0731da8002e6f9f', DROP_FROM_LIST),
     },
     'tbb': {
         'postinstallcmds': (['chmod -R u-w %(installdir)s/cmake || chmod -R u-w %(installdir)s/lib64/cmake'], REPLACE),
@@ -798,9 +761,6 @@ end
         'configopts': (' && sed -i "s@/usr/lib/debug@$EPREFIX/usr/lib/debug@g" coregrind/m_debuginfo/readelf.c', APPEND),
         'modaltsoftname': ('valgrind-mpi', REPLACE),
         'versionsuffix': ('-mpi', REPLACE),
-    },
-    ('Wannier90', '2.0.1.1', '-abinit'): {
-        'modaltsoftname': ('wannier90-abinit', REPLACE),
     },
 }
 
@@ -1037,11 +997,7 @@ def pre_configure_hook(self, *args, **kwargs):
         if 'CMake' not in str(self.cfg['dependencies']) + str(self.cfg['builddependencies']):
             print("Error, for CMakeMake recipes, you should have a dependency on CMake")
             exit(1)
-        # skip for those
-        if (ec['name'],ec['version']) in [('ROOT','5.34.36'), ('mariadb', '10.4.11')]:
-            pass
-        else:
-            update_opts(ec, ' -DCMAKE_SKIP_INSTALL_RPATH=ON ', 'configopts', PREPEND)
+        update_opts(ec, ' -DCMAKE_SKIP_INSTALL_RPATH=ON ', 'configopts', PREPEND)
         # disable XHOST
         update_opts(ec, ' -DENABLE_XHOST=OFF ', 'configopts', PREPEND)
         # use verbose makefile to get the command lines that are executed
@@ -1155,7 +1111,7 @@ def end_hook():
 
     modulepath = '/cvmfs/soft.computecanada.ca/custom/modules'
     index_dir = '/cvmfs/soft.computecanada.ca/custom/mii/data'
-    mii = "/cvmfs/soft.computecanada.ca/easybuild/software/2020/Core/mii/1.1.1/bin/mii"
+    mii = "/cvmfs/soft.computecanada.ca/easybuild/software/2026/Core/mii/1.1.2/bin/mii"
     final_index_file = os.path.join(index_dir, arch)
     exclude_modnames = ",".join(("gentoo","nixpkgs"))
 
