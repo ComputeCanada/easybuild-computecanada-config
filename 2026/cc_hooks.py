@@ -457,7 +457,7 @@ add_property("type_","mpi")
 family("mpi")
 """
 
-# for e.g. CUDA-12.2-gompi-2026.eb we need to add e.g. 2023/x86-64-v3/CUDA/gcc12/cuda12.2 to MODULEPATH
+# for e.g. CUDA-13.3-gompi-2026.eb we need to add e.g. 2026/x86-64-v3/CUDA/gcc15/cuda13.3 to MODULEPATH
 # but not for spider as that shadows the non-MPI cuda module
 cuda_mpi_modluafooter = """
 if (mode() ~= "spider") then
@@ -467,7 +467,7 @@ if (mode() ~= "spider") then
     end
 end
 prepend_path("MODULEPATH", "/cvmfs/soft.computecanada.ca/easybuild/modules/{year}/{sub_mpi_path}")
-if isDir(pathJoin(os.getenv("HOME"), ".local/easybuild/modules/2023/{sub_mpi_path}")) then
+if isDir(pathJoin(os.getenv("HOME"), ".local/easybuild/modules/{year}/{sub_mpi_path}")) then
     prepend_path("MODULEPATH", pathJoin(os.getenv("HOME"), ".local/easybuild/modules/{year}/{sub_mpi_path}"))
 end
 """
