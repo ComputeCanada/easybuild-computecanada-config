@@ -76,8 +76,17 @@ class DepRule:
     def _is_system_toolchain(tc):
         """Check if a toolchain specification represents a system / unassigned toolchain."""
         if isinstance(tc, list):
-            return len(tc) == 1 and tc[0] in DepRule._SYSTEM_SENTINELS
+            return len(tc) == 1 and DepRule._is_system_toolchain(tc[0])
+        if isinstance(tc, dict):
+            return tc.get('name') in DepRule._SYSTEM_SENTINELS
         return tc in DepRule._SYSTEM_SENTINELS
+
+    @staticmethod
+    def _get_ec_toolchain(ec):
+        """Extract toolchain from an EasyConfig instance or dict."""
+        if not ec:
+            return None
+        return getattr(ec, 'toolchain', None) or (ec.get('toolchain', None) if isinstance(ec, dict) else None)
 
     @staticmethod
     def _parse_version_spec(spec):
@@ -140,7 +149,7 @@ class DepRule:
         else:
             tc_name = getattr(ec_toolchain, 'name', '')
             tc_version = getattr(ec_toolchain, 'version', '')
-            is_obj = hasattr(ec_toolchain, '__class__')
+            is_obj = bool(tc_name)
 
         if supported_toolchains == 'CUDA':
             return 'CUDA' if any(tc_name.endswith(s) for s in CUDA_TOOLCHAIN_SUFFIXES) else None
@@ -212,7 +221,7 @@ class DepRule:
             return dep_tc == self.match_toolchain
 
         # Compatible match against ec.toolchain (and dep_tc if dep_tc is explicitly non-system)
-        ec_tc = getattr(ec, 'toolchain', None) or (ec.get('toolchain', None) if isinstance(ec, dict) else None) if ec else None
+        ec_tc = DepRule._get_ec_toolchain(ec)
 
         if DepRule._is_system_toolchain(dep_tc) or DepRule._get_compatible_toolchain(dep_tc, self.match_toolchain):
             if ec_tc is None or DepRule._get_compatible_toolchain(ec_tc, self.match_toolchain):
@@ -227,8 +236,8 @@ class DepRule:
         if isinstance(self.new_toolchain, tuple):
             return self.new_toolchain
         if self.new_toolchain == AUTOMATIC:
-            ec_tc = getattr(ec, 'toolchain', None) or (ec.get('toolchain', None) if isinstance(ec, dict) else None)
-            matching_tc = DepRule._get_compatible_toolchain(ec_tc, self.match_toolchain)
+            ec_tc = DepRule._get_ec_toolchain(ec)
+            matching_tc = DepRule._get_compatible_toolchain(ec_tc, self.match_toolchain) if ec_tc else None
             return matching_tc if isinstance(matching_tc, tuple) else dep_tc
         raise ValueError(f"Unexpected new_toolchain value: {self.new_toolchain!r}")
 
@@ -308,15 +317,15 @@ dep_transforms_2026 = {
 
     # Python packages bumped from SYSTEM to GCCcore (PR #99)
     'python-build-bundle': [
-        DepRule(match_version='2026a', new_version='2026b', match_toolchain=[GCCCORE153, SYSTEM], new_toolchain=GCCCORE153),
+        DepRule(match_version='2026a', new_version='2026b', new_toolchain=GCCCORE153),
         BUMP_TO_GCCCORE,
     ],
     'Cython':              BUMP_TO_GCCCORE,
     'numpy':               BUMP_TO_GCCCORE,
     'Python': [
-        DepRule(match_version='3.13*', new_version='3.15', match_toolchain=[GCCCORE153, SYSTEM], new_toolchain=GCCCORE153),
-        DepRule(match_version='3.14.*', new_version='3.14', match_toolchain=[GCCCORE153, SYSTEM], new_toolchain=GCCCORE153),
-        DepRule(match_version='3.15.*', new_version='3.15', match_toolchain=[GCCCORE153, SYSTEM], new_toolchain=GCCCORE153),
+        DepRule(match_version='3.13*', new_version='3.15', new_toolchain=GCCCORE153),
+        DepRule(match_version='3.14.*', new_version='3.14', new_toolchain=GCCCORE153),
+        DepRule(match_version='3.15.*', new_version='3.15', new_toolchain=GCCCORE153),
         # Catch-all: bump toolchain to GCCcore for SYSTEM-toolchain Python deps
         BUMP_TO_GCCCORE,
     ],
