@@ -273,7 +273,7 @@ dep_transforms_2026 = {
     'netCDF.Serial': _serial_alias_rules('netCDF', '4.10.1'),
 
     # Deprecations & special formats: (new_toolchain=None strips the toolchain field to return a 2-tuple)
-    'SciPy-bundle': DepRule(new_name='SciPy-Stack', new_version='2026a', new_suffix='', new_toolchain=None),
+    'SciPy-bundle': DepRule(new_name='SciPy-Stack', new_version='2026b', new_suffix='', new_toolchain=None),
     'oldest-supported-numpy': DepRule(
         new_name='numpy', new_version='2.5.3', new_suffix='', new_toolchain=None,
         message="Dependency on oldest-supported-numpy is now deprecated. Replacing with ('numpy', '2.5.3')",
