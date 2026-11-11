@@ -297,6 +297,7 @@ dep_transforms_2026 = {
     'GEOS': DepRule(new_version='3.14.1', match_toolchain=GCCCORE153),
     'Java': DepRule(new_version='25', match_toolchain=SYSTEM),
     'libcerf': DepRule(new_version='3.9', match_toolchain=GCCCORE153),
+    'nodejs': DepRule(new_version='24.22.3'),
     'Perl': DepRule(new_version='5.44.0', match_toolchain=GCCCORE153),
     'PostgreSQL': DepRule(new_version='18.6', match_toolchain=GCCCORE153),
     'PROJ': DepRule(new_version='9.9.0', match_toolchain=GCCCORE153),

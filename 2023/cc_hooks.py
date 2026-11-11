@@ -93,6 +93,7 @@ new_version_mapping_2023a = {
         ('netCDF-Fortran','ANY', ""): ('4.6.1', COMPILERS_2023a),
         ('netCDF-Fortran','ANY', ""): ('4.6.1', cOMPI_2023a, '-mpi'),
         ('netCDF-Fortran','ANY','-mpi'): ('4.6.1', cOMPI_2023a, '-mpi'),
+        'nodejs': ('24.22.3', SYSTEM),
         ('ParaView', '5.8.0'): ('5.8.0', [('gompi', '2023a')], None),
         'Perl': ('5.36.1', SYSTEM),
         ('PLUMED', '2.6.0'): ('2.6.2', cOMKL_2023a, None),
