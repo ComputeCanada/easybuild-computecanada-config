@@ -305,7 +305,7 @@ dep_transforms_2026 = {
     'Qt5': DepRule(new_version='5.15.19', match_toolchain=GCCCORE153),
     'Qt6': DepRule(new_version='6.12.0', match_toolchain=GCCCORE153),
     'R': DepRule(new_version='4.6.1', match_toolchain=('gcccoreflexiblas', '2023a'), exact_toolchain=True, new_toolchain=('gcccoreflexiblas','2026')),
-    'SCOTCH': DepRule(new_version='7.0.13', match_toolchain=cOMPI_2026, new_suffix=''),
+    'SCOTCH': DepRule(new_version='7.0.18', match_toolchain=cOMPI_2026, new_suffix=''),
     'yaml-cpp': DepRule(new_version='0.9.0', match_toolchain=GCCCORE153),
     'ETSF_IO': DepRule(new_version='1.0.4', match_toolchain=[('iompi', '2026'), ('intel-compilers', '2026.1.0')]),
 
