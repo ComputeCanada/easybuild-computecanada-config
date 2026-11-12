@@ -291,7 +291,7 @@ dep_transforms_2026 = {
     # Simple software upgrades
     'babel': DepRule(new_version='2.18.0', match_toolchain=SYSTEM),
     'calibre': DepRule(new_version='9.17.0', match_toolchain=SYSTEM),
-    'CGAL': DepRule(new_version='6.2', match_toolchain=SYSTEM),
+    'CGAL': DepRule(new_version='6.2.1', match_toolchain=SYSTEM),
     'CMake': DepRule(new_version='4.4.2', match_toolchain=SYSTEM),
     'Eigen': DepRule(new_version='5.0.1', match_toolchain=GCCCORE153),
     'GEOS': DepRule(new_version='3.14.1', match_toolchain=GCCCORE153),
