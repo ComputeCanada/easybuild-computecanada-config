@@ -704,7 +704,6 @@ end
     },
     **{("OpenFOAM", ver): {
         'modluafooter': (_openfoam_modluafooter(ver), REPLACE),
-        'patches': (['OpenFOAM-11-cleanup-cc.patch'], APPEND_LIST),
         'checksums': ('56a98703a1022d5e75f7b1f7cd4592bc79ba93c1dd53d3e52316726797430c33', APPEND_LIST),
     } for ver in _OPENFOAM_ORG_VERSIONS},
     **{("OpenFOAM", ver): {
