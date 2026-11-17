@@ -296,6 +296,8 @@ dep_transforms_2026 = {
     'Eigen': DepRule(new_version='5.0.1', match_toolchain=GCCCORE153),
     'GEOS': DepRule(new_version='3.14.1', match_toolchain=GCCCORE153),
     'Java': DepRule(new_version='25', match_toolchain=SYSTEM),
+    'JasPer': DepRule(new_version='4.2.9', match_toolchain=GCCCORE153),
+    'libaec': DepRule(new_version='1.1.7', match_toolchain=GCCCORE153),
     'libcerf': DepRule(new_version='3.9', match_toolchain=GCCCORE153),
     'nodejs': DepRule(new_version='24.22.3'),
     'Perl': DepRule(new_version='5.44.0', match_toolchain=GCCCORE153),
