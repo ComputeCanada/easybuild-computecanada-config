@@ -692,16 +692,6 @@ end
         echo "set DEFLIBDIR=$EBROOTGENTOO/lib64;" >> $installdir/compilers/bin/localrc
         echo "set DEFSTDOBJDIR=$EBROOTGENTOO/lib64;" >> $installdir/compilers/bin/localrc
         echo "set NORPATH=YES;" >> $installdir/compilers/bin/localrc
-        publicdir=${installdir/restricted.computecanada.ca/soft.computecanada.ca}
-        rm -rf $publicdir
-        mkdir -p $publicdir
-        cp -a $installdir/REDIST/* $publicdir
-        for i in $(find $publicdir); do
-            if [[ $(readlink $i) == ../../../* ]]; then
-                rm $i
-                cp -p ${i/soft.computecanada.ca/restricted.computecanada.ca} $i
-            fi
-        done
         '''], REPLACE),
     },
     **{("OpenFOAM", ver): {
